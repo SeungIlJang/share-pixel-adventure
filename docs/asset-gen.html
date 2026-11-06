@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>모두의 픽셀모험 — 스토어 에셋 생성기</title>
+<style>
+  body{background:#14161f;color:#e8eef7;font-family:system-ui,sans-serif;text-align:center;padding:24px}
+  canvas{image-rendering:pixelated;border:1px solid #333;margin:8px;background:#000;max-width:96%;height:auto}
+  button{padding:9px 16px;margin:6px;font-size:14px;border:0;border-radius:6px;background:#2a3658;color:#cfe4ff;cursor:pointer}
+  button:hover{background:#3a4a78}
+  h2{margin-top:28px;color:#9fe8c4}
+  .hint{color:#8a93ad;font-size:13px}
+</style>
+</head>
+<body>
+<h1>모두의 픽셀모험 — 스토어 에셋 생성기</h1>
+<p class="hint">각 버튼을 누르면 PNG 파일이 내려받아집니다. (Play Console에 그대로 업로드)</p>
+
+<h2>앱 아이콘 — 512×512</h2>
+<canvas id="icon" width="512" height="512" style="width:200px"></canvas><br>
+<button onclick="dl('icon','icon-512.png')">⬇ 아이콘 512 내려받기</button>
+
+<h2>마스커블 아이콘 — 512×512</h2>
+<canvas id="iconM" width="512" height="512" style="width:200px"></canvas><br>
+<button onclick="dl('iconM','icon-maskable-512.png')">⬇ 마스커블 내려받기</button>
+
+<h2>피처 그래픽 — 1024×500</h2>
+<canvas id="feat" width="1024" height="500" style="width:512px"></canvas><br>
+<button onclick="dl('feat','feature-graphic-1024x500.png')">⬇ 피처 그래픽 내려받기</button>
+
+<script>
+/* ---- 영웅 필드 스프라이트 (게임과 동일) ---- */
+const HERO=[
+ {pal:{o:'#161019',h:'#8a5a3a',H:'#6a4228',s:'#f2d6b8',e:'#20202c',b:'#5a9bd8',l:'#8fc1ef',d:'#3f6ea8',k:'#d7b24e',n:'#3a3550',L:'#241e2c'},
+  rows:["....oooo....","...ohhhho...","..ohhhhhho..","..ohssssho..","..osesseso..","..osssssso..","..obbbbbbo..","..olbbbbdo..","..olbbbbdo..","..okkkkkko..","..olbbbbdo..","..onn..nno..","..onn..nno..","..oLL..LLo.."]},
+ {pal:{o:'#161019',p:'#9166c4',d:'#654499',l:'#c3a3ef',s:'#f2d6b8',e:'#20202c',k:'#caa44a',n:'#3a3550',L:'#241e2c',c:'#9fe8ff',C:'#dff6ff',w:'#8a6a3a'},
+  rows:[".....oo...oCo.","....oppo..ccc.","...oppppo.oco.","..oppppppo.w..",".oppppppppow..","..osssssso.w..","..osesseso.w..","..osssssso.w..","..oppppppo.w..","..olppppdo.w..","..olppppdo.w..","..okkkkkko.w..","..olppppdo.w..","..onn..nno.w..","..oLL..LLo...."]},
+ {pal:{o:'#161019',v:'#5aa98a',V:'#3f7f66',s:'#f2d6b8',e:'#20202c',g:'#e7efe9',w:'#ffffff',d:'#bcd0c6',k:'#cfa44a'},
+  rows:["....oooo....","...ovvvvo...","..ovvvvvvo..","..ovssssvo..","..osesseso..","..osssssso..","..oggggggo..","..owggggdo..","..oggggggo..","..okkkkkko..","..oggggggo..",".oggggggggo.",".oggggggggo.",".ogddddddgo."]},
+ {pal:{o:'#161019',a:'#caa05a',A:'#9c7636',l:'#e6c488',s:'#f2d6b8',e:'#20202c',b:'#6a4e32',d:'#4e3a26',k:'#3a2e1a',n:'#3a2e1e',L:'#2a2018'},
+  rows:["....oooo....","...oaaaao...","..oaaaaaao..","..oassssao..","..oseeseso..","..oassssao..","..obbbbbbo..","..olbbbbdo..","..obbbbbbo..","..okkkkkko..","..obbbbbbo..","..onn..nno..","..onn..nno..","..oLL..LLo.."]}
+];
+function pix(c,rows,pal,ox,oy,px){ for(let y=0;y<rows.length;y++){const r=rows[y];for(let x=0;x<r.length;x++){const col=pal[r[x]];if(col){c.fillStyle=col;c.fillRect(ox+x*px,oy+y*px,px,px);}}} }
+function pw(rows,px){ return Math.max.apply(null,rows.map(r=>r.length))*px; }
+function diamond(c,cx,cy,R,fill,hi,glow){
+  c.save();c.globalAlpha=0.3;c.fillStyle=glow;c.beginPath();c.arc(cx,cy,R+R*0.35,0,7);c.fill();c.restore();
+  c.fillStyle='#0c0a16';for(let y=-R;y<=R;y++){const w=R-Math.abs(y);c.fillRect(cx-w,cy+y,w*2,1);}
+  const r2=R-Math.max(2,R*0.09);c.fillStyle=fill;for(let y=-r2;y<=r2;y++){const w=r2-Math.abs(y);c.fillRect(cx-w,cy+y,w*2,1);}
+  c.fillStyle=hi;for(let y=-r2+2;y<=-1;y++){const w=r2-Math.abs(y);if(w>1)c.fillRect(cx-w+1,cy+y,Math.max(1,Math.round(w*0.55)),1);}
+}
+function mountains(c,W,H,baseY,stepW,amp,period,phase,col){ c.fillStyle=col;
+  for(let x=0;x<W;x+=stepW){const h=Math.round((Math.sin(x/period+phase)*0.5+0.5)*amp);const top=baseY-h;c.fillRect(x,top,stepW,H-top);} }
+function sky(c,W,H){ const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#090c1a');g.addColorStop(0.5,'#1e1b33');g.addColorStop(1,'#3a2438');c.fillStyle=g;c.fillRect(0,0,W,H);}
+function stars(c,W,yMax,n){ for(let k=0;k<n;k++){const x=(k*71)%W,y=(k*43)%yMax+4,s=(k%6===0)?2:1;c.globalAlpha=0.35+0.45*Math.abs(Math.sin(k*1.7));c.fillStyle='#cfe4ff';c.fillRect(x,y,s,s);}c.globalAlpha=1; }
+function moon(c,x,y,r){ c.save();c.globalAlpha=0.16;c.fillStyle='#f0ead0';c.beginPath();c.arc(x,y,r*1.9,0,7);c.fill();c.restore();c.fillStyle='#f4eed6';c.beginPath();c.arc(x,y,r,0,7);c.fill();c.fillStyle='#ddd5b6';c.fillRect(x-r*0.4,y-r*0.3,r*0.22,r*0.22);c.fillRect(x+r*0.2,y+r*0.2,r*0.16,r*0.16); }
+const SEALS=[['#2e4a7a','#aee0ff','#8fd0ff'],['#4a2e6a','#dcb8ff','#c79bff'],['#6e3c40','#ffcfae','#f0b89a']];
+
+/* ---- 앱 아이콘 ---- */
+function drawIcon(c,S,mask){
+  sky(c,S,S);
+  if(!mask){ stars(c,S,S*0.5,20); moon(c,S*0.8,S*0.18,S*0.055);
+    mountains(c,S,S,S*0.8,S/32,S*0.12,S*0.16,0,'#17131f'); }
+  const cy=mask?S*0.5:S*0.46, sp=mask?S*0.16:S*0.22, R=mask?S*0.09:S*0.1;
+  diamond(c,S*0.5-sp,cy,R,SEALS[0][0],SEALS[0][2],SEALS[0][2]);
+  diamond(c,S*0.5+sp,cy,R,SEALS[2][0],SEALS[2][2],SEALS[2][2]);
+  diamond(c,S*0.5,cy,R*1.25,SEALS[1][0],SEALS[1][2],SEALS[1][2]);
+}
+/* ---- 피처 그래픽 ---- */
+function drawFeature(c){ const W=1024,H=500;
+  sky(c,W,H); stars(c,W,H*0.55,60); moon(c,880,95,34);
+  mountains(c,W,H,370,16,70,150,0,'#191630');
+  mountains(c,W,H,400,16,48,110,2.1,'#110e20');
+  c.fillStyle='#0c0a16';c.fillRect(0,430,W,H-430);
+  // seals
+  for(let i=0;i<3;i++){const cx=330+(i-1)*112;diamond(c,cx,120,(i===1)?48:38,SEALS[i][0],SEALS[i][1],SEALS[i][2]);}
+  // title
+  c.textAlign='center';c.font='bold 72px system-ui,sans-serif';c.fillStyle='#0a0814';
+  for(const d of [[-3,0],[3,0],[0,-3],[0,3],[-3,-3],[3,3],[3,-3],[-3,3]])c.fillText('모두의 픽셀모험',330+d[0],280+d[1]);
+  c.fillStyle='#f4edd8';c.fillText('모두의 픽셀모험',330,280);
+  c.fillStyle='#9a86cc';c.font='bold 22px system-ui';c.fillText('P I X E L   A D V E N T U R E',330,312);
+  c.fillStyle='#8fd0ff';c.font='bold 18px system-ui';c.fillText('오리지널 턴제 픽셀 RPG · 오프라인 · 광고 없음',330,344);
+  // heroes along the right/bottom
+  for(let i=0;i<4;i++){const sp=HERO[i],px=6,w=pw(sp.rows,px),h=sp.rows.length*px,cx=640+i*96;
+    c.fillStyle='rgba(0,0,0,.5)';c.beginPath();c.ellipse(cx,452,w*0.4,7,0,0,7);c.fill();
+    pix(c,sp.rows,sp.pal,Math.round(cx-w/2),452-h,px);}
+  c.textAlign='left';
+}
+drawIcon(document.getElementById('icon').getContext('2d'),512,false);
+drawIcon(document.getElementById('iconM').getContext('2d'),512,true);
+drawFeature(document.getElementById('feat').getContext('2d'));
+function dl(id,name){ document.getElementById(id).toBlob(function(b){const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();},'image/png'); }
+</script>
+</body>
+</html>
