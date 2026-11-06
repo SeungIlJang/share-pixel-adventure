@@ -909,22 +909,22 @@ function drawFx(){ for(const f of fx){ const p=f.t/f.max; g.globalAlpha=Math.max
     if(f.kind==='slash'){ const o=(1-p)*10; g.beginPath(); g.moveTo(f.x-12+o,f.y-10); g.lineTo(f.x+10+o,f.y+12); g.stroke(); g.beginPath(); g.moveTo(f.x+10,f.y-10); g.lineTo(f.x-12,f.y+12); g.stroke(); }
     else { g.beginPath(); g.arc(f.x,f.y,6+(1-p)*18,0,7); g.stroke(); } }
   g.globalAlpha=1; g.lineWidth=1; }
-function nextInput(){ const b=battle; b.menu='cmd'; b.cmd=0; b.sub=0; b.pending=null;
+function nextInput(){ const b=battle; b.pending=null;
   b.inputIdx++; while(b.inputIdx<party.length&&!party[b.inputIdx].alive) b.inputIdx++;
-  if(b.inputIdx>=party.length) enemyPlan(); }
+  if(b.inputIdx>=party.length){ enemyPlan(); return; } setCmdDefault(); b.autoT=12; }
 function battleBack(){ const b=battle;
   if(b.menu==='skill'||b.menu==='item') b.menu='cmd';
   else if(b.menu==='target') b.menu = b.pending&&b.pending.type==='skill'?'skill':(b.pending&&b.pending.type==='item'?'item':'cmd');
   else if(b.menu==='targetAlly'||b.menu==='targetDead') b.menu = b.pending&&b.pending.type==='item'?'item':'skill';
   else if(b.menu==='cmd'&&b.inputIdx>0){ b.actions.pop(); do{b.inputIdx--;}while(b.inputIdx>0&&!party[b.inputIdx].alive); b.menu='cmd'; b.cmd=0; } }
-function chooseCommand(i){ const b=battle,p=party[b.inputIdx]; b.cmd=i; const c=CMDS[i]; sfx('sel');
+function chooseCommand(i){ const b=battle,p=party[b.inputIdx]; b.cmd=i; const c=CMDS[i]; sfx('sel'); if(p){ p.ai=p.ai||{}; p.ai.cmd=i; }
   if(c==='공격'){ b.pending={type:'attack'}; b.menu='target'; b.targetIdx=firstEnemy(); b.curX=null; }
   else if(c==='방어'){ pushA({actor:b.inputIdx,type:'guard'}); nextInput(); }
   else if(c==='도망'){ pushA({actor:b.inputIdx,type:'flee'}); nextInput(); }
-  else if(c==='스킬'){ p.skills.length?(b.menu='skill',b.sub=0):flashMsg('스킬 없음'); }
+  else if(c==='스킬'){ p.skills.length?(b.menu='skill',b.sub=(p.ai&&p.ai.skill!=null&&p.ai.skill<p.skills.length)?p.ai.skill:0):flashMsg('스킬 없음'); }
   else if(c==='아이템'){ invCount()>0?(b.menu='item',b.sub=0):flashMsg('아이템 없음'); } }
 function chooseSkill(i){ const b=battle,p=party[b.inputIdx]; b.sub=i; const id=p.skills[i],s=SKILLS[id];
-  if(p.mp<s.mp){ flashMsg('MP 부족'); return; } sfx('sel'); b.pending={type:'skill',skill:id};
+  if(p.mp<s.mp){ flashMsg('MP 부족'); return; } sfx('sel'); if(p){ p.ai=p.ai||{}; p.ai.cmd=1; p.ai.skill=i; } b.pending={type:'skill',skill:id};
   if(s.target==='allEnemies'||s.target==='allAllies'){ pushA({actor:b.inputIdx,...b.pending,target:-1}); nextInput(); }
   else if(s.target==='ally'){ b.menu='targetAlly'; b.targetIdx=firstAlly(); }
   else if(s.target==='allyDead'){ const d=firstDead(); d<0?flashMsg('대상 없음'):(b.menu='targetDead',b.targetIdx=d); }
@@ -934,6 +934,24 @@ function chooseItem(i){ const b=battle,list=invList(),id=list[i]; if(!id) return
   if(it.revive){ const d=firstDead(); d<0?flashMsg('대상 없음'):(b.menu='targetDead',b.targetIdx=d); }
   else { b.menu='targetAlly'; b.targetIdx=firstAlly(); } }
 function confirmTarget(i){ const b=battle; b.targetIdx=i; pushA({actor:b.inputIdx,...b.pending,target:i}); nextInput(); }
+/* ---- 이전 선택 기억 + 자동모드 ---- */
+let autoBattle=false;
+function lowestEnemyIdx(){ let bi=-1,bh=1e18; battle.enemies.forEach((e,i)=>{ if(e.alive&&e.hp<bh){bh=e.hp;bi=i;} }); return bi<0?firstEnemy():bi; }
+function lowestAllyIdx(){ let bi=-1,br=2; party.forEach((p,i)=>{ if(p.alive){ const r=p.hp/p.maxhp; if(r<br){br=r;bi=i;} } }); return bi<0?firstAlly():bi; }
+function setCmdDefault(){ const b=battle,p=party[b.inputIdx]; b.menu='cmd'; b.cmd=(p&&p.ai&&p.ai.cmd!=null)?Math.min(p.ai.cmd,CMDS.length-1):0; b.sub=(p&&p.ai&&p.ai.skill!=null)?p.ai.skill:0; }
+function autoAction(idx){ const p=party[idx], ai=p.ai||{};
+  let cmd = ai.cmd!=null ? ai.cmd : ((p.cls==='검사'||p.cls==='척후')?0:1);
+  if(CMDS[cmd]==='스킬' && p.skills.length){ const si=(ai.skill!=null&&ai.skill<p.skills.length)?ai.skill:0; const id=p.skills[si], s=SKILLS[id];
+    if(s && p.mp>=s.mp){
+      if(s.kind==='revive'){ const d=firstDead(); if(d>=0) return {actor:idx,type:'skill',skill:id,target:d}; }
+      else if(s.kind==='heal'||s.kind==='healAll'){ const low=lowestAllyIdx(); if(low>=0 && party[low].hp/party[low].maxhp<0.92) return {actor:idx,type:'skill',skill:id,target:low}; }
+      else { let tgt=-1; if(s.target==='enemy') tgt=lowestEnemyIdx(); else if(s.target==='ally') tgt=lowestAllyIdx(); return {actor:idx,type:'skill',skill:id,target:tgt}; }
+    }
+  }
+  if(CMDS[cmd]==='방어') return {actor:idx,type:'guard'};
+  return {actor:idx,type:'attack',target:lowestEnemyIdx()};
+}
+function toggleAuto(){ autoBattle=!autoBattle; sfx('sel'); if(autoBattle&&battle){ battle.menu='cmd'; battle.autoT=12; setCmdDefault(); } }
 function dmgPhys(a,p,d){ return Math.max(1,Math.round(a*p-d*0.9+rnd(3)-1)); }
 function dmgMag(m,p,d){ return Math.max(1,Math.round(m*p-d*0.4+rnd(3)-1)); }
 function spdOf(a){ return (a.enemy!=null)?battle.enemies[a.enemy].spd+rnd(2):party[a.actor].spd+rnd(2); }
@@ -946,11 +964,13 @@ function enemyPlan(){ const b=battle; b.round=(b.round||0)+1;
   b.actions.sort((x,y)=>spdOf(y)-spdOf(x)); b.queue=b.actions.slice(); b.actions=[]; b.phase='resolve'; b.auto=1; b.poisonDone=false; b.log=[]; stepResolve(); }
 function updateBattle(){ const b=battle;
   if(b.noteT>0) b.noteT--;
-  if(b.timer>0){ b.timer--; if(b.timer===0&&b.phase==='intro') b.phase='input'; return; }
+  if(b.timer>0){ b.timer--; if(b.timer===0&&b.phase==='intro'){ b.phase='input'; setCmdDefault(); b.autoT=12; } return; }
   if(b.phase==='input'){
     while(b.inputIdx<party.length&&!party[b.inputIdx].alive) b.inputIdx++;
     if(b.inputIdx>=party.length){ enemyPlan(); return; }
     const p=party[b.inputIdx];
+    if(autoBattle){ if(consume('cancel')){ autoBattle=false; sfx('sel'); }
+      else { b.autoT=(b.autoT||0)-1; if(b.autoT<=0){ b.autoT=12; b.actions.push(autoAction(b.inputIdx)); nextInput(); } return; } }
     if(consume('cancel')) battleBack();
     else if(b.menu==='cmd'){ if(consume('up'))b.cmd=(b.cmd+CMDS.length-1)%CMDS.length; if(consume('down'))b.cmd=(b.cmd+1)%CMDS.length;
       if(consume('confirm')) chooseCommand(b.cmd); }
@@ -975,7 +995,7 @@ function stepResolve(){ const b=battle;
       livingParty().forEach(p=>{ if(p.poison>0){ const d=Math.max(1,Math.round(p.maxhp*0.05)); p.hp-=d; p.poison--; p.hitFlash=10; const q=partyPos(party.indexOf(p)); pop(q.x,q.y,'-'+d,'#8fdc6e'); pm.push(`${p.name} 독 ${d}`); if(p.hp<=0){p.hp=0;p.alive=false; pm.push(`${p.name} 쓰러졌다...`);} } });
       if(pm.length){ b.log=pm; b.auto=28; return; } }
     b.poisonDone=false; party.forEach(p=>p.guard=false);
-    b.phase='input'; b.inputIdx=0; while(b.inputIdx<party.length&&!party[b.inputIdx].alive) b.inputIdx++; b.menu='cmd'; b.cmd=0; b.log=[]; return; }
+    b.phase='input'; b.inputIdx=0; while(b.inputIdx<party.length&&!party[b.inputIdx].alive) b.inputIdx++; b.log=[]; setCmdDefault(); b.autoT=12; return; }
   const a=b.queue.shift(); b.log=[];
   if(a.type==='guard'){ const p=party[a.actor]; if(p.alive){ p.guard=true; b.log.push(`${p.name} 방어 태세!`); } }
   else if(a.type==='flee'){ if(!b.isBoss&&Math.random()<0.6){ b.log.push('도망쳤다!'); b.result='flee'; b.phase='done'; return; } else b.log.push('도망칠 수 없었다!'); }
@@ -1078,8 +1098,10 @@ function drawBattleUI(){ const b=battle;
     else { g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('탭하여 계속 ▶',W/2,36); g.textAlign='left'; }
     return; }
   if(b.phase!=='input') return; const p=party[b.inputIdx]; if(!p) return;
-  btn(6,44,52,18,'◀ 뒤로',()=>battleBack(),{font:'10px sans-serif'});
+  btn(W-74,44,68,18, autoBattle?'⟳ 자동 ON':'⟳ 자동', toggleAuto, {bg:autoBattle?'#2a4a3a':'rgba(14,18,28,.96)', fg:autoBattle?'#9fe8c4':'#aeb8d0', font:'10px sans-serif'});
   g.fillStyle='#8a93ad'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText(p.name+'의 턴',W-8,16); g.textAlign='left';
+  if(autoBattle){ g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('⟳ 자동 진행 중 — "자동"을 눌러 해제',W/2,H-22); g.textAlign='left'; return; }
+  btn(6,44,52,18,'◀ 뒤로',()=>battleBack(),{font:'10px sans-serif'});
   const by=H-40;
   if(b.menu==='cmd'){ const n=CMDS.length, bw=(W-16-(n-1)*6)/n;
     CMDS.forEach((c,i)=>btn(8+i*(bw+6),by,bw,32,(i===b.cmd?'▶ ':'')+c,()=>chooseCommand(i),
