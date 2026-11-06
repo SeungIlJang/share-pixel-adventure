@@ -705,7 +705,7 @@ function drawTitle(){
   g.fillStyle='#9a86cc'; g.font='bold 11px sans-serif'; g.fillText('P I X E L   A D V E N T U R E',W/2,150);
   // 파티 4인 (바닥에 선 픽셀 영웅)
   const order=['검사','주술사','치유사','척후'], hx0=W/2-81;
-  for(let i=0;i<4;i++){ const sp=HEROPX[order[i]]; if(!sp) continue; const rows=sp.rows, px=2, w=Math.max.apply(null,rows.map(r=>r.length))*px, h=rows.length*px, cx=hx0+i*54, bob=Math.round(Math.sin((gtime+i*16)/20)*1.5);
+  for(let i=0;i<4;i++){ const sp=HEROPX[order[i]]; if(!sp) continue; const rows=sp.battle||sp.rows, px=2, w=Math.max.apply(null,rows.map(r=>r.length))*px, h=rows.length*px, cx=hx0+i*54, bob=Math.round(Math.sin((gtime+i*16)/20)*1.5);
     g.fillStyle='#0008'; g.beginPath(); g.ellipse(cx,253,11,3,0,0,7); g.fill();
     drawPixSprite(rows,sp.pal,Math.round(cx-w/2),253-h+bob,px); }
   // 버튼
