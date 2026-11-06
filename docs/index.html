@@ -664,22 +664,54 @@ function doContinue(){ bgm.started=true; if(loadGame()){ state='field'; showMsg(
 function updateTitle(){ const n=hasSave()?2:1;
   if(consume('up')) titleSel=(titleSel+n-1)%n; if(consume('down')) titleSel=(titleSel+1)%n;
   if(consume('confirm')){ titleSel===0?startNew():doContinue(); } }
+function pxDiamond(cx,cy,R,fill,hi,glow){
+  g.save(); g.globalAlpha=0.28; g.fillStyle=glow; g.beginPath(); g.arc(cx,cy,R+8,0,7); g.fill(); g.restore();
+  g.fillStyle='#0c0a16'; for(let y=-R;y<=R;y++){ const w=R-Math.abs(y); g.fillRect(cx-w,cy+y,w*2,1); }
+  const r2=R-2; g.fillStyle=fill; for(let y=-r2;y<=r2;y++){ const w=r2-Math.abs(y); g.fillRect(cx-w,cy+y,w*2,1); }
+  g.fillStyle=hi; for(let y=-r2+2;y<=-1;y++){ const w=r2-Math.abs(y); if(w>1) g.fillRect(cx-w+1,cy+y,Math.max(1,Math.round(w*0.55)),1); }
+}
+function pxMountains(baseY,stepW,amp,period,phase,col){ g.fillStyle=col;
+  for(let x=0;x<W;x+=stepW){ const h=Math.round((Math.sin(x/period+phase)*0.5+0.5)*amp); const top=baseY-h; g.fillRect(x,top,stepW,H-top); } }
+function pxBtn(x,y,w,h,label,sel,fn){
+  g.fillStyle=sel?'#39305a':'#171d33'; g.fillRect(x,y,w,h);
+  g.fillStyle=sel?'#564a86':'#283150'; g.fillRect(x,y,w,2);
+  g.fillStyle='#0b0914'; g.fillRect(x,y+h-2,w,2);
+  g.strokeStyle=sel?'#9fe8c4':'#454e74'; g.lineWidth=1; g.strokeRect(x+0.5,y+0.5,w-1,h-1); g.lineWidth=1;
+  g.fillStyle=sel?'#c6ffe6':'#aeb8d0'; g.font='bold 13px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  g.fillText((sel?'▶ ':'')+label, x+w/2, y+h/2+1); g.textBaseline='alphabetic'; g.textAlign='left';
+  hz(x,y,w,h,fn); }
 function drawTitle(){
-  const grd=g.createLinearGradient(0,0,0,H); grd.addColorStop(0,'#0a0e1e'); grd.addColorStop(0.58,'#241f3a'); grd.addColorStop(1,'#5e3c40');
+  const grd=g.createLinearGradient(0,0,0,H); grd.addColorStop(0,'#090c1a'); grd.addColorStop(0.5,'#1e1b33'); grd.addColorStop(1,'#3a2438');
   g.fillStyle=grd; g.fillRect(0,0,W,H);
-  g.fillStyle='#17131f'; g.beginPath(); g.moveTo(0,206); for(let x=0;x<=W;x+=40) g.lineTo(x,200-((x/40)%2?12:0)); g.lineTo(W,H); g.lineTo(0,H); g.closePath(); g.fill();
-  for(let k=0;k<22;k++){ const x=(k*131+gtime*0.4)%W, y=206-((gtime*0.5+k*80)%232); g.globalAlpha=0.12+0.2*Math.abs(Math.sin((gtime+k*30)/22)); g.fillStyle='#cfe4ff'; g.fillRect(x,y,2,2); } g.globalAlpha=1;
-  for(let i=0;i<3;i++){ const sx=W/2+(i-1)*46, sy=74, ps=1+Math.sin((gtime+i*24)/16)*0.08; g.save(); g.translate(sx,sy); g.rotate(Math.PI/4); g.scale(ps,ps);
-    g.fillStyle=i<(3-sealsFixed)?'#2e4a7a':'#4a2a2a'; g.fillRect(-12,-12,24,24); g.strokeStyle=i<(3-sealsFixed)?'#8fd0ff':'#c67'; g.lineWidth=2; g.strokeRect(-12,-12,24,24); g.lineWidth=1; g.restore(); }
-  g.textAlign='center'; g.fillStyle='#000'; g.font='bold 26px sans-serif'; g.fillText('모두의 픽셀모험',W/2+1,139); g.fillStyle='#f2ecda'; g.fillText('모두의 픽셀모험',W/2,138);
-  g.font='12px sans-serif'; g.fillStyle='#9aa6c4'; g.fillText('Pixel Adventure',W/2,158);
-  const opts=['새 게임']; if(hasSave()) opts.push('이어하기');
-  opts.forEach((o,i)=>{ const y=174+i*28; btn(W/2-80,y,160,24,(i===titleSel?'▶ ':'')+o, i===0?startNew:doContinue,
-    {bg:i===titleSel?'#2a3658':'rgba(18,24,42,.7)', fg:i===titleSel?'#9fe8c4':'#aeb8d0', font:'14px sans-serif'}); });
-  const cols=['#7cc4ff','#c79bff','#9fe8c4','#f0c27a'];
-  cols.forEach((c,i)=>{ const hx=W/2-78+i*52, hy=234+Math.sin((gtime+i*18)/24)*1.5; g.fillStyle='#0006'; g.beginPath(); g.ellipse(hx+9,hy+21,8,3,0,0,7); g.fill();
-    g.fillStyle=c; g.fillRect(hx+4,hy+9,11,12); g.fillStyle='#caa46a'; g.fillRect(hx+5,hy+1,9,9); });
-  g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.fillText('오리지널 작품 · 2026',W/2,H-7); g.textAlign='left'; }
+  // 달 + 글로우
+  g.save(); g.globalAlpha=0.16; g.fillStyle='#f0ead0'; g.beginPath(); g.arc(410,48,32,0,7); g.fill(); g.restore();
+  g.fillStyle='#f4eed6'; g.beginPath(); g.arc(410,48,17,0,7); g.fill();
+  g.fillStyle='#ddd5b6'; g.fillRect(404,43,4,4); g.fillRect(414,52,3,3); g.fillRect(407,56,2,2);
+  // 별 (반짝임)
+  for(let k=0;k<36;k++){ const x=(k*71)%W, y=(k*43)%140+4, s=(k%6===0)?2:1; g.globalAlpha=0.28+0.5*Math.abs(Math.sin((gtime+k*37)/26)); g.fillStyle='#cfe4ff'; g.fillRect(x,y,s,s); } g.globalAlpha=1;
+  // 픽셀 산 (2겹)
+  pxMountains(198,8,34,74,0.0,'#191630');
+  pxMountains(214,8,24,54,2.1,'#110e20');
+  // 땅
+  g.fillStyle='#0c0a16'; g.fillRect(0,236,W,H-236);
+  g.fillStyle='#14111f'; g.fillRect(0,236,W,2);
+  // 세 봉인 (빛나는 픽셀 다이아)
+  const sc=[['#2e4a7a','#aee0ff','#8fd0ff'],['#4a2e6a','#dcb8ff','#c79bff'],['#6e3c40','#ffcfae','#f0b89a']];
+  for(let i=0;i<3;i++){ const cx=W/2+(i-1)*54, cy=58+Math.round(Math.sin((gtime+i*20)/22)*3), R=(i===1)?24:19; pxDiamond(cx,cy,R,sc[i][0],sc[i][1],sc[i][2]); }
+  // 타이틀 (로고풍 아웃라인)
+  g.textAlign='center'; g.font='bold 30px sans-serif'; g.fillStyle='#0a0814';
+  for(const d of [[-2,0],[2,0],[0,-2],[0,2],[-2,-2],[2,2],[2,-2],[-2,2]]) g.fillText('모두의 픽셀모험',W/2+d[0],132+d[1]);
+  g.fillStyle='#f4edd8'; g.fillText('모두의 픽셀모험',W/2,132);
+  g.fillStyle='#9a86cc'; g.font='bold 11px sans-serif'; g.fillText('P I X E L   A D V E N T U R E',W/2,150);
+  // 파티 4인 (바닥에 선 픽셀 영웅)
+  const order=['검사','주술사','치유사','척후'], hx0=W/2-81;
+  for(let i=0;i<4;i++){ const sp=HEROPX[order[i]]; if(!sp) continue; const rows=sp.rows, px=2, w=Math.max.apply(null,rows.map(r=>r.length))*px, h=rows.length*px, cx=hx0+i*54, bob=Math.round(Math.sin((gtime+i*16)/20)*1.5);
+    g.fillStyle='#0008'; g.beginPath(); g.ellipse(cx,253,11,3,0,0,7); g.fill();
+    drawPixSprite(rows,sp.pal,Math.round(cx-w/2),253-h+bob,px); }
+  // 버튼
+  pxBtn(W/2-78,166,156,24,'새 게임',titleSel===0,startNew);
+  if(hasSave()) pxBtn(W/2-78,194,156,22,'이어하기',titleSel===1,doContinue);
+  g.fillStyle='#6b7590'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText('오리지널 작품 · 2026',W/2,H-5); g.textAlign='left'; }
 
 /* ================= 필드 ================= */
 const DIRV={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
@@ -1097,7 +1129,7 @@ function loop(){ update(); draw(); requestAnimationFrame(loop); }
 loop();
 </script>
 <script>
-if('serviceWorker' in navigator){ window.addEventListener('load', function(){ navigator.serviceWorker.register('service-worker.js').catch(function(){}); }); }
+if('serviceWorker' in navigator && location.protocol==='https:'){ window.addEventListener('load', function(){ navigator.serviceWorker.register('service-worker.js').catch(function(){}); }); }
 </script>
 </body>
 </html>
