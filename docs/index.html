@@ -30,7 +30,7 @@
    설계 패턴만 참고(상태머신·파티/클래스·아이템·상점·세이브). 전부 오리지널. */
 const cv=document.getElementById('screen'), g=cv.getContext('2d');
 const W=480,H=270,TILE=30, SAVE_KEY='three-seals-save-v2';
-function resizeCanvas(){ const s=Math.min(window.innerWidth/W, window.innerHeight/H); cv.style.width=(W*s)+'px'; cv.style.height=(H*s)+'px'; }
+function resizeCanvas(){ cv.style.width=window.innerWidth+'px'; cv.style.height=window.innerHeight+'px'; }
 addEventListener('resize',resizeCanvas); resizeCanvas();
 
 /* ---------- 입력: 키보드 + 캔버스 탭(핫스폿) ---------- */
