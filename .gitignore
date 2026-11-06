@@ -1,0 +1,20 @@
+# Node / Capacitor
+app/node_modules/
+app/android/
+app/ios/
+app/.gradle/
+app/www/
+
+# Build outputs
+**/build/
+*.aab
+*.apk
+
+# Signing keys — NEVER commit
+*.keystore
+*.jks
+key.properties
+
+# OS
+.DS_Store
+Thumbs.db
