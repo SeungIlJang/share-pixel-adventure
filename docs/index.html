@@ -30,7 +30,7 @@
    설계 패턴만 참고(상태머신·파티/클래스·아이템·상점·세이브). 전부 오리지널. */
 const cv=document.getElementById('screen'), g=cv.getContext('2d');
 const W=480,H=270,TILE=30, SAVE_KEY='three-seals-save-v2';
-var DEBUG_ENCOUNTER=true; /* 개발용: 적 조우(풀) 타일을 빨간 점으로 표시. 출시 전 false. */
+var DEBUG_ENCOUNTER=false; /* 개발용: 적 조우(풀) 타일을 빨간 점으로 표시. 출시 전 false. */
 function resizeCanvas(){ const s=Math.min(window.innerWidth/W, window.innerHeight/H); cv.style.width=(W*s)+'px'; cv.style.height=(H*s)+'px'; }
 addEventListener('resize',resizeCanvas); resizeCanvas();
 
