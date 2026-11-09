@@ -150,7 +150,7 @@ const MK={
   '테리':()=>mk('테리','검사',  38,10, 12,7,3,6,  ['powerStrike','cleave'], '#7cc4ff'),
   '카엘':()=>mk('카엘','주술사',24,24, 5,4,13,7,  ['flameBolt','frostLance','thunder'], '#c79bff'),
   '미아':()=>mk('미아','치유사',26,24, 6,5,10,8,  ['heal','cureAll','revive'], '#9fe8c4'),
-  '코르':()=>mk('코르','척후',  30,14, 10,5,6,13, ['doubleCut','venom'], '#f0c27a'),
+  '코르':()=>mk('코르','궁수',  30,14, 10,5,6,13, ['doubleCut','venom'], '#f0c27a'),
 };
 function makeParty(){ return [MK['테리'](), MK['카엘']()]; }
 function joinMember(key){ if(!MK[key]||party.some(p=>p.name===key)) return false; const p=MK[key]();
@@ -563,7 +563,7 @@ const HEROPX={
       ".owggggggdo....",
       ".owggggggdo....",
       ".odddddddddo..." ] },
-  '척후':{ px:2, pal:{o:'#161019',a:'#caa05a',A:'#9c7636',l:'#e6c488',s:'#f2d6b8',e:'#20202c',b:'#6a4e32',d:'#4e3a26',k:'#3a2e1a',n:'#3a2e1e',L:'#2a2018',m:'#cfd6e8'},
+  '궁수':{ px:2, pal:{o:'#161019',a:'#caa05a',A:'#9c7636',l:'#e6c488',s:'#f2d6b8',e:'#20202c',b:'#6a4e32',d:'#4e3a26',k:'#3a2e1a',n:'#3a2e1e',L:'#2a2018',m:'#cfd6e8'},
     rows:[
       "....oooo....",
       "...oaaaao...",
@@ -607,7 +607,7 @@ function heroSprite(px,py,p){ chibi(px,py,p.alive?p.color:'#777'); if(!p.alive) 
   if(p.cls==='검사'){ g.strokeStyle='#e4ebf5'; g.lineWidth=2.5; g.beginPath(); g.moveTo(px+4,py+s*0.34); g.lineTo(px-7,py-3); g.stroke(); g.strokeStyle='#8a6a3a'; g.lineWidth=2; g.beginPath(); g.moveTo(px+1,py+s*0.3); g.lineTo(px+7,py+s*0.42); g.stroke(); g.lineWidth=1; }
   else if(p.cls==='주술사'){ g.fillStyle=p.color; g.beginPath(); g.moveTo(px+s*0.18,py+s*0.08); g.lineTo(cx-1,py-s*0.34); g.lineTo(px+s*0.82,py+s*0.08); g.closePath(); g.fill(); g.strokeStyle='#caa44a'; g.lineWidth=2; g.beginPath(); g.moveTo(px-3,py+s*0.3); g.lineTo(px-3,py+s*0.95); g.stroke(); g.fillStyle='#9fe8ff'; g.beginPath(); g.arc(px-3,py+s*0.26,3,0,7); g.fill(); g.lineWidth=1; }
   else if(p.cls==='치유사'){ g.fillStyle=p.color; g.beginPath(); g.arc(cx,py+s*0.12,s*0.3,Math.PI,2*Math.PI); g.fill(); g.strokeStyle='#eef3ff'; g.lineWidth=2; g.beginPath(); g.moveTo(px-4,py+s*0.36); g.lineTo(px-4,py+s*0.64); g.moveTo(px-8,py+s*0.46); g.lineTo(px,py+s*0.46); g.stroke(); g.lineWidth=1; }
-  else if(p.cls==='척후'){ g.fillStyle=p.color; g.fillRect(px+s*0.18,py-3,s*0.64,4); g.strokeStyle='#cdd6ea'; g.lineWidth=2.5; g.beginPath(); g.moveTo(px+2,py+s*0.4); g.lineTo(px-6,py+s*0.26); g.stroke(); g.lineWidth=1; } }
+  else if(p.cls==='궁수'){ g.fillStyle=p.color; g.fillRect(px+s*0.18,py-3,s*0.64,4); g.strokeStyle='#cdd6ea'; g.lineWidth=2.5; g.beginPath(); g.moveTo(px+2,py+s*0.4); g.lineTo(px-6,py+s*0.26); g.stroke(); g.lineWidth=1; } }
 function heroBack(cx,cy,p,sc){ const s=TILE*sc, x=cx-s/2, y=cy-s/2, col=p.alive?p.color:'#777';
   g.fillStyle='#0007'; g.beginPath(); g.ellipse(cx,y+s-2,s*0.34,s*0.13,0,0,7); g.fill();
   g.fillStyle=col; g.fillRect(x+s*0.2,y+s*0.4,s*0.6,s*0.5);
@@ -617,7 +617,7 @@ function heroBack(cx,cy,p,sc){ const s=TILE*sc, x=cx-s/2, y=cy-s/2, col=p.alive?
   if(p.cls==='검사'){ g.strokeStyle='#e4ebf5'; g.lineWidth=2.5; g.beginPath(); g.moveTo(x+s*0.78,y+s*0.55); g.lineTo(x+s+5,y+s*0.04); g.stroke(); }
   else if(p.cls==='주술사'){ g.strokeStyle='#caa44a'; g.lineWidth=2; g.beginPath(); g.moveTo(x-4,y+s*0.28); g.lineTo(x-4,y+s*0.95); g.stroke(); g.fillStyle='#9fe8ff'; g.beginPath(); g.arc(x-4,y+s*0.24,3,0,7); g.fill(); }
   else if(p.cls==='치유사'){ g.strokeStyle='#eef3ff'; g.lineWidth=2; g.beginPath(); g.moveTo(x-3,y+s*0.3); g.lineTo(x-3,y+s*0.9); g.moveTo(x-7,y+s*0.42); g.lineTo(x+1,y+s*0.42); g.stroke(); }
-  else if(p.cls==='척후'){ g.strokeStyle='#cdd6ea'; g.lineWidth=2; g.beginPath(); g.moveTo(x+s*0.78,y+s*0.5); g.lineTo(x+s+4,y+s*0.34); g.stroke(); }
+  else if(p.cls==='궁수'){ g.strokeStyle='#cdd6ea'; g.lineWidth=2; g.beginPath(); g.moveTo(x+s*0.78,y+s*0.5); g.lineTo(x+s+4,y+s*0.34); g.stroke(); }
   g.lineWidth=1; }
 function drawEnemyShape(e,flash){ g.fillStyle=flash?'#fff':e.color;
   if(e.id==='warden'){ g.beginPath(); g.moveTo(-20,10); g.lineTo(-14,-18); g.lineTo(14,-18); g.lineTo(20,10); g.lineTo(6,22); g.lineTo(-6,22); g.closePath(); g.fill(); g.fillStyle=flash?'#aaa':'#f0b89a'; g.fillRect(-11,-8,8,8); g.fillRect(3,-8,8,8); }
@@ -721,7 +721,7 @@ function drawTitle(){
   g.fillStyle='#f4edd8'; g.fillText('모두의 픽셀모험',W/2,132);
   g.fillStyle='#9a86cc'; g.font='bold 11px sans-serif'; g.fillText('P I X E L   A D V E N T U R E',W/2,150);
   // 파티 4인 (바닥에 선 픽셀 영웅)
-  const order=['검사','주술사','치유사','척후'], hx0=W/2-81;
+  const order=['검사','주술사','치유사','궁수'], hx0=W/2-81;
   for(let i=0;i<4;i++){ const sp=HEROPX[order[i]]; if(!sp) continue; const rows=sp.battle||sp.rows, px=2, w=Math.max.apply(null,rows.map(r=>r.length))*px, h=rows.length*px, cx=hx0+i*54, bob=Math.round(Math.sin((gtime+i*16)/20)*1.5);
     g.fillStyle='#0008'; g.beginPath(); g.ellipse(cx,253,11,3,0,0,7); g.fill();
     drawPixSprite(rows,sp.pal,Math.round(cx-w/2),253-h+bob,px); }
@@ -958,7 +958,7 @@ function lowestEnemyIdx(){ let bi=-1,bh=1e18; battle.enemies.forEach((e,i)=>{ if
 function lowestAllyIdx(){ let bi=-1,br=2; party.forEach((p,i)=>{ if(p.alive){ const r=p.hp/p.maxhp; if(r<br){br=r;bi=i;} } }); return bi<0?firstAlly():bi; }
 function setCmdDefault(){ const b=battle,p=party[b.inputIdx]; b.menu='cmd'; b.cmd=(p&&p.ai&&p.ai.cmd!=null)?Math.min(p.ai.cmd,CMDS.length-1):0; b.sub=(p&&p.ai&&p.ai.skill!=null)?p.ai.skill:0; }
 function autoAction(idx){ const p=party[idx], ai=p.ai||{};
-  let cmd = ai.cmd!=null ? ai.cmd : ((p.cls==='검사'||p.cls==='척후')?0:1);
+  let cmd = ai.cmd!=null ? ai.cmd : ((p.cls==='검사'||p.cls==='궁수')?0:1);
   if(CMDS[cmd]==='스킬' && p.skills.length){ const si=(ai.skill!=null&&ai.skill<p.skills.length)?ai.skill:0; const id=p.skills[si], s=SKILLS[id];
     if(s && p.mp>=s.mp){
       if(s.kind==='revive'){ const d=firstDead(); if(d>=0) return {actor:idx,type:'skill',skill:id,target:d}; }
