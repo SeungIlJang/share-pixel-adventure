@@ -130,22 +130,48 @@ const ITEMS={
   revive:{name:'부활석',revive:true,ratio:0.5,price:40},
 };
 const EQUIP={
-  bronzeSword:{name:'청동검',slot:'weapon',atk:3,price:30},
-  steelSword:{name:'강철검',slot:'weapon',atk:7,price:75},
-  mithrilSword:{name:'미스릴검',slot:'weapon',atk:13,price:170},
-  knightSword:{name:'기사검',slot:'weapon',atk:20,price:320},
-  leatherArmor:{name:'가죽갑옷',slot:'armor',def:3,price:30},
-  chainMail:{name:'사슬갑옷',slot:'armor',def:6,price:75},
-  plateArmor:{name:'판금갑옷',slot:'armor',def:11,price:170},
-  guardianRobe:{name:'수호의 로브',slot:'armor',def:15,price:320},
+  /* 무기 — 직업 제한(cls). 검사:검 / 주술사·치유사:지팡이 / 궁수:활 */
+  bronzeSword: {name:'청동검',  slot:'weapon',cls:['검사'],atk:3, price:30},
+  steelSword:  {name:'강철검',  slot:'weapon',cls:['검사'],atk:7, price:75},
+  mithrilSword:{name:'미스릴검',slot:'weapon',cls:['검사'],atk:13,price:170},
+  knightSword: {name:'기사검',  slot:'weapon',cls:['검사'],atk:20,price:320},
+  woodStaff:   {name:'나무지팡이',  slot:'weapon',cls:['주술사','치유사'],mag:3, price:30},
+  crystalStaff:{name:'수정지팡이',  slot:'weapon',cls:['주술사','치유사'],mag:8, price:90},
+  sageStaff:   {name:'현자의 지팡이',slot:'weapon',cls:['주술사','치유사'],mag:14,price:200},
+  shortBow:    {name:'사냥활',slot:'weapon',cls:['궁수'],atk:3, price:30},
+  longBow:     {name:'장궁',  slot:'weapon',cls:['궁수'],atk:8, price:90},
+  stormBow:    {name:'폭풍활',slot:'weapon',cls:['궁수'],atk:14,price:200},
+  /* 머리 */
+  leatherCap:{name:'가죽모자',  slot:'head',def:2,price:25},
+  ironHelm:  {name:'강철투구',  slot:'head',def:5,price:70},
+  mageHat:   {name:'마법사 모자',slot:'head',mag:3,def:1,price:80},
+  /* 몸통 */
+  leatherArmor:{name:'가죽갑옷',  slot:'armor',def:3, price:30},
+  chainMail:   {name:'사슬갑옷',  slot:'armor',def:6, price:75},
+  plateArmor:  {name:'판금갑옷',  slot:'armor',def:11,price:170},
+  guardianRobe:{name:'수호의 로브',slot:'armor',def:8,mag:4,price:220},
+  /* 손 */
+  leatherGloves:{name:'가죽장갑',  slot:'hands',atk:1,def:1,price:25},
+  gauntlet:     {name:'강철건틀릿',slot:'hands',def:3,atk:1,price:70},
+  /* 발 */
+  leatherBoots:{name:'가죽부츠',slot:'feet',def:1,spd:1,price:25},
+  windBoots:   {name:'바람부츠',slot:'feet',spd:4,price:90},
+  /* 반지 */
+  powerRing:{name:'힘의 반지',  slot:'ring',atk:3,price:80},
+  guardRing:{name:'수호의 반지',slot:'ring',def:3,price:80},
+  sageRing: {name:'현자의 반지',slot:'ring',mag:3,price:80},
+  swiftRing:{name:'질풍의 반지',slot:'ring',spd:3,price:80},
 };
+const SLOTS=['weapon','head','armor','hands','feet','ring'];
+const SLOT_KO={weapon:'무기',head:'머리',armor:'몸통',hands:'손',feet:'발',ring:'반지'};
 function itemDef(id){ return ITEMS[id]||EQUIP[id]; }
+function effStr(it){ if(it&&it.slot){ const o=[]; for(const k of ['atk','def','mag','spd']) if(it[k]) o.push(k.toUpperCase()+'+'+it[k]); return o.join(' '); } return it&&it.hp?('HP+'+it.hp):it&&it.mp?('MP+'+it.mp):it&&it.revive?'부활':''; }
 const CONSUMABLES=['potion','ether','revive'];
-const SHOP_STOCK=['potion','ether','revive','bronzeSword','leatherArmor','steelSword','chainMail'];
+const SHOP_STOCK=['potion','ether','revive','bronzeSword','woodStaff','shortBow','leatherCap','leatherArmor','leatherGloves','leatherBoots'];
 
 /* ---------- 파티 ---------- */
 function mk(name,cls,hp,mp,atk,def,mag,spd,skills,color){
-  return {name,cls,lv:1,exp:0,expNext:12,hp,maxhp:hp,mp,maxmp:mp,atk,def,mag,spd,skills,color,alive:true,guard:false,weapon:null,armor:null}; }
+  return {name,cls,lv:1,exp:0,expNext:12,hp,maxhp:hp,mp,maxmp:mp,atk,def,mag,spd,skills,color,alive:true,guard:false,weapon:null,head:null,armor:null,hands:null,feet:null,ring:null}; }
 const MK={
   '테리':()=>mk('테리','검사',  38,10, 12,7,3,6,  ['powerStrike','cleave'], '#7cc4ff'),
   '카엘':()=>mk('카엘','주술사',24,24, 5,4,13,7,  ['flameBolt','frostLance','thunder'], '#c79bff'),
@@ -235,7 +261,7 @@ const AREAS={
           "1000000000000001","1111111001111111","1111111111111111" ],
     enc:null, respawn:{x:3,y:3},
     npcs:[
-      {x:3,y:7,color:'#f0c27a',name:'상인',glyph:'◇',shop:['potion','ether','revive','steelSword','chainMail','mithrilSword','plateArmor','knightSword','guardianRobe']},
+      {x:3,y:7,color:'#f0c27a',name:'상인',glyph:'◇',shop:['potion','ether','revive','steelSword','mithrilSword','knightSword','crystalStaff','sageStaff','longBow','stormBow','ironHelm','mageHat','chainMail','plateArmor','guardianRobe','gauntlet','windBoots','powerRing','guardRing','sageRing','swiftRing']},
       {x:10,y:3,color:'#b7a98f',name:'마을 장로',lines:[
         {n:'장로',t:'여명이 옅어진 뒤로 바람조차 잿빛이오. 봉인을 되살려 주시게.',c:'#d9cdb5'},
         {n:'장로',t:'북쪽 잊혀진 신전에 봉인의 비밀이 잠들어 있다 하오.',c:'#d9cdb5'} ]} ],
@@ -439,10 +465,16 @@ function tile(x,y){ if(x<0||y<0||x>=MAPW||y>=MAPH) return '1'; return MAP[y][x];
 function livingParty(){ return party.filter(p=>p.alive); }
 function invList(){ return CONSUMABLES.filter(k=>inventory[k]>0); }
 function ownedEquip(){ return Object.keys(EQUIP).filter(k=>inventory[k]>0); }
-function atkOf(p){ return p.atk + (p.weapon&&EQUIP[p.weapon]?EQUIP[p.weapon].atk:0); }
-function defOf(p){ return p.def + (p.armor&&EQUIP[p.armor]?EQUIP[p.armor].def:0); }
-function equip(p,id){ const e=EQUIP[id]; if(!e||(inventory[id]||0)<=0) return; const old=p[e.slot];
-  inventory[id]--; if(old) inventory[old]=(inventory[old]||0)+1; p[e.slot]=id; sfx('sel'); }
+function eqSum(p,stat){ let s=0; for(const sl of SLOTS){ const e=p[sl]&&EQUIP[p[sl]]; if(e&&e[stat]) s+=e[stat]; } return s; }
+function atkOf(p){ return p.atk + eqSum(p,'atk'); }
+function defOf(p){ return p.def + eqSum(p,'def'); }
+function magOf(p){ return p.mag + eqSum(p,'mag'); }
+function spdEff(p){ return p.spd + eqSum(p,'spd'); }
+function canEquip(p,id){ const e=EQUIP[id]; return !!e && !(e.slot==='weapon'&&e.cls&&!e.cls.includes(p.cls)); }
+function equip(p,id){ const e=EQUIP[id]; if(!e||(inventory[id]||0)<=0) return;
+  if(!canEquip(p,id)){ flashMenu(`${p.cls}는 ${e.name} 장착 불가`); return; }
+  const old=p[e.slot]; inventory[id]--; if(old) inventory[old]=(inventory[old]||0)+1; p[e.slot]=id; sfx('sel'); }
+function unequip(p,slot){ if(p[slot]){ inventory[p[slot]]=(inventory[p[slot]]||0)+1; p[slot]=null; sfx('sel'); } }
 function invCount(){ return invList().reduce((s,k)=>s+inventory[k],0); }
 function firstDead(){ return party.findIndex(p=>!p.alive); }
 
@@ -822,6 +854,7 @@ function useItemField(id,p){ const it=ITEMS[id]; if((inventory[id]||0)<=0) retur
   if(it.revive){ if(p.alive) return; inventory[id]--; p.alive=true; p.hp=Math.round(p.maxhp*it.ratio); sfx('heal'); }
   else { if(it.hp&&p.hp>=p.maxhp&&(!it.mp)) return; inventory[id]--;
     if(it.hp) p.hp=Math.min(p.maxhp,p.hp+it.hp); if(it.mp) p.mp=Math.min(p.maxmp,p.mp+it.mp); sfx('heal'); } }
+let menuNote='',menuNoteT=0; function flashMenu(t){ menuNote=t; menuNoteT=70; }
 function updateMenu(){
   if(menuMode==='party'){
     if(consume('cancel')){ state='field'; return; }
@@ -834,29 +867,26 @@ function updateMenu(){
     if(list.length){ if(consume('up')) menuItemSel=(menuItemSel+list.length-1)%list.length;
       if(consume('down')) menuItemSel=(menuItemSel+1)%list.length;
       if(consume('confirm')){ useItemField(list[menuItemSel], party[menuSel]); if(invCount()===0) menuMode='party'; } }
-  } else {
-    const list=ownedEquip();
+  } else { /* equip — 탭으로 슬롯/장비 조작 */
     if(consume('cancel')){ menuMode='party'; return; }
-    if(list.length){ if(consume('up')) menuItemSel=(menuItemSel+list.length-1)%list.length;
-      if(consume('down')) menuItemSel=(menuItemSel+1)%list.length;
-      if(consume('confirm')){ equip(party[menuSel], list[menuItemSel]); if(!ownedEquip().length) menuMode='party'; } }
   } }
 function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0,W,H);
+  if(menuMode==='equip'){ drawEquipPanel(party[menuSel]); return; }
   g.fillStyle='#e8eef7'; g.font='bold 14px sans-serif'; g.fillText('파티',14,20);
   g.fillStyle='#cdd6ea'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText('◆ '+gold,W-14,18); g.textAlign='left';
   party.forEach((p,i)=>{ const y=34+i*40; const sel=i===menuSel;
     if(sel){ g.fillStyle='#1b2236'; g.fillRect(8,y-12,W-16,38); }
     g.fillStyle=p.alive?p.color:'#777'; g.font='bold 12px sans-serif'; g.fillText(`${p.name} Lv${p.lv} ${p.cls}`,16,y);
     g.fillStyle='#9fb0cf'; g.font='10px sans-serif'; g.fillText(`HP ${p.hp}/${p.maxhp}  MP ${p.mp}/${p.maxmp}`,16,y+14);
+    const eqN=SLOTS.reduce((c,sl)=>c+(p[sl]?1:0),0);
     g.fillStyle='#8a93ad'; g.font='9px sans-serif';
-    g.fillText(`무기 ${p.weapon?EQUIP[p.weapon].name:'—'} · 방어구 ${p.armor?EQUIP[p.armor].name:'—'}`,200,y-2);
-    g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.fillText(`ATK ${atkOf(p)}  DEF ${defOf(p)}`,200,y+12);
+    g.fillText(`무기 ${p.weapon?EQUIP[p.weapon].name:'—'} · 장비 ${eqN}/6`,200,y-2);
+    g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.fillText(`ATK ${atkOf(p)} DEF ${defOf(p)} MAG ${magOf(p)} SPD ${spdEff(p)}`,200,y+12);
     bar(200,y+18,180,5,p.hp/p.maxhp,'#4a7');
     hz(8,y-12,W-16,38,()=>{ menuSel=i; }); });
   if(menuMode==='party'){
     let bx=8; if(invCount()>0){ btn(bx,H-24,92,20,'아이템 사용',()=>{menuMode='item';menuItemSel=0;}); bx+=100; }
-    if(ownedEquip().length){ btn(bx,H-24,92,20,'장비 변경',()=>{menuMode='equip';menuItemSel=0;}); bx+=100; }
-    else { g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.fillText('장비는 상인 ◇ 에게서 구매',bx+4,H-11); }
+    btn(bx,H-24,92,20,'장비 장착',()=>{menuMode='equip';menuItemSel=0;}); bx+=100;
     btn(W-62,H-24,54,20,'닫기',()=>state='field',{font:'11px sans-serif'});
   } else if(menuMode==='item'){
     const list=invList(); g.fillStyle='#9fe8c4'; g.font='11px sans-serif'; g.fillText('아이템 → '+party[menuSel].name,14,H-46);
@@ -864,13 +894,26 @@ function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0
       btn(x,y,112,20, `${it.name} x${inventory[id]}`, ()=>{ menuItemSel=i; useItemField(id,party[menuSel]); if(invCount()===0) menuMode='party'; },
         {bg:i===menuItemSel?'#23314f':'rgba(27,34,54,.9)',font:'11px sans-serif'}); });
     btn(W-62,H-22,54,18,'뒤로',()=>menuMode='party',{font:'10px sans-serif'});
-  } else {
-    const list=ownedEquip(); g.fillStyle='#9fe8c4'; g.font='11px sans-serif'; g.fillText('장비 장착 → '+party[menuSel].name,14,H-46);
-    list.forEach((id,i)=>{ const x=10+(i%4)*118, y=H-40; const e=EQUIP[id];
-      btn(x,y,112,20, `${e.name} ${e.slot==='weapon'?'+A'+e.atk:'+D'+e.def} x${inventory[id]}`, ()=>{ menuItemSel=i; equip(party[menuSel],id); if(!ownedEquip().length) menuMode='party'; },
-        {bg:i===menuItemSel?'#23314f':'rgba(27,34,54,.9)',font:'10px sans-serif'}); });
-    btn(W-62,H-22,54,18,'뒤로',()=>menuMode='party',{font:'10px sans-serif'});
-  } }
+  }
+  if(menuNote&&menuNoteT>0){ g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.textAlign='center'; g.fillText(menuNote,W/2,H-32); g.textAlign='left'; menuNoteT--; } }
+function drawEquipPanel(p){
+  g.fillStyle=p.color; g.font='bold 13px sans-serif'; g.fillText(`장비 — ${p.name} Lv${p.lv} ${p.cls}`,14,20);
+  g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('◆ '+gold,W-14,18); g.textAlign='left';
+  g.fillStyle='#9fb0cf'; g.font='10px sans-serif'; g.fillText(`HP ${p.hp}/${p.maxhp}  MP ${p.mp}/${p.maxmp}   ATK ${atkOf(p)} DEF ${defOf(p)} MAG ${magOf(p)} SPD ${spdEff(p)}`,14,36);
+  SLOTS.forEach((sl,i)=>{ const col=i%2, row=(i/2|0), x=12+col*230, y=46+row*26, id=p[sl], e=id&&EQUIP[id];
+    btn(x,y,222,22,'',()=>{ if(p[sl]) unequip(p,sl); },{bg:'rgba(27,34,54,.92)'});
+    g.textAlign='left'; g.fillStyle='#8fb0e8'; g.font='10px sans-serif'; g.fillText(SLOT_KO[sl],x+6,y+15);
+    g.fillStyle=e?'#e8eef7':'#6b7590'; g.font='11px sans-serif'; g.fillText(e?e.name:'— 비어있음',x+44,y+15);
+    if(e){ g.fillStyle='#9fe8c4'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(effStr(e),x+216,y+15); g.textAlign='left'; } });
+  g.fillStyle='#9fe8c4'; g.font='10px sans-serif'; g.fillText('보유 장비 (탭=장착 · 위 슬롯 탭=해제)',14,140);
+  const list=ownedEquip();
+  if(!list.length){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.fillText('보유한 장비가 없습니다 — 상인 ◇ 에게서 구매',14,158); }
+  list.forEach((id,i)=>{ const col=i%2, row=(i/2|0), x=12+col*230, y=148+row*19; if(y>H-46) return; const e=EQUIP[id], ok=canEquip(p,id);
+    btn(x,y,222,17,'',()=>{ equip(p,id); },{bg:'rgba(27,34,54,.92)'});
+    g.textAlign='left'; g.fillStyle=ok?'#cdd6ea':'#9a6069'; g.font='10px sans-serif'; g.fillText(`${e.name} ·${SLOT_KO[e.slot]}${ok?'':' (불가)'}`,x+6,y+12);
+    g.fillStyle=ok?'#9fe8c4':'#9a6069'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(`${effStr(e)} x${inventory[id]}`,x+216,y+12); g.textAlign='left'; });
+  if(menuNote&&menuNoteT>0){ g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.textAlign='center'; g.fillText(menuNote,W/2-30,H-30); g.textAlign='left'; menuNoteT--; }
+  btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
 
 /* ================= 상점 ================= */
 let shopSel=0, shopStock=SHOP_STOCK;
@@ -885,15 +928,17 @@ function updateShop(){ if(consume('cancel')){ state='field'; return; }
 function drawShop(){ drawField(); g.fillStyle='rgba(6,8,16,.9)'; g.fillRect(0,0,W,H);
   g.fillStyle='#f0c27a'; g.font='bold 13px sans-serif'; g.fillText('◇ '+((cur&&cur.name)||'상인'),16,22);
   g.fillStyle='#cdd6ea'; g.font='12px sans-serif'; g.textAlign='right'; g.fillText('보유 ◆ '+gold,W-14,20); g.textAlign='left';
-  const n=shopStock.length, top=28, rh=Math.min(29,(H-56-top)/n);
-  shopStock.forEach((id,i)=>{ const it=itemDef(id), y=top+i*rh, sel=i===shopSel, ty=y+rh*0.64;
+  const n=shopStock.length, top=34, rh=26, vis=Math.max(1,Math.floor((H-58-top)/rh));
+  let start=Math.min(Math.max(0,shopSel-(vis-1)),Math.max(0,n-vis)); if(shopSel<start) start=shopSel;
+  for(let r=0;r<vis && start+r<n;r++){ const i=start+r, id=shopStock[i], it=itemDef(id), y=top+r*rh, sel=i===shopSel, ty=y+rh*0.62;
     btn(14,y,W-28,rh-3,'',()=>{shopSel=i; buy(id);},{bg:sel?'#23314f':'rgba(27,34,54,.9)'});
-    g.textAlign='left'; g.fillStyle=sel?'#9fe8c4':'#cdd6ea'; g.font='12px sans-serif'; g.fillText(it.name,26,ty);
-    const eff=it.slot==='weapon'?('ATK +'+it.atk):it.slot==='armor'?('DEF +'+it.def):it.hp?('HP +'+it.hp):it.mp?('MP +'+it.mp):it.revive?'부활':'';
-    g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText(eff,150,ty);
-    g.fillStyle='#9fb0cf'; g.font='11px sans-serif'; g.fillText('보유 '+(inventory[id]||0),300,ty);
-    g.textAlign='right'; g.fillStyle='#f0c27a'; g.fillText('◆ '+it.price,W-26,ty); g.textAlign='left'; });
-  if(shopNote&&shopNoteT>0){ g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText(shopNote,W-130,20); g.textAlign='left'; shopNoteT--; }
+    g.textAlign='left'; g.fillStyle=sel?'#9fe8c4':'#cdd6ea'; g.font='12px sans-serif'; g.fillText(it.name+(it.cls?` (${it.cls.join('/')})`:''),24,ty);
+    g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText(effStr(it),196,ty);
+    g.fillStyle='#9fb0cf'; g.font='10px sans-serif'; g.fillText('보유 '+(inventory[id]||0),300,ty);
+    g.textAlign='right'; g.fillStyle='#f0c27a'; g.fillText('◆ '+it.price,W-24,ty); g.textAlign='left'; }
+  if(start>0) btn(W-154,H-24,26,20,'▲',()=>{ shopSel=Math.max(0,shopSel-vis); },{font:'12px sans-serif'});
+  if(start+vis<n) btn(W-124,H-24,26,20,'▼',()=>{ shopSel=Math.min(n-1,shopSel+vis); },{font:'12px sans-serif'});
+  if(shopNote&&shopNoteT>0){ g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText(shopNote,W-162,20); g.textAlign='left'; shopNoteT--; }
   btn(W/2-45,H-24,90,20,'나가기',()=>state='field'); }
 
 /* ================= 전투 ================= */
@@ -972,7 +1017,7 @@ function autoAction(idx){ const p=party[idx], ai=p.ai||{};
 function toggleAuto(){ autoBattle=!autoBattle; sfx('sel'); if(autoBattle&&battle){ battle.menu='cmd'; battle.autoT=12; setCmdDefault(); } }
 function dmgPhys(a,p,d){ return Math.max(1,Math.round(a*p-d*0.9+rnd(3)-1)); }
 function dmgMag(m,p,d){ return Math.max(1,Math.round(m*p-d*0.4+rnd(3)-1)); }
-function spdOf(a){ return (a.enemy!=null)?battle.enemies[a.enemy].spd+rnd(2):party[a.actor].spd+rnd(2); }
+function spdOf(a){ return (a.enemy!=null)?battle.enemies[a.enemy].spd+rnd(2):spdEff(party[a.actor])+rnd(2); }
 function enemyPlan(){ const b=battle; b.round=(b.round||0)+1;
   b.enemies.forEach((e,i)=>{ if(!e.alive) return; let type='eatk';
     if(e.boss&&b.round%3===0) type='eaoe';
@@ -1020,11 +1065,11 @@ function stepResolve(){ const b=battle;
   else if(a.type==='attack'){ const p=party[a.actor]; if(!p.alive){ b.auto=1; return; } p.actAnim=12; let t=b.enemies[a.target]; if(!t||!t.alive) t=b.enemies[firstEnemy()]; if(!t){b.auto=1;return;}
     const d=dmgPhys(atkOf(p),1.0,t.def); t.hp-=d; t.flash=12; sfx('hit'); popE(t,'-'+d); hitFx(t,'slash'); b.log.push(`${p.name}의 공격! ${t.name} ${d}`); if(t.hp<=0){t.alive=false; e_die(t); sfx('down'); b.log.push(`${t.name} 쓰러짐!`);} }
   else if(a.type==='skill'){ const p=party[a.actor]; if(!p.alive){b.auto=1;return;} p.actAnim=12; const s=SKILLS[a.skill]; p.mp=Math.max(0,p.mp-s.mp);
-    if(s.kind==='heal'){ let t=party[a.target]; if(!t||!t.alive) t=party[firstAlly()]; const h=Math.round(p.mag*s.power); t.hp=Math.min(t.maxhp,t.hp+h); popP(party.indexOf(t),'+'+h); sfx('heal'); b.log.push(`${p.name}${s.msg} ${t.name} HP+${h}`); }
-    else if(s.kind==='healAll'){ const h=Math.round(p.mag*s.power); livingParty().forEach(t=>{t.hp=Math.min(t.maxhp,t.hp+h); popP(party.indexOf(t),'+'+h);}); sfx('heal'); b.log.push(`${p.name}${s.msg} 전원 HP+${h}`); }
+    if(s.kind==='heal'){ let t=party[a.target]; if(!t||!t.alive) t=party[firstAlly()]; const h=Math.round(magOf(p)*s.power); t.hp=Math.min(t.maxhp,t.hp+h); popP(party.indexOf(t),'+'+h); sfx('heal'); b.log.push(`${p.name}${s.msg} ${t.name} HP+${h}`); }
+    else if(s.kind==='healAll'){ const h=Math.round(magOf(p)*s.power); livingParty().forEach(t=>{t.hp=Math.min(t.maxhp,t.hp+h); popP(party.indexOf(t),'+'+h);}); sfx('heal'); b.log.push(`${p.name}${s.msg} 전원 HP+${h}`); }
     else if(s.kind==='revive'){ let t=party[a.target]; if(t&&!t.alive){ t.alive=true; t.hp=Math.round(t.maxhp*s.power); sfx('heal'); b.log.push(`${p.name}${s.msg} ${t.name} 소생!`); } else b.log.push('대상이 없다'); }
     else { sfx('hit'); const hits=s.hits||1; const ts=s.target==='allEnemies'?aliveEnemies():[(b.enemies[a.target]&&b.enemies[a.target].alive)?b.enemies[a.target]:b.enemies[firstEnemy()]];
-      b.log.push(`${p.name}${s.msg}`); ts.forEach(t=>{ if(!t) return; let tot=0; for(let h=0;h<hits;h++){ const d=s.kind==='magic'?dmgMag(p.mag,s.power,t.def):dmgPhys(atkOf(p),s.power,t.def); t.hp-=d; tot+=d; } t.flash=12; popE(t,'-'+tot); hitFx(t, s.kind==='magic'?'burst':'slash', s.kind==='magic'?'#c79bff':'#fff'); if(s.poison) t.poison=(t.poison||0)+s.poison;
+      b.log.push(`${p.name}${s.msg}`); ts.forEach(t=>{ if(!t) return; let tot=0; for(let h=0;h<hits;h++){ const d=s.kind==='magic'?dmgMag(magOf(p),s.power,t.def):dmgPhys(atkOf(p),s.power,t.def); t.hp-=d; tot+=d; } t.flash=12; popE(t,'-'+tot); hitFx(t, s.kind==='magic'?'burst':'slash', s.kind==='magic'?'#c79bff':'#fff'); if(s.poison) t.poison=(t.poison||0)+s.poison;
         b.log.push(`${t.name} ${tot}${s.poison?' +독':''}`); if(t.hp<=0){t.alive=false; e_die(t); sfx('down'); b.log.push(`${t.name} 쓰러짐!`);} }); } }
   else if(a.type==='item'){ const it=ITEMS[a.item]; if((inventory[a.item]||0)<=0){b.auto=1;return;} inventory[a.item]--; let t=party[a.target]; sfx('heal');
     if(it.revive){ if(t&&!t.alive){ t.alive=true; t.hp=Math.round(t.maxhp*it.ratio); } b.log.push(`${it.name} — ${t?t.name:''} 소생!`); }
