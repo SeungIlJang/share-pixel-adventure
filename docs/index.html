@@ -132,15 +132,17 @@ const ITEMS={
 const EQUIP={
   /* 무기 — 직업 제한(cls). 검사:검 / 주술사·치유사:지팡이 / 궁수:활 */
   bronzeSword: {name:'청동검',  slot:'weapon',cls:['검사'],atk:3, price:30},
-  steelSword:  {name:'강철검',  slot:'weapon',cls:['검사'],atk:7, price:75},
-  mithrilSword:{name:'미스릴검',slot:'weapon',cls:['검사'],atk:13,price:170},
+  steelSword:  {name:'강철검',  slot:'weapon',cls:['검사'],atk:8, price:90},
+  mithrilSword:{name:'미스릴검',slot:'weapon',cls:['검사'],atk:14,price:200},
   knightSword: {name:'기사검',  slot:'weapon',cls:['검사'],atk:20,price:320},
   woodStaff:   {name:'나무지팡이',  slot:'weapon',cls:['주술사','치유사'],mag:3, price:30},
   crystalStaff:{name:'수정지팡이',  slot:'weapon',cls:['주술사','치유사'],mag:8, price:90},
   sageStaff:   {name:'현자의 지팡이',slot:'weapon',cls:['주술사','치유사'],mag:14,price:200},
+  dragonStaff: {name:'용옥의 지팡이',slot:'weapon',cls:['주술사','치유사'],mag:20,price:320},
   shortBow:    {name:'사냥활',slot:'weapon',cls:['궁수'],atk:3, price:30},
   longBow:     {name:'장궁',  slot:'weapon',cls:['궁수'],atk:8, price:90},
   stormBow:    {name:'폭풍활',slot:'weapon',cls:['궁수'],atk:14,price:200},
+  divineBow:   {name:'신궁',  slot:'weapon',cls:['궁수'],atk:20,price:320},
   /* 머리 */
   leatherCap:{name:'가죽모자',  slot:'head',def:2,price:25},
   ironHelm:  {name:'강철투구',  slot:'head',def:5,price:70},
@@ -261,7 +263,7 @@ const AREAS={
           "1000000000000001","1111111001111111","1111111111111111" ],
     enc:null, respawn:{x:3,y:3},
     npcs:[
-      {x:3,y:7,color:'#f0c27a',name:'상인',glyph:'◇',shop:['potion','ether','revive','steelSword','mithrilSword','knightSword','crystalStaff','sageStaff','longBow','stormBow','ironHelm','mageHat','chainMail','plateArmor','guardianRobe','gauntlet','windBoots','powerRing','guardRing','sageRing','swiftRing']},
+      {x:3,y:7,color:'#f0c27a',name:'상인',glyph:'◇',shop:['potion','ether','revive','steelSword','mithrilSword','knightSword','crystalStaff','sageStaff','dragonStaff','longBow','stormBow','divineBow','ironHelm','mageHat','chainMail','plateArmor','guardianRobe','gauntlet','windBoots','powerRing','guardRing','sageRing','swiftRing']},
       {x:10,y:3,color:'#b7a98f',name:'마을 장로',lines:[
         {n:'장로',t:'여명이 옅어진 뒤로 바람조차 잿빛이오. 봉인을 되살려 주시게.',c:'#d9cdb5'},
         {n:'장로',t:'북쪽 잊혀진 신전에 봉인의 비밀이 잠들어 있다 하오.',c:'#d9cdb5'} ]} ],
@@ -896,21 +898,34 @@ function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0
     btn(W-62,H-22,54,18,'뒤로',()=>menuMode='party',{font:'10px sans-serif'});
   }
   if(menuNote&&menuNoteT>0){ g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.textAlign='center'; g.fillText(menuNote,W/2,H-32); g.textAlign='left'; menuNoteT--; } }
+function wkind(clsName){ return clsName==='검사'?'sword':clsName==='궁수'?'bow':'staff'; }
+function slotIcon(kind,x,y,s){ const c=g, cx=x+s/2;
+  if(kind==='sword'){ c.fillStyle='#d7ddea'; c.fillRect(cx-1,y+1,2,s*0.55); c.fillStyle='#caa44a'; c.fillRect(x+s*0.22,y+s*0.52,s*0.56,s*0.12); c.fillRect(cx-1,y+s*0.6,2,s*0.32); }
+  else if(kind==='staff'){ c.fillStyle='#b98a5a'; c.fillRect(cx-1,y+s*0.22,2,s*0.72); c.fillStyle='#9fe8ff'; c.beginPath(); c.arc(cx,y+s*0.2,s*0.19,0,7); c.fill(); }
+  else if(kind==='bow'){ c.strokeStyle='#caa44a'; c.lineWidth=Math.max(1,s*0.1); c.beginPath(); c.arc(x+s*0.32,y+s*0.5,s*0.4,-1.05,1.05); c.stroke(); c.strokeStyle='#d7ddea'; c.lineWidth=1; c.beginPath(); c.moveTo(x+s*0.22,y+s*0.12); c.lineTo(x+s*0.22,y+s*0.88); c.stroke(); }
+  else if(kind==='head'){ c.fillStyle='#9fb0cf'; c.beginPath(); c.arc(cx,y+s*0.56,s*0.32,Math.PI,2*Math.PI); c.fill(); c.fillRect(x+s*0.18,y+s*0.53,s*0.64,s*0.12); }
+  else if(kind==='armor'){ c.fillStyle='#8fa0c0'; c.fillRect(x+s*0.3,y+s*0.18,s*0.4,s*0.6); c.fillRect(x+s*0.18,y+s*0.22,s*0.14,s*0.34); c.fillRect(x+s*0.68,y+s*0.22,s*0.14,s*0.34); }
+  else if(kind==='hands'){ c.fillStyle='#b98a5a'; c.fillRect(x+s*0.34,y+s*0.34,s*0.32,s*0.44); c.fillRect(x+s*0.3,y+s*0.22,s*0.1,s*0.2); c.fillRect(x+s*0.45,y+s*0.16,s*0.1,s*0.24); c.fillRect(x+s*0.6,y+s*0.22,s*0.1,s*0.2); }
+  else if(kind==='feet'){ c.fillStyle='#a07a4a'; c.fillRect(x+s*0.36,y+s*0.18,s*0.2,s*0.42); c.fillRect(x+s*0.36,y+s*0.56,s*0.44,s*0.22); }
+  else if(kind==='ring'){ c.strokeStyle='#e5c85a'; c.lineWidth=Math.max(1.5,s*0.14); c.beginPath(); c.arc(cx,y+s*0.62,s*0.25,0,7); c.stroke(); c.lineWidth=1; c.fillStyle='#9fe8ff'; c.fillRect(cx-s*0.09,y+s*0.14,s*0.18,s*0.18); }
+}
 function drawEquipPanel(p){
   g.fillStyle=p.color; g.font='bold 13px sans-serif'; g.fillText(`장비 — ${p.name} Lv${p.lv} ${p.cls}`,14,20);
   g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('◆ '+gold,W-14,18); g.textAlign='left';
   g.fillStyle='#9fb0cf'; g.font='10px sans-serif'; g.fillText(`HP ${p.hp}/${p.maxhp}  MP ${p.mp}/${p.maxmp}   ATK ${atkOf(p)} DEF ${defOf(p)} MAG ${magOf(p)} SPD ${spdEff(p)}`,14,36);
   SLOTS.forEach((sl,i)=>{ const col=i%2, row=(i/2|0), x=12+col*230, y=46+row*26, id=p[sl], e=id&&EQUIP[id];
     btn(x,y,222,22,'',()=>{ if(p[sl]) unequip(p,sl); },{bg:'rgba(27,34,54,.92)'});
-    g.textAlign='left'; g.fillStyle='#8fb0e8'; g.font='10px sans-serif'; g.fillText(SLOT_KO[sl],x+6,y+15);
-    g.fillStyle=e?'#e8eef7':'#6b7590'; g.font='11px sans-serif'; g.fillText(e?e.name:'— 비어있음',x+44,y+15);
+    slotIcon(sl==='weapon'?wkind(p.cls):sl, x+5, y+4, 14);
+    g.textAlign='left'; g.fillStyle='#8fb0e8'; g.font='10px sans-serif'; g.fillText(SLOT_KO[sl],x+24,y+15);
+    g.fillStyle=e?'#e8eef7':'#6b7590'; g.font='11px sans-serif'; g.fillText(e?e.name:'— 비어있음',x+56,y+15);
     if(e){ g.fillStyle='#9fe8c4'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(effStr(e),x+216,y+15); g.textAlign='left'; } });
   g.fillStyle='#9fe8c4'; g.font='10px sans-serif'; g.fillText('보유 장비 (탭=장착 · 위 슬롯 탭=해제)',14,140);
   const list=ownedEquip();
   if(!list.length){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.fillText('보유한 장비가 없습니다 — 상인 ◇ 에게서 구매',14,158); }
   list.forEach((id,i)=>{ const col=i%2, row=(i/2|0), x=12+col*230, y=148+row*19; if(y>H-46) return; const e=EQUIP[id], ok=canEquip(p,id);
     btn(x,y,222,17,'',()=>{ equip(p,id); },{bg:'rgba(27,34,54,.92)'});
-    g.textAlign='left'; g.fillStyle=ok?'#cdd6ea':'#9a6069'; g.font='10px sans-serif'; g.fillText(`${e.name} ·${SLOT_KO[e.slot]}${ok?'':' (불가)'}`,x+6,y+12);
+    slotIcon(e.slot==='weapon'?wkind(e.cls?e.cls[0]:'검사'):e.slot, x+4, y+2, 13);
+    g.textAlign='left'; g.fillStyle=ok?'#cdd6ea':'#9a6069'; g.font='10px sans-serif'; g.fillText(`${e.name} ·${SLOT_KO[e.slot]}${ok?'':' (불가)'}`,x+22,y+12);
     g.fillStyle=ok?'#9fe8c4':'#9a6069'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(`${effStr(e)} x${inventory[id]}`,x+216,y+12); g.textAlign='left'; });
   if(menuNote&&menuNoteT>0){ g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.textAlign='center'; g.fillText(menuNote,W/2-30,H-30); g.textAlign='left'; menuNoteT--; }
   btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
@@ -932,7 +947,8 @@ function drawShop(){ drawField(); g.fillStyle='rgba(6,8,16,.9)'; g.fillRect(0,0,
   let start=Math.min(Math.max(0,shopSel-(vis-1)),Math.max(0,n-vis)); if(shopSel<start) start=shopSel;
   for(let r=0;r<vis && start+r<n;r++){ const i=start+r, id=shopStock[i], it=itemDef(id), y=top+r*rh, sel=i===shopSel, ty=y+rh*0.62;
     btn(14,y,W-28,rh-3,'',()=>{shopSel=i; buy(id);},{bg:sel?'#23314f':'rgba(27,34,54,.9)'});
-    g.textAlign='left'; g.fillStyle=sel?'#9fe8c4':'#cdd6ea'; g.font='12px sans-serif'; g.fillText(it.name+(it.cls?` (${it.cls.join('/')})`:''),24,ty);
+    if(it.slot) slotIcon(it.slot==='weapon'?wkind(it.cls?it.cls[0]:'검사'):it.slot, 18, y+rh*0.5-7, 14);
+    g.textAlign='left'; g.fillStyle=sel?'#9fe8c4':'#cdd6ea'; g.font='12px sans-serif'; g.fillText(it.name+(it.cls?` (${it.cls.join('/')})`:''),38,ty);
     g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText(effStr(it),196,ty);
     g.fillStyle='#9fb0cf'; g.font='10px sans-serif'; g.fillText('보유 '+(inventory[id]||0),300,ty);
     g.textAlign='right'; g.fillStyle='#f0c27a'; g.fillText('◆ '+it.price,W-24,ty); g.textAlign='left'; }
