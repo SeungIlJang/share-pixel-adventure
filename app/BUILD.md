@@ -50,6 +50,12 @@ Android Studio에서: **Build → Generate Signed Bundle / APK → Android App B
 
 ## 권장 설정
 - 가로 고정: `android/app/src/main/AndroidManifest.xml` 의 MainActivity에 `android:screenOrientation="landscape"`
+- 상태바/노치 안전영역: 웹(docs)에서 `viewport-fit=cover` + `env(safe-area-inset-*)` 로
+  상단 HUD 버튼이 상태바에 가리지 않게 처리됨(OTA 반영). 만약 설치된 앱의 WebView가
+  safe-area inset 을 보고하지 않아 여전히 상태바가 버튼을 덮으면, 네이티브에서
+  `@capacitor/status-bar` 로 `StatusBar.setOverlaysWebView({ overlay: false })` 를
+  적용하거나, 테마의 `windowLayoutInDisplayCutoutMode` / 상태바 비오버레이로 바꾼다
+  (이 변경은 재빌드 필요).
 - 아이콘: Android Studio **Image Asset** 에 `../docs/icon-maskable.svg`(또는 PNG) 사용
 - 버전: `android/app/build.gradle` 의 `versionCode` / `versionName`
 
