@@ -2,6 +2,10 @@
   "appId": "com.moduseries.pixeladventure",
   "appName": "모두의 픽셀모험",
   "webDir": "www",
+  "server": {
+    "url": "https://seungiljang.github.io/share-pixel-adventure/",
+    "cleartext": false
+  },
   "android": {
     "allowMixedContent": false,
     "backgroundColor": "#0a0c14"
