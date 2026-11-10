@@ -1165,6 +1165,7 @@ function drawBattle(){ const b=battle;
     bar(cx-30,iy+9,60,3,p.mp/p.maxmp,'#48c');
     g.textAlign='left';
     if(tgtMode) hz(cx-28,cy-half-4,56,TILE*SC+30,()=>{ if(b.menu==='targetDead'&&p.alive) return; if(b.menu==='targetAlly'&&!p.alive) return; confirmTarget(i); }); });
+  g.restore(); // 1134의 shake save 복구 — 누락 시 흔들림 translate가 프레임마다 누적되어 화면이 점점 밀림
   drawBattleUI(); }
 function drawBattleUI(){ const b=battle;
   g.fillStyle='rgba(6,8,16,.8)'; g.fillRect(0,0,W,42); g.fillStyle='#e8eef7'; g.font='11px sans-serif'; g.textAlign='left';
@@ -1228,7 +1229,8 @@ function update(){ if(msg) updateMsg();
   if(fx.length){ for(const f of fx) f.t--; fx=fx.filter(f=>f.t>0); }
   if(battle){ party.forEach(q=>{ if(q.hitFlash>0) q.hitFlash--; if(q.actAnim>0) q.actAnim--; }); battle.enemies.forEach(e=>{ if(e.dying>0) e.dying--; }); }
   clearPressed(); }
-function draw(){ hotspots=[]; g.textAlign='left'; g.textBaseline='alphabetic'; g.font='12px sans-serif';
+function draw(){ g.setTransform(1,0,0,1,0,0); // 매 프레임 변환 초기화(흔들림 등 누적 방지)
+  hotspots=[]; g.textAlign='left'; g.textBaseline='alphabetic'; g.font='12px sans-serif';
   if(state==='title') drawTitle(); else if(state==='field') drawField(); else if(state==='menu') drawMenu();
   else if(state==='shop') drawShop(); else if(state==='battle') drawBattle();
   if(state==='battle'){ drawFx(); drawPops(); }
