@@ -469,6 +469,7 @@ let state='title', party=makeParty();
 let player={x:2,y:4,dir:'down',px:2*TILE,py:4*TILE,moving:false,steps:0};
 let gold=30, inventory={potion:3,ether:1,revive:1}, sealsFixed=3, bossStage=0, chests={}, storyFlags={};
 let msg=null, flash=0, fieldMove=null, camOX=0, camOY=0, pops=[], shakeT=0, gtime=0, fx=[];
+let encAlert=0, encPending=null, encX=0, encY=0; // 랜덤 조우: 전투 직전 위치에 '!' 경고 표시
 
 /* ---------- 유틸 ---------- */
 const rnd=n=>Math.floor(Math.random()*n), clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -786,6 +787,7 @@ function fieldTap(p){ const tx=Math.floor((p.x+camOX)/TILE), ty=Math.floor((p.y+
   const dx=tx-player.x, dy=ty-player.y; if(!dx&&!dy) return;
   fieldMove = Math.abs(dx)>=Math.abs(dy) ? (dx>0?'right':'left') : (dy>0?'down':'up'); }
 function updateField(){ if(msg) return;
+  if(encAlert>0){ encAlert--; if(encAlert===0&&encPending){ const es=encPending; encPending=null; startBattle(es,false); } return; } // 조우 경고 중 이동 정지
   if(!player.moving){ let dir=null;
     for(const d of ['up','down','left','right']) if(keys[d]){ dir=d; break; }
     if(!dir&&joyDir) dir=joyDir;
@@ -812,7 +814,7 @@ function onStep(){
   else if(t==='7'){ party.forEach(p=>{ if(p.alive) p.hp=Math.max(1,p.hp-Math.round(p.maxhp*0.12)); }); sfx('hit'); flash=8; shakeT=6; showMsg(['함정! 바닥에서 가시가 솟았다. (전원 HP 피해)']); }
   else if(t==='8'){ const k='sw_'+cur.id+'_'+player.x+','+player.y; if(!storyFlags[k]){ storyFlags[k]=true; sfx('coin'); const opened=checkGate(); showMsg([opened?'철컹! 모든 장치가 맞물리며 봉인된 문이 열렸다!':'고대 장치가 눌렸다. 철컹—']); } }
   else if(t==='2'){ const e=cur.enc; if(e&&Math.random()<e.rate){ const n=1+rnd(3),es=[];
-    for(let i=0;i<n;i++) es.push(e.pool[rnd(e.pool.length)]); startBattle(es,false); } }
+    for(let i=0;i<n;i++) es.push(e.pool[rnd(e.pool.length)]); encPending=es; encAlert=20; encX=player.x; encY=player.y; sfx('sel'); flash=5; } } // 조우! '!' 표시 후 전투
   else if(t==='5'){ const k=cur.id+':'+player.x+','+player.y; if(!chests[k]){ chests[k]=1; gold+=25; inventory.potion=(inventory.potion||0)+1; MAP[player.y][player.x]='0'; sfx('coin'); showMsg(['보물상자! ◆25 와(과) 물약을 얻었다.']); } } }
 function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H);
   camOX=clamp(player.px-W/2+TILE/2,0,Math.max(0,MAPW*TILE-W)); camOY=clamp(player.py-H/2+TILE/2,0,Math.max(0,MAPH*TILE-H));
@@ -838,7 +840,9 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
     if(t==='7'){ g.fillStyle='#c76a54'; for(let k=0;k<3;k++){ g.beginPath(); g.moveTo(sx+6+k*7,sy+TILE-4); g.lineTo(sx+9+k*7,sy+TILE-13); g.lineTo(sx+12+k*7,sy+TILE-4); g.closePath(); g.fill(); } }
     if(t==='8'){ const on=storyFlags['sw_'+cur.id+'_'+x+','+y]; g.fillStyle=on?'#9fe8c4':'#5a5a68'; g.beginPath(); g.arc(sx+TILE/2,sy+TILE/2,TILE*0.22,0,7); g.fill(); g.strokeStyle=on?'#dfffe8':'#3a3a46'; g.lineWidth=2; g.stroke(); g.lineWidth=1; }
     if(t==='9'){ g.fillStyle='#7a7a9a'; for(let k=0;k<4;k++) g.fillRect(sx+4+k*6,sy+3,3,TILE-6); g.fillStyle='#4a4a66'; g.fillRect(sx+2,sy+2,TILE-4,3); g.fillRect(sx+2,sy+TILE-6,TILE-4,3); }
-    if(DEBUG_ENCOUNTER&&t==='2'&&cur.enc){ g.fillStyle='#ff2d2d'; g.beginPath(); g.arc(sx+TILE/2,sy+TILE/2,3.2,0,7); g.fill(); g.strokeStyle='rgba(255,255,255,.8)'; g.lineWidth=1; g.stroke(); } }
+    if(t==='2'&&cur.enc){ const pul=0.34+0.24*Math.sin((gtime+(x*5+y*9)*6)/16); // 적 조우 지역 표식(은은한 붉은 점)
+      g.globalAlpha=pul; g.fillStyle='#ff5a4a'; g.beginPath(); g.arc(sx+TILE-7,sy+7,2.4,0,7); g.fill();
+      g.strokeStyle='rgba(255,228,200,.7)'; g.lineWidth=1; g.stroke(); g.globalAlpha=1; } }
   // 워프(출구) 표식
   if(cur.warps) for(const w of cur.warps){ const sx=w.x*TILE-camOX, sy=w.y*TILE-camOY;
     g.fillStyle='rgba(159,232,196,.16)'; g.fillRect(sx+2,sy+2,TILE-4,TILE-4);
@@ -850,6 +854,11 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
     if(nz.glyph){ g.fillStyle=nz.color; g.font='16px sans-serif'; g.fillText(nz.glyph,sx+TILE*0.2,sy-1); }
     chibi(sx,sy,nz.color); }
   drawHeroField(player.px-camOX, player.py-camOY, party[0]);
+  if(encAlert>0){ // 적 조우! — 머리 위 '!' 경고
+    const px=player.px-camOX+TILE/2, py=player.py-camOY-4, bob=Math.sin(gtime/2)*2;
+    g.fillStyle='rgba(224,40,40,.92)'; g.beginPath(); g.arc(px,py-6+bob,8,0,7); g.fill();
+    g.strokeStyle='#fff'; g.lineWidth=1.5; g.stroke(); g.lineWidth=1;
+    g.fillStyle='#fff'; g.font='bold 12px sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('!',px,py-6+bob); g.textAlign='left'; g.textBaseline='alphabetic'; }
   // HUD
   g.fillStyle='rgba(8,10,20,.72)'; g.fillRect(0,0,W,20);
   g.fillStyle='#cdd6ea'; g.font='11px sans-serif'; g.fillText('봉인 '+(3-sealsFixed)+'/3',6,14);
@@ -944,13 +953,19 @@ function drawEquipPanel(p){
   btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
 
 /* ================= 상점 ================= */
-let shopSel=0, shopStock=SHOP_STOCK, shopConfirm=null, shopMode='buy';
-function openShop(stock){ state='shop'; shopSel=0; shopConfirm=null; shopMode='buy'; shopStock=stock||SHOP_STOCK; }
+let shopSel=0, shopTop=0, shopStock=SHOP_STOCK, shopConfirm=null, shopMode='buy';
+function shopVis(){ return Math.max(1,Math.floor((H-58-48)/26)); }
+// 스크롤 창은 선택이 화면 밖으로 나갈 때만 이동(구매/선택으로 창이 맨 위로 튀지 않게 고정)
+function shopClampScroll(){ const n=shopList().length, vis=shopVis(), maxTop=Math.max(0,n-vis);
+  if(shopSel<0) shopSel=0; if(shopSel>=n) shopSel=Math.max(0,n-1);
+  if(shopSel<shopTop) shopTop=shopSel; else if(shopSel>=shopTop+vis) shopTop=shopSel-vis+1;
+  if(shopTop>maxTop) shopTop=maxTop; if(shopTop<0) shopTop=0; }
+function openShop(stock){ state='shop'; shopSel=0; shopTop=0; shopConfirm=null; shopMode='buy'; shopStock=stock||SHOP_STOCK; }
 const SELL_ORDER=[...Object.keys(ITEMS), ...Object.keys(EQUIP)]; // 판매 목록 정렬(소비→장비)
 function sellList(){ return SELL_ORDER.filter(id=>(inventory[id]||0)>0); } // 장착품은 inventory에서 빠져 있어 제외됨
 function shopList(){ return shopMode==='sell' ? sellList() : shopStock; }
 function sellPrice(id){ const it=itemDef(id); return Math.max(1, Math.floor((it?it.price:0)*0.5)); } // 구매가의 50%
-function setShopMode(m){ if(shopMode!==m){ shopMode=m; shopSel=0; shopConfirm=null; sfx('sel'); } }
+function setShopMode(m){ if(shopMode!==m){ shopMode=m; shopSel=0; shopTop=0; shopConfirm=null; sfx('sel'); } }
 function buy(id){ const it=itemDef(id); if(gold>=it.price){ gold-=it.price; inventory[id]=(inventory[id]||0)+1; sfx('coin'); flashShop(it.name+' 구매!'); }
   else flashShop('골드 부족'); }
 function sell(id){ const it=itemDef(id); if((inventory[id]||0)>0){ inventory[id]--; const sp=sellPrice(id); gold+=sp; sfx('coin'); flashShop(it.name+' 판매! +◆'+sp); }
@@ -974,9 +989,9 @@ function drawShop(){ drawField(); g.fillStyle='rgba(6,8,16,.9)'; g.fillRect(0,0,
   // 사기 / 팔기 탭
   btn(W/2-66,24,64,17,'사기', ()=>setShopMode('buy'),  {bg:shopMode==='buy' ?'#23314f':'rgba(18,22,34,.9)', fg:shopMode==='buy' ?'#9fe8c4':'#8a93ad', font:'11px sans-serif'});
   btn(W/2+2, 24,64,17,'팔기', ()=>setShopMode('sell'), {bg:shopMode==='sell'?'#3a2f1f':'rgba(18,22,34,.9)', fg:shopMode==='sell'?'#f0c27a':'#8a93ad', font:'11px sans-serif'});
-  const selling=shopMode==='sell', list=shopList(), n=list.length, top=48, rh=26, vis=Math.max(1,Math.floor((H-58-top)/rh));
-  if(n===0){ g.fillStyle='#6b7590'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('팔 물건이 없습니다',W/2,top+40); g.textAlign='left'; }
-  let start=Math.min(Math.max(0,shopSel-(vis-1)),Math.max(0,n-vis)); if(shopSel<start) start=shopSel;
+  const selling=shopMode==='sell', list=shopList(), n=list.length, top=48, rh=26, vis=shopVis();
+  if(n===0){ g.fillStyle='#6b7590'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText(selling?'팔 물건이 없습니다':'판매 중인 물건이 없습니다',W/2,top+40); g.textAlign='left'; }
+  shopClampScroll(); const start=shopTop; // 선택이 보이는 범위면 스크롤 유지(튐 방지)
   for(let r=0;r<vis && start+r<n;r++){ const i=start+r, id=list[i], it=itemDef(id), y=top+r*rh, sel=i===shopSel, ty=y+rh*0.62;
     btn(14,y,W-28,rh-3,'',()=>{shopSel=i; shopConfirm=id; sfx('sel');},{bg:sel?(selling?'#3a2f1f':'#23314f'):'rgba(27,34,54,.9)'});
     if(it.slot) slotIcon(it.slot==='weapon'?wkind(it.cls?it.cls[0]:'검사'):it.slot, 18, y+rh*0.5-7, 14);
@@ -985,8 +1000,8 @@ function drawShop(){ drawField(); g.fillStyle='rgba(6,8,16,.9)'; g.fillRect(0,0,
     g.fillStyle='#9fb0cf'; g.font='10px sans-serif'; g.fillText('보유 '+(inventory[id]||0),300,ty);
     const price=selling?sellPrice(id):it.price;
     g.textAlign='right'; g.fillStyle=selling?'#9fe8c4':'#f0c27a'; g.fillText((selling?'팔기 ◆ ':'◆ ')+price,W-24,ty); g.textAlign='left'; }
-  if(start>0) btn(W-154,H-24,26,20,'▲',()=>{ shopSel=Math.max(0,shopSel-vis); },{font:'12px sans-serif'});
-  if(start+vis<n) btn(W-124,H-24,26,20,'▼',()=>{ shopSel=Math.min(n-1,shopSel+vis); },{font:'12px sans-serif'});
+  if(start>0) btn(W-154,H-24,26,20,'▲',()=>{ shopTop=Math.max(0,shopTop-vis); shopSel=shopTop; },{font:'12px sans-serif'});
+  if(start+vis<n) btn(W-124,H-24,26,20,'▼',()=>{ const mt=Math.max(0,n-vis); shopTop=Math.min(mt,shopTop+vis); shopSel=shopTop; },{font:'12px sans-serif'});
   if(shopNote&&shopNoteT>0){ g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText(shopNote,W-162,19); g.textAlign='left'; shopNoteT--; }
   btn(W/2-45,H-24,90,20,'나가기',()=>state='field');
   if(shopConfirm) drawShopConfirm(); }
