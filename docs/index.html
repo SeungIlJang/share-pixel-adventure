@@ -886,12 +886,13 @@ function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0
   party.forEach((p,i)=>{ const y=34+i*40; const sel=i===menuSel;
     if(sel){ g.fillStyle='#1b2236'; g.fillRect(8,y-12,W-16,38); }
     g.fillStyle=p.alive?p.color:'#777'; g.font='bold 12px sans-serif'; g.fillText(`${p.name} Lv${p.lv} ${p.cls}`,16,y);
-    g.fillStyle='#9fb0cf'; g.font='10px sans-serif'; g.fillText(`HP ${p.hp}/${p.maxhp}  MP ${p.mp}/${p.maxmp}`,16,y+14);
+    g.fillStyle='#9fb0cf'; g.font='10px sans-serif'; g.fillText(`HP ${p.hp}/${p.maxhp}  MP ${p.mp}/${p.maxmp}  EXP ${p.exp}/${p.expNext}`,16,y+14);
     const eqN=SLOTS.reduce((c,sl)=>c+(p[sl]?1:0),0);
     g.fillStyle='#8a93ad'; g.font='9px sans-serif';
     g.fillText(`무기 ${p.weapon?EQUIP[p.weapon].name:'—'} · 장비 ${eqN}/6`,200,y-2);
     g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.fillText(`ATK ${atkOf(p)} DEF ${defOf(p)} MAG ${magOf(p)} SPD ${spdEff(p)}`,200,y+12);
-    bar(200,y+18,180,5,p.hp/p.maxhp,'#4a7');
+    bar(200,y+18,180,4,p.hp/p.maxhp,'#4a7');          // HP 바(초록)
+    bar(200,y+23,180,3,p.exp/p.expNext,'#ffd54a');    // EXP 바(금색) — 다음 레벨까지 진행도
     hz(8,y-12,W-16,38,()=>{ menuSel=i; }); });
   if(menuMode==='party'){
     let bx=8; if(invCount()>0){ btn(bx,H-24,92,20,'아이템 사용',()=>{menuMode='item';menuItemSel=0;}); bx+=100; }
@@ -919,7 +920,7 @@ function slotIcon(kind,x,y,s){ const c=g, cx=x+s/2;
 function drawEquipPanel(p){
   g.fillStyle=p.color; g.font='bold 13px sans-serif'; g.fillText(`장비 — ${p.name} Lv${p.lv} ${p.cls}`,14,20);
   g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('◆ '+gold,W-14,18); g.textAlign='left';
-  g.fillStyle='#9fb0cf'; g.font='10px sans-serif'; g.fillText(`HP ${p.hp}/${p.maxhp}  MP ${p.mp}/${p.maxmp}   ATK ${atkOf(p)} DEF ${defOf(p)} MAG ${magOf(p)} SPD ${spdEff(p)}`,14,36);
+  g.fillStyle='#9fb0cf'; g.font='10px sans-serif'; g.fillText(`HP ${p.hp}/${p.maxhp}  MP ${p.mp}/${p.maxmp}  EXP ${p.exp}/${p.expNext}   ATK ${atkOf(p)} DEF ${defOf(p)} MAG ${magOf(p)} SPD ${spdEff(p)}`,14,36);
   SLOTS.forEach((sl,i)=>{ const col=i%2, row=(i/2|0), x=12+col*230, y=46+row*26, id=p[sl], e=id&&EQUIP[id];
     btn(x,y,222,22,'',()=>{ if(p[sl]) unequip(p,sl); },{bg:'rgba(27,34,54,.92)'});
     slotIcon(sl==='weapon'?wkind(p.cls):sl, x+5, y+4, 14);
