@@ -11,7 +11,8 @@ const ASSETS = [
   './manifest.webmanifest',
   './icon.svg',
   './icon-maskable.svg',
-  './data/part1.js'
+  './data/part1.js',
+  './data/part2.js'
 ];
 
 self.addEventListener('install', (e) => {
