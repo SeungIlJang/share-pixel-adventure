@@ -2,6 +2,7 @@
    문서(index.html)는 "네트워크 우선"으로 받아 항상 최신 버전을 적용하고,
    오프라인일 때만 캐시로 폴백한다. 아이콘 등 정적 자산은 캐시 우선 +
    백그라운드 갱신(stale-while-revalidate)으로 빠르게 뜨면서 다음 실행 때 최신화된다.
+   부별 데이터(data/partN.js)도 문서와 같이 네트워크 우선으로 받아 엔진과 버전이 어긋나지 않게 한다.
    → 웹(docs)만 갱신하면 설치된 앱이 재빌드 없이 자동 업데이트된다. */
 const CACHE = 'pixel-adventure';
 const ASSETS = [
@@ -9,7 +10,8 @@ const ASSETS = [
   './index.html',
   './manifest.webmanifest',
   './icon.svg',
-  './icon-maskable.svg'
+  './icon-maskable.svg',
+  './data/part1.js'
 ];
 
 self.addEventListener('install', (e) => {
@@ -29,7 +31,8 @@ function isDocument(req) {
   return req.mode === 'navigate'
       || req.destination === 'document'
       || req.url.endsWith('/')
-      || req.url.endsWith('/index.html');
+      || req.url.endsWith('/index.html')
+      || req.url.includes('/data/'); // 부별 데이터는 엔진(index.html)과 항상 같은 버전이어야 하므로 네트워크 우선
 }
 
 self.addEventListener('fetch', (e) => {
@@ -45,7 +48,7 @@ self.addEventListener('fetch', (e) => {
           caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
           return res;
         })
-        .catch(() => caches.match(req).then((c) => c || caches.match('./index.html')))
+        .catch(() => caches.match(req, { ignoreSearch: true }).then((c) => c || (req.url.includes('/data/') ? Response.error() : caches.match('./index.html'))))
     );
     return;
   }

@@ -20,6 +20,12 @@
 > 완전 오프라인(네트워크 전혀 불필요) 번들로 되돌리려면 `server` 블록을 지우고
 > `docs/` 를 `app/www/` 로 복사한 뒤 아래 절차대로 빌드하면 됩니다.
 
+## 게임 파일 구성과 동기화
+- `docs/index.html` = 엔진, `docs/data/partN.js` = 부별 콘텐츠(지역·적·이벤트). 둘은 항상 같은 버전 쌍이어야 한다.
+- 개발본(`../three-seals`)을 고친 뒤에는 저장소 루트에서 `python tools/sync.py` 로 `docs/` 에 반영한다
+  (데이터 파일 해시를 `index.html` 의 `?v=` 에 자동으로 찍어 캐시 불일치를 막는다). `cp` 로 `index.html` 만 복사하면 안 된다.
+- 오프라인 번들로 빌드할 때는 `docs/` 를 `data/` 폴더까지 통째로 `app/www/` 에 복사한다.
+
 ## 구조
 ```
 share-pixel-adventure/
