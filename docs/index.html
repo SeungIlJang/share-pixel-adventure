@@ -990,6 +990,8 @@ function drawBattleUI(){ const b=battle;
   g.fillStyle='rgba(6,8,16,.8)'; g.fillRect(0,0,W,42); g.fillStyle='#e8eef7'; g.font='11px sans-serif'; g.textAlign='left';
   (b.log||[]).slice(-3).forEach((l,i)=>g.fillText(l,8,13+i*11));
   if(b.note&&b.noteT>0){ g.fillStyle='#f0c27a'; g.fillText(b.note,8,40); }
+  // 자동 버튼은 입력 턴뿐 아니라 행동이 진행되는 동안에도 항상 노출(결과 화면 제외)
+  if(b.phase!=='done') btn(W-74,44,68,18, autoBattle?'⟳ 자동 ON':'⟳ 자동', toggleAuto, {bg:autoBattle?'#2a4a3a':'rgba(14,18,28,.96)', fg:autoBattle?'#9fe8c4':'#aeb8d0', font:'10px sans-serif'});
   if(b.phase==='intro'){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭하여 진행',W-6,40); g.textAlign='left'; return; }
   if(b.phase==='resolve'){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭=빠르게 ▶',W-6,40); g.textAlign='left'; return; }
   if(b.phase==='done'){
@@ -1005,7 +1007,6 @@ function drawBattleUI(){ const b=battle;
     else { g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('탭하여 계속 ▶',W/2,36); g.textAlign='left'; }
     return; }
   if(b.phase!=='input') return; const p=party[b.inputIdx]; if(!p) return;
-  btn(W-74,44,68,18, autoBattle?'⟳ 자동 ON':'⟳ 자동', toggleAuto, {bg:autoBattle?'#2a4a3a':'rgba(14,18,28,.96)', fg:autoBattle?'#9fe8c4':'#aeb8d0', font:'10px sans-serif'});
   g.fillStyle='#8a93ad'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText(p.name+'의 턴',W-8,16); g.textAlign='left';
   if(autoBattle){ g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('⟳ 자동 진행 중 — "자동"을 눌러 해제',W/2,H-22); g.textAlign='left'; return; }
   btn(6,44,52,18,'◀ 뒤로',()=>battleBack(),{font:'10px sans-serif'});
