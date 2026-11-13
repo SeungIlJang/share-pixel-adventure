@@ -201,15 +201,24 @@ const ENEMY_DB={
   creeper:{name:'동굴 포식귀',hp:100,atk:19,def:11,mag:4,spd:6, exp:30,gold:22,color:'#6a7a6a'},
   raider:{name:'그림자 약탈자',hp:120,atk:24,def:10,mag:6,spd:11,exp:40,gold:30,color:'#7a6a80'},
   gale:  {name:'돌풍 정령',    hp:84, atk:18,def:6, mag:6,spd:15,exp:36,gold:26,color:'#8fb0c4'},
-  warden:{name:'고원의 파수꾼',hp:430,atk:34,def:14,mag:26,spd:9,exp:170,gold:200,color:'#9a8c6a',boss:true},
+  warden:{name:'고원의 파수꾼',hp:700,atk:50,def:14,mag:38,spd:9,exp:170,gold:200,color:'#9a8c6a',boss:true},
   sentinel:{name:'석상 파수병',hp:130,atk:26,def:16,mag:8, spd:7,exp:46, gold:34, color:'#8a94a0'},
-  golem: {name:'신전 수호상',hp:620,atk:40,def:18,mag:30,spd:6,exp:240,gold:260,color:'#9aa6b4',boss:true},
+  golem: {name:'신전 수호상',hp:1240,atk:60,def:18,mag:45,spd:6,exp:240,gold:260,color:'#9aa6b4',boss:true},
   phantom:{name:'그림자 환영',hp:150,atk:26,def:10,mag:16,spd:14,exp:55,gold:40,color:'#6a5a80'},
   brute: {name:'균열 거수',  hp:240,atk:34,def:16,mag:8, spd:6, exp:70,gold:52,color:'#7a4a4a'},
-  herald:{name:'군주의 전조',hp:760,atk:48,def:16,mag:40,spd:11,exp:320,gold:340,color:'#a05a6a',boss:true},
-  seal1:{name:'균열의 수호물',hp:260,atk:22,def:9, mag:18,spd:7,exp:90, gold:100,color:'#d88',boss:true},
-  seal2:{name:'심연의 수호물',hp:600,atk:32,def:13,mag:28,spd:9,exp:200,gold:220,color:'#b96',boss:true},
-  seal3:{name:'종언의 수호물',hp:1320,atk:56,def:18,mag:50,spd:12,exp:500,gold:500,color:'#caa',boss:true},
+  herald:{name:'군주의 전조',hp:2280,atk:62,def:16,mag:52,spd:11,exp:320,gold:340,color:'#a05a6a',boss:true},
+  seal1:{name:'균열의 수호물',hp:520,atk:22,def:9, mag:18,spd:7,exp:90, gold:100,color:'#d88',boss:true},
+  seal2:{name:'심연의 수호물',hp:950,atk:37,def:13,mag:32,spd:9,exp:200,gold:220,color:'#b96',boss:true},
+  seal3:{name:'종언의 수호물',hp:2640,atk:73,def:18,mag:65,spd:12,exp:500,gold:500,color:'#caa',boss:true},
+  /* 심층 맵 적·중간 보스 — look: 기존 스프라이트 재사용, palx: 팔레트 덮어쓰기, big: 확대 */
+  thornling:{name:'가시 덩굴귀',hp:58, atk:15,def:6, mag:3, spd:7, exp:14,gold:12,color:'#4f8a4a',look:'creeper',palx:{g:'#4f8a4a',G:'#356a34',l:'#7ab86a'}},
+  rootguard:{name:'결계의 뿌리',hp:340,atk:16,def:7, mag:11,spd:5, exp:60,gold:70,color:'#3f7a3a',boss:true,look:'creeper',big:2,palx:{g:'#3f7a3a',G:'#28552a',l:'#6aa85a',e:'#ffd54a'}},
+  geode:    {name:'수정 갑충',  hp:110,atk:21,def:13,mag:4, spd:5, exp:34,gold:24,color:'#8a6ac0',look:'slime',palx:{g:'#8a6ac0',G:'#5f4a92',l:'#d8c8ff',w:'#f4eeff'}},
+  crystalmaw:{name:'수정 포식자',hp:560,atk:25,def:12,mag:20,spd:8, exp:150,gold:160,color:'#8a6ac0',boss:true,look:'brute',palx:{b:'#7a5ab0',B:'#523a82',l:'#b89ae0',e:'#9fe8ff'}},
+  harrier:  {name:'능선 매',    hp:100,atk:26,def:8, mag:6, spd:16,exp:48,gold:32,color:'#c4a878',look:'gale',palx:{a:'#c4a878',A:'#92784e',l:'#f0e0c0'}},
+  galelord: {name:'돌풍의 주인',hp:1120,atk:54,def:13,mag:45,spd:14,exp:230,gold:240,color:'#9fc4d8',boss:true,look:'gale',big:2,palx:{a:'#9fc4d8',A:'#5f8aa6',e:'#ffe9a0'}},
+  voidling: {name:'심부의 그림자',hp:190,atk:34,def:12,mag:20,spd:13,exp:95,gold:60,color:'#a04a5a',look:'phantom',palx:{p:'#a04a5a',P:'#6a2e3a',e:'#ffb0a0'}},
+  voidmaw:  {name:'심부의 아귀',hp:1350,atk:78,def:17,mag:66,spd:10,exp:420,gold:420,color:'#8a2a3a',boss:true,look:'brute',big:1,palx:{b:'#8a2a3a',B:'#5a1622',l:'#c05a5a',e:'#ffd54a'}},
 };
 function spawn(id){ const b=ENEMY_DB[id]; return {...b,id,hp:b.hp,maxhp:b.hp,alive:true,flash:0,poison:0}; }
 
@@ -241,10 +250,12 @@ const AREAS={
     npcs:[
       {x:8,y:4,color:'#9ab0c4',name:'이정표',lines:[
         "이정표: 숲 깊은 곳(남동쪽)에 봉인 封 이 잠들어 있다.",
+        "이정표: 봉인석은 뿌리 결계에 감싸여 있다 — 서쪽 ▣ 속삭이는 수림에서 결계를 끊어라.",
         "이정표: 봉인 앞에 서면 수호물이 깨어난다 — 레벨과 장비를 갖추고 가라." ]} ],
     warps:[ {x:8,y:1,to:'village',tx:8,ty:8,label:'마을'},
+            {x:1,y:6,to:'grove',tx:13,ty:4,label:'수림'},
             {x:14,y:8,to:'cave',tx:8,ty:2,label:'동굴',need:'sealDone_forest',block:'봉인의 기운이 길을 막는다. 먼저 이 숲의 봉인을 되살려라.'} ],
-    boss:{ id:'seal1', chapter:1 }, onEnter:'ev_forest_enter' },
+    boss:{ id:'seal1', chapter:1, need:'key_forest', block:'봉인석이 뿌리 결계에 감싸여 있다. 서쪽 ▣ 속삭이는 수림에서 결계의 뿌리를 끊어야 한다.' }, onEnter:'ev_forest_enter' },
   cave:{ name:'메아리 동굴', theme:'cave', bgm:'field',
     pal:{ bg:'#0a0a12', floor:'#2a2838', wall:'#16141f', grass:'#2e2a44', altar:'#2a3a66', boss:'#3a2030', chest:'#3a2e1a', detail:'rgba(150,150,200,.10)' },
     src:[ "1111111111111111","1000000000000001","1011100100111101","1000000000000001",
@@ -252,8 +263,9 @@ const AREAS={
           "1000220000220001","1000000000000401","1111111111111111" ],
     enc:{ pool:['bat','wraith','shade','creeper'], rate:0.24 }, respawn:{x:6,y:8},
     npcs:[], warps:[ {x:8,y:1,to:'forest',tx:13,ty:8,label:'숲'},
+            {x:1,y:5,to:'cavern',tx:2,ty:1,label:'공동'},
             {x:14,y:8,to:'highlands',tx:8,ty:2,label:'고원',need:'sealDone_cave',block:'두 번째 봉인을 되살리기 전에는 길이 열리지 않는다.'} ],
-    boss:{ id:'seal2', chapter:2 }, onEnter:'ev_cave_enter' },
+    boss:{ id:'seal2', chapter:2, need:'key_cave', block:'봉인석이 검은 수정에 뒤덮여 있다. 서쪽 ▣ 수정 공동의 포식자를 쓰러뜨려야 한다.' }, onEnter:'ev_cave_enter' },
   highlands:{ name:'잿빛 고원', theme:'ash', bgm:'field',
     pal:{ bg:'#14120f', floor:'#403a30', wall:'#2a2620', grass:'#5a4e38', altar:'#2a3a66', boss:'#4a2a2a', chest:'#3a2e1a', detail:'rgba(200,190,160,.08)' },
     src:[ "1111111111111111","1000000000000001","1022000000002201","1000000000000001",
@@ -261,8 +273,8 @@ const AREAS={
           "1022003000002201","1000000000000001","1111111111111111" ],
     enc:{ pool:['raider','gale','shade'], rate:0.22 }, respawn:{x:6,y:8},
     npcs:[], warps:[ {x:8,y:1,to:'cave',tx:14,ty:8,label:'동굴'},
-            {x:14,y:9,to:'merchant',tx:8,ty:2,label:'마을',event:'ev_kor_encounter',eventFlag:'ch3done'} ],
-    eventTile:'ev_kor_encounter', onEnter:'ev_highlands_enter' },
+            {x:14,y:9,to:'ridge',tx:2,ty:1,label:'능선',event:'ev_kor_encounter',eventFlag:'ch3done'} ],
+    eventTile:'ev_kor_encounter', eventDone:'ch3done', onEnter:'ev_highlands_enter' },
   merchant:{ name:'바람맞이 상인 마을', theme:'town', bgm:'field',
     pal:{ bg:'#141009', floor:'#3c342a', wall:'#2a2016', grass:'#3a5a34', altar:'#2a3a66', boss:'#5a2a3a', chest:'#3a2e1a', detail:'rgba(220,200,160,.10)' },
     src:[ "1111111111111111","1000000000000001","1011011001101101","1000000000000001",
@@ -270,11 +282,11 @@ const AREAS={
           "1000000000000001","1111111001111111","1111111111111111" ],
     enc:null, respawn:{x:3,y:3},
     npcs:[
-      {x:3,y:7,color:'#f0c27a',name:'상인',glyph:'◇',shop:['potion','ether','revive','steelSword','mithrilSword','knightSword','crystalStaff','sageStaff','dragonStaff','longBow','stormBow','divineBow','ironHelm','mageHat','chainMail','plateArmor','guardianRobe','gauntlet','windBoots','powerRing','guardRing','sageRing','swiftRing']},
+      {x:3,y:7,color:'#f0c27a',name:'상인',glyph:'◇',shop:['potion','ether','revive','steelSword','mithrilSword','crystalStaff','sageStaff','longBow','stormBow','ironHelm','mageHat','chainMail','plateArmor','gauntlet','windBoots','powerRing','guardRing','sageRing','swiftRing']}, /* 최상급(기사검·용옥·신궁·수호 로브)은 신전·균열·심부 보물상자 */
       {x:10,y:3,color:'#b7a98f',name:'마을 장로',lines:[
         {n:'장로',t:'여명이 옅어진 뒤로 바람조차 잿빛이오. 봉인을 되살려 주시게.',c:'#d9cdb5'},
         {n:'장로',t:'북쪽 잊혀진 신전에 봉인의 비밀이 잠들어 있다 하오.',c:'#d9cdb5'} ]} ],
-    warps:[ {x:8,y:9,to:'highlands',tx:13,ty:9,label:'고원'},
+    warps:[ {x:8,y:9,to:'ridge',tx:13,ty:9,label:'능선'},
             {x:14,y:1,to:'temple',tx:8,ty:2,label:'신전',need:'ch3done',block:'북쪽 신전의 문은 굳게 닫혀 있다. 고원에서 아직 매듭짓지 못한 일이 있는 듯하다 — 잿빛 고원(남쪽 ▣)으로 돌아가 보자.'} ],
     onEnter:'ev_merchant_enter' },
   temple:{ name:'잊혀진 신전', theme:'temple', bgm:'field',
@@ -291,7 +303,7 @@ const AREAS={
         "비문: 『여명의 근원은 봉인 너머 — 균열의 심장에 잠들어 있다.』" ]} ],
     warps:[ {x:8,y:1,to:'merchant',tx:14,ty:2,label:'마을'},
             {x:14,y:8,to:'rift',tx:8,ty:3,label:'균열',event:'ev_temple_guardian',eventFlag:'ch4done'} ],
-    eventTile:'ev_temple_guardian', onEnter:'ev_temple_enter' },
+    eventTile:'ev_temple_guardian', eventDone:'ch4done', loot:{'2,5':{item:'knightSword'}}, onEnter:'ev_temple_enter' },
   rift:{ name:'균열의 입구', theme:'rift', bgm:'battle',
     pal:{ bg:'#0c0608', floor:'#241820', wall:'#160b12', grass:'#3a1c22', altar:'#2a3a66', boss:'#4a1a28', chest:'#3a2e1a', detail:'rgba(224,90,80,.10)' },
     src:[ "1111111111111111","1000000000000001","1022000000002201","1000000000000001",
@@ -299,17 +311,53 @@ const AREAS={
           "1022000000002201","1000000000000001","1111111111111111" ],
     enc:{ pool:['phantom','brute','raider','wraith'], rate:0.3 }, respawn:{x:14,y:7},
     npcs:[], warps:[ {x:8,y:1,to:'temple',tx:13,ty:8,label:'신전'},
-            {x:14,y:9,to:'altar',tx:8,ty:2,label:'제단',event:'ev_rift_herald',eventFlag:'ch5done'} ],
-    eventTile:'ev_rift_herald', onEnter:'ev_rift_enter' },
+            {x:14,y:9,to:'abyss',tx:2,ty:1,label:'심부',event:'ev_rift_herald',eventFlag:'ch5done'} ],
+    eventTile:'ev_rift_herald', eventDone:'ch5done', loot:{'2,7':{item:'dragonStaff'}}, onEnter:'ev_rift_enter' },
   altar:{ name:'종언의 제단', theme:'rift', bgm:'battle',
     pal:{ bg:'#0a0406', floor:'#2a1620', wall:'#180a12', grass:'#3a1c22', altar:'#2a3a66', boss:'#5a1a2a', chest:'#3a2e1a', detail:'rgba(255,100,90,.12)' },
     src:[ "1111111111111111","1000000000000001","1000000000000001","1011100000011101",
           "1000000000000001","1000003000000001","1000000000000001","1011100000011101",
           "1000000040000001","1000000000000001","1111111111111111" ],
     enc:null, respawn:{x:6,y:5},
-    npcs:[], warps:[ {x:8,y:1,to:'rift',tx:13,ty:9,label:'균열'} ],
+    npcs:[], warps:[ {x:8,y:1,to:'abyss',tx:13,ty:9,label:'심부'} ],
     boss:{ id:'seal3', chapter:6 }, onEnter:'ev_altar_enter' },
+  /* ---- 심층 맵(1부 밀도 보강): 퍼즐 + 중간 보스 + 보물 장비 ---- */
+  grove:{ name:'속삭이는 수림', theme:'forest', bgm:'field',
+    src:[ "1111111111111111","1050000060000001","1000220000220001","1111111911111111",
+          "1000000000000001","1022007000022001","1022000110022001","1000000110000001",
+          "1870000000000781","1000022002200001","1111111111111111" ],
+    enc:{ pool:['wolf','slime','bat','thornling'], rate:0.24 }, respawn:{x:13,y:5},
+    npcs:[], warps:[ {x:14,y:4,to:'forest',tx:2,ty:6,label:'숲'} ],
+    loot:{'2,1':{item:'guardRing'}},
+    eventTile:'ev_grove_root', eventDone:'key_forest', onEnter:'ev_grove_enter' },
+  cavern:{ name:'수정 공동', theme:'cave', bgm:'field',
+    src:[ "1111111111111111","1000001000100051","1022001080100001","1022000000102201",
+          "1000117000002201","1800110000000001","1111111111911111","1000000700000001",
+          "1022000000022001","1050000060000001","1111111111111111" ],
+    enc:{ pool:['wraith','shade','creeper','geode'], rate:0.26 }, respawn:{x:2,y:1},
+    npcs:[], warps:[ {x:1,y:1,to:'cave',tx:2,ty:5,label:'동굴'} ],
+    loot:{'14,1':{item:'crystalStaff'},'2,9':{gold:120,item:'ether'}},
+    eventTile:'ev_cavern_maw', eventDone:'key_cave', onEnter:'ev_cavern_enter' },
+  ridge:{ name:'바람 능선', theme:'ash', bgm:'field',
+    src:[ "1111111111111111","1000001000000051","1002201022011001","1002201022010001",
+          "1100001000010701","1000111000010001","1070000011000001","1022000011002201",
+          "1522000000002201","1000001100060001","1111111111111111" ],
+    enc:{ pool:['raider','gale','harrier'], rate:0.24 }, respawn:{x:2,y:2},
+    npcs:[], warps:[ {x:1,y:1,to:'highlands',tx:13,ty:9,label:'고원'},
+            {x:14,y:9,to:'merchant',tx:8,ty:2,label:'마을',event:'ev_ridge_lord',eventFlag:'ridgeDone'} ],
+    loot:{'14,1':{item:'longBow'},'1,8':{item:'powerRing'}},
+    eventTile:'ev_ridge_lord', eventDone:'ridgeDone', onEnter:'ev_ridge_enter' },
+  abyss:{ name:'균열 심부', theme:'rift', bgm:'battle',
+    src:[ "1111111111111111","1000220000220081","1011101111011101","1080700000070001",
+          "1022000000002201","1022011001102201","1111111911111111","1000000000000051",
+          "1022007007002201","1500000000060001","1111111111111111" ],
+    enc:{ pool:['phantom','brute','voidling'], rate:0.28 }, respawn:{x:2,y:1},
+    npcs:[], warps:[ {x:1,y:1,to:'rift',tx:13,ty:9,label:'균열'},
+            {x:14,y:9,to:'altar',tx:8,ty:2,label:'제단',event:'ev_abyss_maw',eventFlag:'abyssDone'} ],
+    loot:{'14,7':{item:'divineBow'},'1,9':{item:'guardianRobe'}},
+    eventTile:'ev_abyss_maw', eventDone:'abyssDone', onEnter:'ev_abyss_enter' },
 };
+for(const [a,b] of [['grove','forest'],['cavern','cave'],['ridge','highlands'],['abyss','rift']]) AREAS[a].pal=AREAS[b].pal;
 let cur=null, MAP=[], MAPW=0, MAPH=0;
 function loadArea(id,tx,ty,dir){ cur=AREAS[id]; if(!cur) return; cur.id=id;
   MAP=cur.src.map(r=>r.split('')); MAPW=MAP[0].length; MAPH=MAP.length;
@@ -435,6 +483,77 @@ const EVENTS={
       "종언의 제단 — 세 번째 봉인이 검붉은 빛 속에 잠들어 있다.",
       {n:'미아',t:'마지막이에요. 여명을 되돌릴 마지막 봉인.',c:'#9fe8c4'},
       {n:'카엘',t:'제단 ✦ 에서 충분히 쉬고, 봉인 封 앞에 서자.',c:'#c79bff'} ]); },
+  /* ---- 심층 맵 이벤트 ---- */
+  ev_grove_enter:()=>{ if(storyFlags.groveEntered) return; storyFlags.groveEntered=true;
+    showMsg([
+      "속삭이는 수림 — 나뭇잎 사이로 누군가의 속삭임 같은 바람이 분다.",
+      {n:'카엘',t:'봉인석을 감싼 결계의 뿌리가 이 안쪽에 있어. 덩굴문(▦)이 길을 막고 있네.',c:'#c79bff'},
+      {n:'카엘',t:'고대 장치(○) 둘을 모두 밟으면 문이 열려. 가시 함정(▲)은 피해서 가.',c:'#c79bff'},
+      {n:'테리',t:'…카엘, 넌 봉인에 대해 어떻게 그렇게 잘 알아?',c:'#7cc4ff'},
+      {n:'카엘',t:'…책에서 읽었어. 가자.',c:'#c79bff'} ]); },
+  ev_grove_root:()=>{ if(storyFlags.key_forest) return;
+    showMsg([
+      "거대한 뿌리 덩어리가 봉인석 쪽으로 뻗은 결계를 붙들고 있다.",
+      {n:'테리',t:'저게 결계의 뿌리군. 끊어 낸다!',c:'#7cc4ff'} ],
+      ()=>{ startBattle(['rootguard','thornling'],true,{onWin:'ev_grove_after'}); }); },
+  ev_grove_after:()=>{
+    showMsg([
+      "결계의 뿌리가 말라붙으며 흩어진다. 그 순간 — 희미한 목소리가 섞여 들린다.",
+      {n:'???',t:'…집에… 돌아가고 싶어…',c:'#8a93ad'},
+      {n:'테리',t:'방금… 사람 목소리 아니었어?',c:'#7cc4ff'},
+      {n:'카엘',t:'…바람 소리일 거야. 결계가 풀렸어. 숲의 봉인 封 으로 가자.',c:'#c79bff'} ],
+      ()=>{ storyFlags.key_forest=true; saveGame(); }); },
+  ev_cavern_enter:()=>{ if(storyFlags.cavernEntered) return; storyFlags.cavernEntered=true;
+    showMsg([
+      "수정 공동 — 검은 수정이 벽과 천장을 뒤덮고 희미하게 맥동한다.",
+      {n:'미아',t:'이 수정이 봉인석까지 자라난 거예요. 뿌리가 되는 마물이 안쪽에 있어요.',c:'#9fe8c4'},
+      {n:'카엘',t:'장치(○)는 둘. 수정문(▦) 너머가 그놈의 둥지야.',c:'#c79bff'} ]); },
+  ev_cavern_maw:()=>{ if(storyFlags.key_cave) return;
+    showMsg([
+      "수정을 씹어 삼키던 거대한 마물이 천천히 고개를 든다.",
+      {n:'미아',t:'수정 포식자… 저걸 쓰러뜨리면 봉인석의 수정도 부서질 거예요!',c:'#9fe8c4'} ],
+      ()=>{ startBattle(['crystalmaw','geode','geode'],true,{onWin:'ev_cavern_after'}); }); },
+  ev_cavern_after:()=>{
+    showMsg([
+      "수정 포식자가 쓰러지자, 동굴 전체의 검은 수정에 금이 간다.",
+      {n:'???',t:'…춥다… 빛이… 보고 싶어…',c:'#8a93ad'},
+      {n:'미아',t:'…들으셨어요? 마물이 쓰러질 때마다 목소리가….',c:'#9fe8c4'},
+      {n:'카엘',t:'지금은 봉인이 먼저야. 동굴의 봉인 封 으로 돌아가자.',c:'#c79bff'} ],
+      ()=>{ storyFlags.key_cave=true; saveGame(); }); },
+  ev_ridge_enter:()=>{ if(storyFlags.ridgeEntered) return; storyFlags.ridgeEntered=true;
+    showMsg([
+      "바람 능선 — 상인 마을로 이어지는 좁은 산길. 돌풍이 몸을 밀어낸다.",
+      {n:'코르',t:'이 능선엔 주인이 있어. 돌풍을 부리는 놈이지. 마을 앞 길목(동남쪽)을 막고 있을 거다.',c:'#f0c27a'},
+      {n:'코르',t:'상자도 몇 개 숨겨 놨다는 소문이야. 내 활이 될 만한 것도 있으면 좋겠군.',c:'#f0c27a'} ]); },
+  ev_ridge_lord:()=>{ if(storyFlags.ridgeDone) return;
+    showMsg([
+      "길목 한가운데, 회오리가 사람 형상으로 뭉친다.",
+      {n:'코르',t:'나왔군, 돌풍의 주인. 화살이 휘니까 가까이서 끝내자!',c:'#f0c27a'} ],
+      ()=>{ startBattle(['galelord','harrier','harrier'],true,{onWin:'ev_ridge_after'}); }); },
+  ev_ridge_after:()=>{
+    showMsg([
+      "돌풍이 잦아들고, 능선 아래로 상인 마을의 지붕이 보인다.",
+      {n:'코르',t:'…형도 이 길을 지나갔을까.',c:'#f0c27a'},
+      {n:'미아',t:'형이요?',c:'#9fe8c4'},
+      {n:'코르',t:'아니, 혼잣말이야. 가자 — 마을에서 장비부터 보강하지.',c:'#f0c27a'} ],
+      ()=>{ storyFlags.ridgeDone=true; saveGame(); }); },
+  ev_abyss_enter:()=>{ if(storyFlags.abyssEntered) return; storyFlags.abyssEntered=true;
+    showMsg([
+      "균열 심부 — 땅과 하늘의 구분이 사라지고, 검붉은 빛이 맥박처럼 뛴다.",
+      {n:'카엘',t:'제단은 이 너머야. 장치(○) 둘로 안쪽 문(▦)을 열어야 해.',c:'#c79bff'},
+      {n:'미아',t:'이곳의 그림자들… 울고 있는 것처럼 들려요.',c:'#9fe8c4'} ]); },
+  ev_abyss_maw:()=>{ if(storyFlags.abyssDone) return;
+    showMsg([
+      "제단으로 가는 길목을, 입만 남은 거대한 그림자가 틀어막고 있다.",
+      {n:'테리',t:'마지막 관문이군. 전원, 간다!',c:'#7cc4ff'} ],
+      ()=>{ startBattle(['voidmaw','voidling','voidling'],true,{onWin:'ev_abyss_after'}); }); },
+  ev_abyss_after:()=>{
+    showMsg([
+      "심부의 아귀가 흩어지며, 수많은 목소리가 한꺼번에 스쳐 지나간다.",
+      {n:'???',t:'…빛을… 돌려줘…',c:'#8a93ad'},
+      {n:'테리',t:'…카엘. 저 그림자들, 대체 뭐야.',c:'#7cc4ff'},
+      {n:'카엘',t:'…마지막 봉인을 세우고 나면, 전부 말할게. 약속해.',c:'#c79bff'} ],
+      ()=>{ storyFlags.abyssDone=true; saveGame(); }); },
   ev_after_seal3:()=>{ playBGM('field');
     showMsg([
       "세 봉인이 모두 여명의 빛을 되찾았다.",
@@ -497,6 +616,8 @@ function saveGame(){ try{ localStorage.setItem(SAVE_KEY,JSON.stringify(
   {party,area:cur?cur.id:'village',player:{x:player.x,y:player.y,dir:player.dir},gold,inventory,sealsFixed,bossStage,chests,flags:storyFlags})); return true; }catch(e){ return false; } }
 function loadGame(){ try{ const d=JSON.parse(localStorage.getItem(SAVE_KEY)); if(!d) return false;
   party=d.party; gold=d.gold||0; inventory=d.inventory||{potion:1}; sealsFixed=d.sealsFixed==null?3:d.sealsFixed; bossStage=d.bossStage||0; chests=d.chests||{}; storyFlags=d.flags||{};
+  { const f=storyFlags; // 심층 맵 추가 전 기록 호환: 이미 지난 구간의 관문은 통과 처리
+    if(f.sealDone_forest) f.key_forest=true; if(f.sealDone_cave) f.key_cave=true; if(f.merchEntered) f.ridgeDone=true; if(f.altarEntered) f.abyssDone=true; }
   const area=d.area||'village', px=(d.player&&d.player.x)||3, py=(d.player&&d.player.y)||3, dir=(d.player&&d.player.dir)||'down';
   player={x:px,y:py,dir,px:px*TILE,py:py*TILE,moving:false,steps:0};
   loadArea(area,px,py,dir); return true; }catch(e){ return false; } }
@@ -714,7 +835,7 @@ const ENEMYPX={
   seal3:{ px:3, pal:{o:'#0c0a12',g:'#ccaaaa',G:'#9a8a7a',e:'#ff4466'},
     rows:["..oo....oo..",".ogoo..oogo.",".oggggggggo.","oggggggggggo","ogeeggggeego","oggggggggggo","oggggggggggo","oGgggggggggo","oGGgggggggGo","oGGGgggggGGo",".oGg.oo.gGo.",".o.oo..oo.o."] },
 };
-function drawEnemyPix(e,flash){ const sp=ENEMYPX[e.id]; if(!sp) return; const px=(sp.px||2)+1, rows=sp.rows,
+function drawEnemyPix(e,flash){ const base=ENEMYPX[e.look||e.id]; if(!base) return; const sp=e.palx?{...base,pal:{...base.pal,...e.palx}}:base; const px=(sp.px||2)+1+(e.big||0), rows=sp.rows,
   w=Math.max.apply(null,rows.map(r=>r.length)), ox=Math.round(-w*px/2), oy=Math.round(-rows.length*px/2);
   for(let y=0;y<rows.length;y++){ const r=rows[y]; for(let x=0;x<r.length;x++){ const col=sp.pal[r[x]]; if(!col) continue; g.fillStyle=flash?'#fff':col; g.fillRect(ox+x*px,oy+y*px,px,px); } } }
 
@@ -819,14 +940,18 @@ function onStep(){
   if(t==='3'){ party.forEach(p=>{p.hp=p.maxhp;p.mp=p.maxmp;p.alive=true;}); sfx('heal');
     showMsg(["제단의 빛이 스며든다. (전원 회복)", saveGame()?"기록을 저장했다.":"저장 실패."]); }
   else if(t==='4'){ const bz=cur.boss; if(!bz) return; const key='bi_'+bz.id;
+    if(bz.need&&!storyFlags[bz.need]){ showMsg([bz.block||'봉인석이 결계에 막혀 있다.']); sfx('sel'); return; } // 심층 맵의 결계를 먼저 풀어야 함
     if(!storyFlags[key]){ storyFlags[key]=true; showMsg(bossScene(bz.id,'intro'), ()=>startBattle([bz.id],true,{sealBoss:true})); }
     else startBattle([bz.id],true,{sealBoss:true}); }
-  else if(t==='6'){ const ek=cur.eventTile, fk='et_'+cur.id; if(ek&&!storyFlags[fk]){ storyFlags[fk]=true; runEvent(ek); } }
+  else if(t==='6'){ const ek=cur.eventTile, fk='et_'+cur.id, done=cur.eventDone?storyFlags[cur.eventDone]:storyFlags[fk]; // 완료 플래그 기준 → 패배 후 재도전 가능
+    if(ek&&!done){ storyFlags[fk]=true; runEvent(ek); } }
   else if(t==='7'){ party.forEach(p=>{ if(p.alive) p.hp=Math.max(1,p.hp-Math.round(p.maxhp*0.12)); }); sfx('hit'); flash=8; shakeT=6; showMsg(['함정! 바닥에서 가시가 솟았다. (전원 HP 피해)']); }
   else if(t==='8'){ const k='sw_'+cur.id+'_'+player.x+','+player.y; if(!storyFlags[k]){ storyFlags[k]=true; sfx('coin'); const opened=checkGate(); showMsg([opened?'철컹! 모든 장치가 맞물리며 봉인된 문이 열렸다!':'고대 장치가 눌렸다. 철컹—']); } }
   else if(t==='2'){ const e=cur.enc; if(e&&Math.random()<e.rate){ const n=1+rnd(3),es=[];
     for(let i=0;i<n;i++) es.push(e.pool[rnd(e.pool.length)]); encPending=es; encAlert=20; encX=player.x; encY=player.y; sfx('sel'); flash=5; } } // 조우! '!' 표시 후 전투
-  else if(t==='5'){ const k=cur.id+':'+player.x+','+player.y; if(!chests[k]){ chests[k]=1; gold+=25; inventory.potion=(inventory.potion||0)+1; MAP[player.y][player.x]='0'; sfx('coin'); showMsg(['보물상자! ◆25 와(과) 물약을 얻었다.']); } } }
+  else if(t==='5'){ const k=cur.id+':'+player.x+','+player.y; if(!chests[k]){ chests[k]=1; const lt=(cur.loot&&cur.loot[player.x+','+player.y])||{gold:25,item:'potion'};
+      if(lt.gold) gold+=lt.gold; if(lt.item) inventory[lt.item]=(inventory[lt.item]||0)+1; MAP[player.y][player.x]='0'; sfx('coin');
+      showMsg(['보물상자! '+[lt.gold?('◆'+lt.gold):'', lt.item?itemDef(lt.item).name:''].filter(Boolean).join(' 와(과) ')+' 을(를) 얻었다.']); } } }
 function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H);
   camOX=clamp(player.px-W/2+TILE/2,0,Math.max(0,MAPW*TILE-W)); camOY=clamp(player.py-H/2+TILE/2,0,Math.max(0,MAPH*TILE-H));
   for(let y=0;y<MAPH;y++)for(let x=0;x<MAPW;x++){ const sx=x*TILE-camOX, sy=y*TILE-camOY, t=MAP[y][x];
@@ -848,6 +973,9 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
     if(t==='3'){ g.fillStyle='#7cc4ff'; g.font='18px sans-serif'; g.fillText('✦',sx+TILE*0.22,sy+TILE*0.68); }
     if(t==='4'){ g.fillStyle='#f0b89a'; g.font='16px sans-serif'; g.fillText('封',sx+TILE*0.18,sy+TILE*0.7); }
     if(t==='5'){ g.fillStyle='#caa44a'; g.fillRect(sx+TILE*0.22,sy+TILE*0.36,TILE*0.56,TILE*0.4); g.fillStyle='#7a5a22'; g.fillRect(sx+TILE*0.22,sy+TILE*0.47,TILE*0.56,TILE*0.08); }
+    if(t==='6'&&cur.eventTile&&!(cur.eventDone?storyFlags[cur.eventDone]:storyFlags['et_'+cur.id])){ // 강적(중간 보스) 표식
+      const pu=0.6+0.4*Math.sin(gtime/10); g.globalAlpha=pu; g.fillStyle='#c0304a'; g.beginPath(); g.moveTo(sx+TILE/2,sy+4); g.lineTo(sx+TILE-5,sy+TILE/2); g.lineTo(sx+TILE/2,sy+TILE-5); g.lineTo(sx+5,sy+TILE/2); g.closePath(); g.fill();
+      g.globalAlpha=1; g.fillStyle='#fff'; g.font='bold 12px sans-serif'; g.textAlign='center'; g.fillText('!',sx+TILE/2,sy+TILE*0.66); g.textAlign='left'; }
     if(t==='7'){ g.fillStyle='#c76a54'; for(let k=0;k<3;k++){ g.beginPath(); g.moveTo(sx+6+k*7,sy+TILE-4); g.lineTo(sx+9+k*7,sy+TILE-13); g.lineTo(sx+12+k*7,sy+TILE-4); g.closePath(); g.fill(); } }
     if(t==='8'){ const on=storyFlags['sw_'+cur.id+'_'+x+','+y]; g.fillStyle=on?'#9fe8c4':'#5a5a68'; g.beginPath(); g.arc(sx+TILE/2,sy+TILE/2,TILE*0.22,0,7); g.fill(); g.strokeStyle=on?'#dfffe8':'#3a3a46'; g.lineWidth=2; g.stroke(); g.lineWidth=1; }
     if(t==='9'){ g.fillStyle='#7a7a9a'; for(let k=0;k<4;k++) g.fillRect(sx+4+k*6,sy+3,3,TILE-6); g.fillStyle='#4a4a66'; g.fillRect(sx+2,sy+2,TILE-4,3); g.fillRect(sx+2,sy+TILE-6,TILE-4,3); }
@@ -1205,7 +1333,7 @@ function drawBattle(){ const b=battle;
   if(tappable) hz(0,0,W,H,()=>{ if(b.phase==='done') endBattle(); else if(b.phase==='resolve') stepResolve(); });
   // 적
   b.enemies.forEach((e,i)=>{ if(!e.alive) return; const ep=enemyPos(i), sh=e.flash>0?(rnd(3)-1):0, bob=Math.sin((gtime+i*14)/18)*1.3, esc=e.boss?1:0.8;
-    g.save(); g.translate(ep.x+sh,ep.y+bob); if(ENEMYPX[e.id]) drawEnemyPix(e,e.flash>0); else { g.scale(esc,esc); drawEnemyShape(e,e.flash>0); } g.restore();
+    g.save(); g.translate(ep.x+sh,ep.y+bob); if(ENEMYPX[e.look||e.id]) drawEnemyPix(e,e.flash>0); else { g.scale(esc,esc); drawEnemyShape(e,e.flash>0); } g.restore();
     bar(ep.x-17,ep.y+14,34,4,e.hp/e.maxhp,'#c55');
     g.fillStyle='#cdd6ea'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText(e.name,ep.x,ep.y+26);
     if(e.poison>0){ g.fillStyle='#8fdc6e'; g.fillText('독',ep.x,ep.y-14); }
