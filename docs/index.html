@@ -448,7 +448,8 @@ const EVENTS={
       {n:'그림자 군주',t:'봉인을 되세운 자들이라… 흥미롭군. 다음엔 내가 직접 가지.',c:'#c0708a'},
       "— 모두의 픽셀모험 · 제1부 「세 봉인」 끝 —",
       "제2부에서 계속…   플레이해 주셔서 감사합니다!" ],
-      ()=>{ try{localStorage.removeItem(SAVE_KEY);}catch(e){} stopBGM(); bgm.started=false; sealsFixed=3; bossStage=0; storyFlags={}; party=makeParty(); state='title'; titleSel=0; }); },
+      ()=>{ storyFlags.part1Clear=true; saveGame(); // 엔딩 후에도 최종 기록 유지(이어하기 가능, 2부 인계용)
+        stopBGM(); bgm.started=false; state='title'; titleSel=1; }); },
 };
 function bossScene(id,kind){
   if(id==='seal1'&&kind==='intro') return [
@@ -723,9 +724,12 @@ function startNew(){ party=makeParty(); gold=30; inventory={potion:3,ether:1,rev
   player={x:3,y:3,dir:'down',px:3*TILE,py:3*TILE,moving:false,steps:0}; state='field';
   bgm.started=true; loadArea('village',3,3,'down'); sfx('sel'); playBGM('field'); }
 function doContinue(){ bgm.started=true; if(loadGame()){ state='field'; showMsg('기록을 불러왔다.'); sfx('sel'); playBGM(cur?cur.bgm:'field'); } }
+let titleConfirm=false; // 기록이 있을 때 '새 게임'은 확인을 거친다(기록 덮어쓰기 방지)
+function askNewGame(){ if(hasSave()){ titleConfirm=true; sfx('sel'); } else startNew(); }
 function updateTitle(){ const n=hasSave()?2:1;
+  if(titleConfirm){ if(consume('confirm')){ titleConfirm=false; startNew(); } else if(consume('cancel')){ titleConfirm=false; sfx('sel'); } return; }
   if(consume('up')) titleSel=(titleSel+n-1)%n; if(consume('down')) titleSel=(titleSel+1)%n;
-  if(consume('confirm')){ titleSel===0?startNew():doContinue(); } }
+  if(consume('confirm')){ titleSel===0?askNewGame():doContinue(); } }
 function pxDiamond(cx,cy,R,fill,hi,glow){
   g.save(); g.globalAlpha=0.28; g.fillStyle=glow; g.beginPath(); g.arc(cx,cy,R+8,0,7); g.fill(); g.restore();
   g.fillStyle='#0c0a16'; for(let y=-R;y<=R;y++){ const w=R-Math.abs(y); g.fillRect(cx-w,cy+y,w*2,1); }
@@ -771,9 +775,16 @@ function drawTitle(){
     g.fillStyle='#0008'; g.beginPath(); g.ellipse(cx,253,11,3,0,0,7); g.fill();
     drawPixSprite(rows,sp.pal,Math.round(cx-w/2),253-h+bob,px); }
   // 버튼
-  pxBtn(W/2-78,166,156,24,'새 게임',titleSel===0,startNew);
+  pxBtn(W/2-78,166,156,24,'새 게임',titleSel===0,askNewGame);
   if(hasSave()) pxBtn(W/2-78,194,156,22,'이어하기',titleSel===1,doContinue);
-  g.fillStyle='#6b7590'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText('오리지널 작품 · 2026',W/2,H-5); g.textAlign='left'; }
+  g.fillStyle='#6b7590'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText('오리지널 작품 · 2026',W/2,H-5); g.textAlign='left';
+  if(titleConfirm){ const bw=300,bh=96,bx=(W-bw)/2,by=(H-bh)/2;
+    g.fillStyle='rgba(0,0,0,.6)'; g.fillRect(0,0,W,H); hz(0,0,W,H,()=>{ titleConfirm=false; sfx('sel'); });
+    g.fillStyle='rgba(12,16,30,.98)'; g.fillRect(bx,by,bw,bh); g.strokeStyle='#f0c27a'; g.lineWidth=1.5; g.strokeRect(bx+1,by+1,bw-2,bh-2); g.lineWidth=1;
+    g.textAlign='center'; g.fillStyle='#cdd6ea'; g.font='bold 13px sans-serif'; g.fillText('새 게임을 시작할까요?',W/2,by+26);
+    g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.fillText('다음 저장 때 기존 기록이 덮어써집니다.',W/2,by+46); g.textAlign='left';
+    btn(bx+18,by+bh-32,126,24,'예',()=>{ titleConfirm=false; startNew(); },{bg:'#3a2a2a',fg:'#f0b89a',font:'13px sans-serif'});
+    btn(bx+bw-144,by+bh-32,126,24,'아니오',()=>{ titleConfirm=false; sfx('sel'); },{font:'13px sans-serif'}); } }
 
 /* ================= 필드 ================= */
 const DIRV={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
