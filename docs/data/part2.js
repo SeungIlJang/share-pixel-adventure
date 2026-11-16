@@ -97,55 +97,77 @@ equip:{
   zephyrRing:{name:'서풍의 반지',slot:'ring',spd:6,price:520},
 },
 
+/* ================= 2부 고유 적 그림 ================= */
+enemyPx:{
+  wedgeguard:{ px:3, pal:{o:'#141019',a:'#6a5a8a',A:'#483e62',m:'#c0b4e0',e:'#ffd54a'},
+    rows:["..o.......o..","..oo.ooo.oo..","...oaaaaao...","...oaeaeao...","...oAaaaAo...",".ooaaaaaaaoo.","oamaAaaaAamao","oamaaaaaaamao","oaoaAaaaAaoao",".o.oaaaaao.o.","...oaa.aao...","...oAo.oAo...","..ooo...ooo.."] },
+  tidecaller:{ px:3, pal:{o:'#0c0a12',p:'#3a6aa0',P:'#284a74',l:'#9fd0f0',e:'#9fe8ff'},
+    rows:["....oooo......","...ollllo..o..","..olppppo.oeo.","..opeppeo..o..","..oppppppo.o..",".oPppppppPoo..",".oPpplpppPo...","oPPppppppPPo..","oPpppppppppo..","oPplpppplpPo..",".oPpppppppo...",".ooPoPoPoPo...","..o.o.o.o.o..."] },
+  archivist:{ px:3, pal:{o:'#141019',g:'#b89a4a',G:'#7a6630',l:'#f0e0a0',e:'#7fd0ff'},
+    rows:["...oooooo...","..oggggggo..","..ogoeeogo..","..oggggggo..","oooGggggGooo","olgoGllGoglo","oggoGllGoggo","oggoGggGoggo","oGo.oGGo.oGo",".o.oggggo.o.","...ogoogo...","..oGGooGGo.."] },
+  garn:{ px:3, pal:{o:'#141019',b:'#6a5878',B:'#463a54',s:'#d8b070',e:'#ffd54a',m:'#e8d8a8'},
+    rows:["....ooo......","...obbbo..o..","..obbbbbo.mo.","..obseebo..mo","..obbbbbo..mo",".oBbbbbbBo.mo","obBbbsbbBbomo","obBbbbbbBo.mo",".oBbbbbbBo.mo","..obbobbo.mo.","..obo.obo.o..","..oo..oo....."] },
+  frostApostle:{ px:3, pal:{o:'#0c1420',g:'#7ab0d0',G:'#4a80a0',l:'#e0f8ff',e:'#ffffff'},
+    rows:[".....oo.....","..o.ollo.o..",".olooglooloo",".oglogglogo.","..ogggggggo.",".oggeggeggo.","oglgggggglgo",".oggGggGggo.","..oGgggggGo.","..ogGgggGgo.","...ogo.ogo..","...oo...oo.."] },
+  crownApostle:{ px:3, pal:{o:'#0c0a12',g:'#7a5aa0',G:'#4a3470',m:'#ffd54a',e:'#ffffff'},
+    rows:["..o.o..o.o..","..omommomo..","..ommmmmmo..","..oggggggo..","..ogeggego..","..oggggggo..",".oGggggggGo.","oGGgmggmgGGo","oGGggggggGGo","oGGggggggGGo",".oGgGggGgGo.",".o.oo..oo.o."] },
+  gatekeeper:{ px:3, pal:{o:'#0c0a12',g:'#6a4a8a',G:'#40285a',e:'#ff4466'},
+    rows:["o...o....o...o","oo..oo..oo..oo",".oggoggggoggo.",".oggggggggggo.",".oggeeggeeggo.","oggggggggggggo","ogGggoggoggGgo","ogGggoggoggGgo","oGGggggggggGGo","oGGGggggggGGGo",".oGGg.oo.gGGo.",".o.oo....oo.o."] },
+  scarab:{ px:2, pal:{o:'#141019',g:'#b89a3a',G:'#8a7228',l:'#f0e0a0',w:'#fff8e0',e:'#2a1a08'},
+    rows:["..o......o..","...o....o...","..oooooooo..",".oglllllllgo","oggwlgglwggo","ogeggggggego","oGggggggggGo","oGGggggggGGo",".oGGGGGGGGo.","o.o.o..o.o.o"] },
+  hullCreeper:{ px:2, pal:{o:'#141019',g:'#5a7a8a',G:'#3e5866',t:'#e8edf7',e:'#ffe9a0'},
+    rows:["oo........oo","ogo......ogo","ogo.oooo.ogo",".oooggggooo.",".oggeggeggo.","oggggggggggo","ogGttttttGgo",".oGggggggGo.","o.o.o..o.o.o"] },
+},
+
 /* ================= 적 ================= */
 enemies:{
   /* 7장 옛 대로 */
   p2wolf:  {name:'쐐기 늑대',   ...reg(7,{hp:.9,spd:13}),  color:'#7a5a9a',look:'wolf',palx:{f:'#7a5a9a',F:'#54407a',l:'#a88ac8'}},
   p2scout: {name:'그림자 척후', ...reg(7,{atk:1.05}),      color:'#5a5070',look:'raider',palx:{b:'#5a5070',B:'#3e3652',e:'#c79bff'}},
   p2bat:   {name:'재의 박쥐',   ...reg(7,{hp:.75,spd:15}), color:'#8a8a94',look:'bat',palx:{b:'#8a8a94',B:'#5e5e68',l:'#c0c0cc'}},
-  wedgeguard:{moves:['eatk','esmash','eaoe'],name:'쐐기 파수대장',...bos(7,{hp:.8}), hp:2500,atk:63,mag:54,      color:'#6a5a8a',look:'warden',palx:{a:'#6a5a8a',A:'#483e62',l:'#9a8ac0',e:'#c79bff'}},
+  wedgeguard:{atkFx:'smash',weak:'ice',moves:['eatk','esmash','eaoe'],name:'쐐기 파수대장',...bos(7,{hp:.8}), hp:2500,atk:63,mag:54,      color:'#6a5a8a'},
   /* 8장 살레나 부두 */
   tideSlime:{weak:'bolt',name:'조수 슬라임',...reg(8,{hp:1.1,spd:8}),  color:'#4a8ac0',look:'slime',palx:{g:'#4a8ac0',G:'#346a9a',l:'#bfe0ff'},aiPoison:0.3},
   drowned: {weak:'bolt',name:'익사한 망령', ...reg(8,{hp:.9,mag:1.1}), color:'#6ab0b0',look:'wraith',palx:{g:'#6ab0b0',G:'#4a8686',l:'#c8f0f0',e:'#ffe9a0'},aiMagic:0.5},
-  hullCreeper:{name:'선창 포식귀',...reg(8,{hp:1.2,atk:1.05,spd:9}),color:'#5a7a8a',look:'creeper',palx:{g:'#5a7a8a',G:'#3e5866',l:'#8aaabc'}},
-  tidecaller:{moves:['emagic','evenom','eatk','eaoe'],weak:'bolt',name:'조수의 사도',...bos(8), hp:2990,atk:68,mag:59,                color:'#3a6aa0',look:'herald',palx:{p:'#3a6aa0',P:'#284a74',l:'#7ab0e0',e:'#9fe8ff'}},
+  hullCreeper:{atkFx:'claw',weak:'fire',name:'선창 포식귀',...reg(8,{hp:1.2,atk:1.05,spd:9}),color:'#5a7a8a'},
+  tidecaller:{atkFx:'dark',moves:['emagic','evenom','eatk','eaoe'],weak:'bolt',name:'조수의 사도',...bos(8), hp:2990,atk:68,mag:59,                color:'#3a6aa0'},
   /* 9장 모래 바다·기록고 */
   sandGale:{name:'모래 정령',   ...reg(9,{hp:.85,spd:15}), color:'#c8a868',look:'gale',palx:{a:'#c8a868',A:'#96784a',l:'#f0e0b0'}},
-  scarab:  {name:'기록고 갑충', ...reg(9,{hp:1.15,def:1.3,spd:8}),color:'#b89a3a',look:'slime',palx:{g:'#b89a3a',G:'#8a7228',l:'#f0e0a0',w:'#fff8e0'}},
+  scarab:  {atkFx:'bite',weak:'ice',name:'기록고 갑충', ...reg(9,{hp:1.15,def:1.3,spd:8}),color:'#b89a3a'},
   dustShade:{name:'먼지 그림자',...reg(9,{mag:1.1}),       color:'#8a7a5a',look:'shade',palx:{g:'#8a7a5a',G:'#5e5238',e:'#ffe9a0'},aiMagic:0.4},
   archGuard:{name:'기록고 파수상',...reg(9,{hp:1.3,def:1.3,spd:8}),color:'#a89058',look:'sentinel',palx:{g:'#a89058',G:'#786438',l:'#d8c088',e:'#ffe9a0'}},
-  archivist:{moves:['eatk','echarge','eblast','esmash'],name:'기록고 수호기',...bos(9), hp:2590,atk:84,mag:72,               color:'#b89a4a',look:'golem',palx:{g:'#b89a4a',G:'#7a6630',l:'#e8d08a',e:'#ffd54a'}},
+  archivist:{atkFx:'smash',weak:'bolt',resist:'arrow',moves:['eatk','echarge','eblast','esmash'],name:'기록고 수호기',...bos(9), hp:2590,atk:84,mag:72,               color:'#b89a4a'},
   /* 10장 붉은 협곡 */
   canyonRaider:{name:'협곡 약탈자',...reg(10,{atk:1.08}),  color:'#9a4a3a',look:'raider',palx:{b:'#9a4a3a',B:'#6e3228',e:'#ffd54a'}},
   emberBat:{weak:'ice',resist:'fire',name:'불씨 박쥐',   ...reg(10,{hp:.75,spd:16}),color:'#c05a3a',look:'bat',palx:{b:'#c05a3a',B:'#8a3e28',l:'#f0a070',e:'#ffe9a0'}},
   rockBrute:{name:'바위 거수',  ...reg(10,{hp:1.5,atk:1.1,spd:8,exp:1.3}),color:'#8a5a4a',look:'brute',palx:{b:'#8a5a4a',B:'#5e3c30',l:'#b08070'}},
   garnShade:{name:'가른의 그림자',...reg(10,{hp:.9,spd:15}),color:'#6a5a3a',look:'phantom',palx:{p:'#6a5a3a',P:'#463c26',e:'#ffd54a'}},
-  garn:    {moves:['eflurry','eatk','efocus','eaoe'],weak:'fire',name:'화살의 사도 가른',...bos(10,{spd:16}), hp:4320,atk:80,mag:69,   color:'#a8843a',look:'raider',atkFx:'arrow',big:2,palx:{b:'#3a3040',B:'#262030',s:'#d8b070',e:'#ffd54a',m:'#e8d8a8'}},
+  garn:    {moves:['eflurry','eatk','efocus','eaoe'],weak:'fire',name:'화살의 사도 가른',...bos(10,{spd:16}), hp:4320,atk:80,mag:69,   color:'#a8843a',atkFx:'arrow'},
   /* 11장 설산·빙고 */
   frostWolf:{weak:'fire',resist:'ice',name:'서리 늑대',  ...reg(11,{hp:.9,spd:14}), color:'#a8c0d8',look:'wolf',palx:{f:'#a8c0d8',F:'#7a94ae',l:'#e0f0ff',e:'#7fd0ff'}},
   iceWraith:{weak:'fire',resist:'ice',name:'얼음 망령',  ...reg(11,{mag:1.12}),     color:'#9ad0e8',look:'wraith',palx:{g:'#9ad0e8',G:'#6aa0ba',l:'#e0f8ff',e:'#ffffff'},aiMagic:0.5},
   snowSentinel:{weak:'fire',resist:'ice',name:'빙결 파수병',...reg(11,{hp:1.3,def:1.3,spd:8}),color:'#8aa8c0',look:'sentinel',palx:{g:'#8aa8c0',G:'#5e7a92',l:'#c0dcf0',e:'#ffffff'}},
-  frostApostle:{moves:['emagic','ecurse','echarge','eblast'],weak:'fire',resist:'ice',name:'서리의 사도',...bos(11), hp:4210,atk:87,mag:75,             color:'#7ab0d0',look:'seal2',palx:{g:'#7ab0d0',G:'#4a80a0',e:'#ffffff'}},
+  frostApostle:{atkFx:'dark',moves:['emagic','ecurse','echarge','eblast'],weak:'fire',resist:'ice',name:'서리의 사도',...bos(11), hp:4210,atk:87,mag:75,             color:'#7ab0d0'},
   /* 12장 왕궁 지하 */
   royalShade:{name:'왕관의 그림자',...reg(12,{mag:1.1}),   color:'#a88a4a',look:'shade',palx:{g:'#a88a4a',G:'#786030',e:'#ffe9a0'},aiMagic:0.4},
   palaceGuard:{name:'타락한 근위병',...reg(12,{hp:1.3,def:1.25,spd:9}),color:'#7a5aa0',look:'sentinel',palx:{g:'#7a5aa0',G:'#543e74',l:'#b09ad0',e:'#ffd54a'}},
   crownPhantom:{name:'왕좌의 환영',...reg(12,{hp:.9,spd:16}),color:'#8a6ab0',look:'phantom',palx:{p:'#8a6ab0',P:'#5e4680',e:'#ffd54a'}},
-  crownApostle:{moves:['eatk','edrain','efocus','eaoe'],weak:'bolt',name:'왕관의 사도',...bos(12), hp:3590,atk:95,mag:81,             color:'#b89a4a',look:'seal1',palx:{g:'#b89a4a',G:'#7a5aa0',e:'#ffffff'}},
+  crownApostle:{atkFx:'dark',moves:['eatk','edrain','efocus','eaoe'],weak:'bolt',name:'왕관의 사도',...bos(12), hp:3590,atk:95,mag:81,             color:'#b89a4a'},
   /* 13장 봉인의 숲 */
   wedgeBrute:{name:'쐐기 거수', ...reg(13,{hp:1.5,atk:1.1,spd:8,exp:1.3}),color:'#5a4a7a',look:'brute',palx:{b:'#5a4a7a',B:'#3c3056',l:'#8a7ab0',e:'#c79bff'}},
   nightWolf:{name:'밤의 늑대',  ...reg(13,{hp:.9,spd:15}), color:'#3a3a5a',look:'wolf',palx:{f:'#3a3a5a',F:'#26263e',l:'#6a6a9a',e:'#c79bff'}},
   lostVoice:{name:'잃어버린 목소리',...reg(13,{mag:1.15}), color:'#b0a8d0',look:'wraith',palx:{g:'#b0a8d0',G:'#807aa6',l:'#e8e4ff',e:'#ffb0c0'},aiMagic:0.6},
-  lord:    {weak:null,name:'그림자 군주', hp:999999,atk:420,mag:380,def:60,spd:30,exp:0,gold:0,boss:true,color:'#3a2040',look:'seal3',big:1,palx:{g:'#3a2a4a',G:'#221830',e:'#ff4466'}},
+  lord:    {weak:null,name:'그림자 군주', hp:999999,atk:420,mag:380,def:60,spd:30,exp:0,gold:0,boss:true,color:'#3a2040',look:'gatekeeper',atkFx:'dark',big:1,palx:{g:'#3a2a4a',G:'#221830',e:'#ff4466'}},
   /* 14장 균열의 문 */
   gateShade:{name:'문의 그림자',...reg(14,{hp:.9,spd:16}), color:'#7a3a5a',look:'phantom',palx:{p:'#7a3a5a',P:'#52263c',e:'#ffb0a0'}},
   riftBrute:{name:'문턱의 거수',...reg(14,{hp:1.5,atk:1.1,spd:8,exp:1.3}),color:'#7a2a3a',look:'brute',palx:{b:'#7a2a3a',B:'#521a26',l:'#b05a6a',e:'#ffd54a'}},
   voidHerald:{name:'전조의 잔재',...reg(14,{mag:1.15}),    color:'#a05a6a',look:'shade',palx:{g:'#a05a6a',G:'#6e3a48',e:'#ff5a6a'},aiMagic:0.5},
-  gatekeeper:{moves:['eatk','ecurse','eflurry','echarge','eblast'],enrage:0.4,name:'문지기 — 군주의 그림자',...bos(14,{hp:1.1}), hp:5540,atk:82,mag:70,color:'#5a3a7a',look:'seal3',palx:{g:'#6a4a8a',G:'#40285a',e:'#ff4466'}},
+  gatekeeper:{atkFx:'dark',weak:'bolt',moves:['eatk','ecurse','eflurry','echarge','eblast'],enrage:0.4,name:'문지기 — 군주의 그림자',...bos(14,{hp:1.1}), hp:5540,atk:82,mag:70,color:'#5a3a7a'},
 },
 
 /* ================= 지역 ================= */
 areas:{
-  arg2:{ name:'아르겐 마을', theme:'town', bgm:'field', hud:'2부 7장', pal:PAL.town,
+  arg2:{ name:'아르겐 마을', theme:'town', bgm:'town', hud:'2부 7장', pal:PAL.town,
     src:[ "1111111111111111","1000000000000001","1011100100111101","1000000000000001",
           "1000000000000001","1011000100011001","1000000000003001","1000000000000001",
           "1000000000000001","1111111111111111","1111111111111111" ],
@@ -170,7 +192,7 @@ areas:{
     loot:{'12,1':{gold:300,item:'hiPotion'}},
     eventTile:'ev_wedge', eventDone:'ch7done', onEnter:'ev_oldroad_enter' },
 
-  salena:{ name:'살레나 항', theme:'town', bgm:'field', hud:'2부 8장', pal:PAL.harbor,
+  salena:{ name:'살레나 항', theme:'town', bgm:'town', hud:'2부 8장', pal:PAL.harbor,
     src:[ "1111111111111111","1000000000000001","1011100110011101","1000000000000001",
           "1000000000030001","1000000000000001","1011001100110001","1000000000000001",
           "1000000000000001","1111111101111111","1111111111111111" ],
@@ -188,7 +210,7 @@ areas:{
             {x:14,y:5,to:'dunes',tx:2,ty:5,label:'사막',need:'ch8done',block:'쐐기가 뿜는 어둠이 동쪽 성문까지 덮고 있다. 먼저 부두 창고의 쐐기를 뽑아야 한다.'} ],
     onEnter:'ev_salena_enter' },
 
-  docks:{ name:'부두 창고', theme:'temple', bgm:'field', hud:'2부 8장', pal:PAL.docks,
+  docks:{ name:'부두 창고', theme:'temple', bgm:'dungeon', hud:'2부 8장', pal:PAL.docks,
     src:[ "1111111111111111","1000002200000051","1011102200111101","1000000000000001",
           "1022011811022001","1022000000022081","1111111191111111","1000700000070001",
           "1022000000002201","1500000060000001","1111111111111111" ],
@@ -208,7 +230,7 @@ areas:{
     loot:{'21,3':{item:'stormBoots'}},
     onEnter:'ev_dunes_enter' },
 
-  archive:{ name:'모래의 기록고', theme:'temple', bgm:'field', hud:'2부 9장', pal:PAL.archive,
+  archive:{ name:'모래의 기록고', theme:'temple', bgm:'dungeon', hud:'2부 9장', pal:PAL.archive,
     src:[ "1111111111111111","1000000100000051","1022080100220001","1022000100220001",
           "1000000000000001","1011100700111081","1111191111111111","1000000000000001",
           "1022007007002201","1500000060000001","1111111111111111" ],
@@ -241,7 +263,7 @@ areas:{
     loot:{'22,7':{item:'aegisRing'}},
     onEnter:'ev_snow_enter' },
 
-  abbey:{ name:'설산 수도원', theme:'town', bgm:'field', hud:'2부 11장', pal:PAL.abbey,
+  abbey:{ name:'설산 수도원', theme:'town', bgm:'town', hud:'2부 11장', pal:PAL.abbey,
     src:[ "1111111111111111","1000000000000001","1011100000011101","1000000300000001",
           "1000000000000001","1000000000000001","1011001001001101","1000000000000001",
           "1000000000000001","1111111101111111","1111111111111111" ],
@@ -257,7 +279,7 @@ areas:{
             {x:14,y:5,to:'capital',tx:2,ty:5,label:'왕도',need:'ch11done',block:'눈보라가 왕도로 가는 길을 막고 있다. 지하 빙고의 쐐기를 먼저 뽑아야 한다.'} ],
     onEnter:'ev_abbey_enter' },
 
-  crypt:{ name:'수도원 지하 빙고', theme:'temple', bgm:'field', hud:'2부 11장', pal:PAL.crypt,
+  crypt:{ name:'수도원 지하 빙고', theme:'temple', bgm:'dungeon', hud:'2부 11장', pal:PAL.crypt,
     src:[ "1111111111111111","1000022000022001","1011022011022081","1000000011000001",
           "1807000000007001","1000011001100051","1111111911111111","1000000000000001",
           "1022070000702201","1500000060000001","1111111111111111" ],
@@ -266,7 +288,7 @@ areas:{
     loot:{'14,5':{item:'starRobe'},'1,9':{gold:800,item:'hiEther'}},
     eventTile:'ev_frost', eventDone:'ch11done', onEnter:'ev_crypt_enter' },
 
-  capital:{ name:'왕도 아르센', theme:'town', bgm:'field', hud:'2부 12장', pal:PAL.capital,
+  capital:{ name:'왕도 아르센', theme:'town', bgm:'town', hud:'2부 12장', pal:PAL.capital,
     src:[ "1111111111111111","1000000000000001","1011101001011101","1000000000000001",
           "1000000000030001","1000000000000001","1011011001101101","1000000000000001",
           "1000000000000001","1111111111111111","1111111111111111" ],
@@ -283,7 +305,7 @@ areas:{
             {x:14,y:5,to:'sealgrove',tx:2,ty:5,label:'숲',need:'ch12done',block:'성문이 굳게 닫혀 있다. 왕궁 지하의 일을 먼저 매듭지어야 한다.'} ],
     onEnter:'ev_capital_enter' },
 
-  palace:{ name:'왕궁 지하 회랑', theme:'temple', bgm:'field', hud:'2부 12장', pal:PAL.palace,
+  palace:{ name:'왕궁 지하 회랑', theme:'temple', bgm:'dungeon', hud:'2부 12장', pal:PAL.palace,
     src:[ "1111111111111111","1000000022000051","1011011022011001","1080000000000001",
           "1000111001110001","1022100000012201","1022100700012281","1111111191111111",
           "1000000000000001","1500000060000001","1111111111111111" ],
@@ -292,7 +314,7 @@ areas:{
     loot:{'14,1':{item:'zephyrRing'},'1,9':{gold:1000,item:'hiPotion'}},
     eventTile:'ev_crown', eventDone:'ch12done', onEnter:'ev_palace_enter' },
 
-  sealgrove:{ name:'봉인의 숲', theme:'forest', bgm:'battle', hud:'2부 13장', pal:PAL.sealgrove,
+  sealgrove:{ name:'봉인의 숲', theme:'forest', bgm:'rift', hud:'2부 13장', pal:PAL.sealgrove,
     src:[ "111111111111111111111111","100220000000022000000001","100220011000022001100001","100000011000000001100001",
           "100000000002200000000001","100000000002200000000601","100002200000000110000001","100002200110000110022001",
           "150000000110000000022001","100030000000000000000001","111111111111111111111111" ],
@@ -302,7 +324,7 @@ areas:{
     loot:{'1,8':{gold:900,item:'hiEther'}},
     eventTile:'ev_lord', eventDone:'ch13done', onEnter:'ev_seal_enter' },
 
-  riftgate:{ name:'균열의 문', theme:'rift', bgm:'battle', hud:'2부 14장', pal:PAL.rift,
+  riftgate:{ name:'균열의 문', theme:'rift', bgm:'rift', hud:'2부 14장', pal:PAL.rift,
     src:[ "1111111111111111","1000022000022001","1011022011022001","1080000011000081",
           "1000070000700001","1022011801102201","1111111191111111","1000000300000001",
           "1022007007002201","1500000060000051","1111111111111111" ],

@@ -33,8 +33,8 @@
 var CONTENT={parts:[],areas:{},events:{},enemies:{},enemyPx:{},bossScenes:{},equip:{},items:{},skills:{},learn:{},starts:{}};
 function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]) CONTENT[k]={}; Object.assign(CONTENT[k],c[k]); } }
 </script>
-<script src="data/part1.js?v=a770b456c2"></script>
-<script src="data/part2.js?v=711cfd6342"></script>
+<script src="data/part1.js?v=ee9fdd8c55"></script>
+<script src="data/part2.js?v=74500e063c"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -82,7 +82,7 @@ function canvasPt(cx,cy){ const r=cv.getBoundingClientRect(); return { x:(cx-r.l
 let mouseDown=false, joy={active:false,ox:0,oy:0,x:0,y:0,moved:false,tx:0,ty:0}, joyDir=null;
 function onDown(p){
   resumeAudio();
-  if(!bgm.started){ bgm.started=true; playBGM(state==='battle'?'battle':'field'); }
+  if(!bgm.started){ bgm.started=true; playBGM(state==='battle'?'battle':state==='title'?'title':'field'); }
   for(let i=hotspots.length-1;i>=0;i--){ const h=hotspots[i];
     if(p.x>=h.x&&p.x<=h.x+h.w&&p.y>=h.y&&p.y<=h.y+h.h){ h.fn(); return; } }
   if(state==='field'&&!msg){ joy.active=true; joy.ox=joy.x=p.x; joy.oy=joy.y=p.y; joy.moved=false; joyDir=null;
@@ -121,16 +121,27 @@ function sfx(type){ try{ if(!actx) return; const o=actx.createOscillator(), ga=a
 }catch(e){} }
 /* ---------- BGM (합성 멜로디, 전부 오리지널) ---------- */
 let bgm={timer:null,kind:null,step:0,muted:false,started:false};
+const dbl=a=>a.reduce((o,n)=>(o.push(n,n),o),[]); // 베이스는 두 박마다 한 번 울리므로 같은 음을 두 칸씩 적는다
 const SONGS={
   field:{tempo:300, mel:[64,67,69,67, 71,69,67,64, 62,64,67,64, 67,69,71,0], bass:[52,52,45,45, 47,47,43,43]},
   battle:{tempo:205, mel:[57,60,62,60, 64,62,60,57, 55,58,60,58, 60,62,64,0], bass:[45,45,43,43, 41,41,40,40]},
+  /* 마을: 느긋한 장조 */
+  town:{tempo:340, mel:[72,0,76,79, 77,76,74,0, 72,74,76,72, 74,0,67,0, 69,0,72,76, 74,72,71,0, 72,76,79,76, 72,0,0,0], bass:dbl([48,48,53,53,45,45,43,43, 53,53,43,43,48,52,48,48])},
+  /* 던전: 음이 드문드문한 단조 */
+  dungeon:{tempo:380, mel:[57,0,60,0, 64,0,63,0, 62,0,59,0, 60,0,0,0, 57,0,60,0, 65,0,64,0, 62,60,59,0, 57,0,0,0], bass:dbl([45,45,45,45,41,41,43,43, 45,45,41,41,43,43,45,45])},
+  /* 균열: 반음이 섞인 불안한 선율 */
+  rift:{tempo:330, mel:[64,0,63,0, 64,0,59,0, 60,0,59,0, 57,0,0,56, 64,0,63,0, 64,0,67,0, 66,0,63,0, 64,0,0,0], bass:dbl([52,52,52,52,57,57,56,56, 52,52,55,55,54,54,52,52])},
+  /* 보스: 빠르게 몰아치는 단조, 각진 음색 */
+  boss:{tempo:165, wave:'square', gain:0.016, mel:[62,62,65,62, 69,67,65,62, 61,61,64,61, 69,67,64,61, 62,65,69,74, 72,69,70,69, 67,65,64,62, 61,64,69,0], bass:dbl([50,50,50,50,49,49,49,49, 50,50,46,46,48,48,45,45])},
+  /* 타이틀: 밝게 올라가는 선율 */
+  title:{tempo:320, mel:[67,0,72,74, 76,0,74,72, 74,0,71,67, 69,0,0,0, 67,0,72,74, 76,0,79,76, 77,76,74,71, 72,0,0,0], bass:dbl([48,48,52,52,55,55,53,53, 48,48,52,52,53,53,48,48])},
 };
 function nf(n){ return n>0?440*Math.pow(2,(n-69)/12):0; }
 function tone(f,type,gain,dur){ try{ if(!actx||f<=0) return; const o=actx.createOscillator(),g2=actx.createGain(); o.type=type; o.frequency.value=f; o.connect(g2); g2.connect(actx.destination); const t=actx.currentTime; g2.gain.setValueAtTime(gain,t); g2.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.start(t); o.stop(t+dur); }catch(e){} }
 function stopBGM(){ if(bgm.timer){ clearInterval(bgm.timer); bgm.timer=null; } }
 function playBGM(kind){ bgm.kind=kind; stopBGM(); if(bgm.muted||!actx) return; const s=SONGS[kind]; if(!s) return; bgm.step=0;
   bgm.timer=setInterval(()=>{ if(bgm.muted||bgm.kind!==kind) return; const st=bgm.step, m=s.mel[st%s.mel.length], b=s.bass[st%s.bass.length];
-    tone(nf(m),'triangle',0.03,s.tempo/1000*0.85); if(st%2===0) tone(nf(b),'sine',0.028,s.tempo/1000*1.6); bgm.step++; }, s.tempo); }
+    tone(nf(m),s.wave||'triangle',s.gain||0.03,s.tempo/1000*0.85); if(st%2===0) tone(nf(b),'sine',0.028,s.tempo/1000*1.6); bgm.step++; }, s.tempo); }
 function toggleMute(){ bgm.muted=!bgm.muted; if(bgm.muted) stopBGM(); else playBGM(bgm.kind||'field'); }
 
 /* ---------- 데이터: 스킬 ---------- */
@@ -812,7 +823,7 @@ const CMDS=['공격','스킬','아이템','방어','도망'];
 function startBattle(ids,boss,opts){ party.forEach(p=>{ p.lvFrom=0; }); opts=opts||{}; battle={enemies:ids.map(id=>spawn(id,opts.scale)),isBoss:boss,sealBoss:!!opts.sealBoss,onWin:opts.onWin||null,onLose:opts.onLose||null,phase:'intro',
   log:[(boss?(opts.sealBoss?'봉인 수호물':'강적'):'마물')+'이(가) 나타났다!'],
   actions:[],queue:[],inputIdx:0,cmd:0,sub:0,menu:'cmd',targetIdx:0,timer:40,pending:null,note:'',noteT:0,poisonDone:false,auto:0,result:null,round:0};
-  party.forEach(p=>{p.guard=false; p.poison=0; p.stun=0; p.stunUsed=false; p.weakT=0; p.veil=0;}); joy.active=false; joyDir=null; state='battle'; sfx('sel'); playBGM('battle'); }
+  party.forEach(p=>{p.guard=false; p.poison=0; p.stun=0; p.stunUsed=false; p.weakT=0; p.veil=0;}); joy.active=false; joyDir=null; state='battle'; sfx('sel'); playBGM(boss?'boss':'battle'); }
 function aliveEnemies(){ return battle.enemies.filter(e=>e.alive); }
 function firstEnemy(){ return battle.enemies.findIndex(e=>e.alive); }
 function firstAlly(){ return party.findIndex(p=>p.alive); }
