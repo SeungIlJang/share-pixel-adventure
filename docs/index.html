@@ -803,7 +803,7 @@ function pushA(a){ battle.actions.push(a); }
 function flashMsg(t){ battle.note=t; battle.noteT=34; }
 function enemyPos(i){ const n=battle.enemies.length, startX=150-(n-1)*36; return {x:startX+i*72, y:96+(i%2)*14}; }
 function partyPos(i){ const n=Math.max(1,party.length), gap=n<=4?102:Math.min(102,Math.floor((W-96)/(n-1))), startX=W/2-(n-1)*gap/2, // 5명 이상은 간격을 줄여 전원 배치
-  ys=n>=5?[186,178,174,178,186]:[186,176,176,186]; return {x:startX+i*gap, y:ys[i]!=null?ys[i]:181}; }
+  ys=n>=5?[177,169,165,169,177]:[177,167,167,177]; return {x:startX+i*gap, y:ys[i]!=null?ys[i]:172}; }
 function pop(x,y,text,color){ pops.push({x,y,text,color,t:46}); }
 function popE(t,txt){ const e=enemyPos(battle.enemies.indexOf(t)); pop(e.x,e.y-14,txt,txt[0]==='+'?'#8fdc6e':'#ff8a6a'); if(txt[0]!=='+') shakeHit(parseInt(txt.slice(1))||3); }
 function popP(i,txt){ if(i<0)return; const q=partyPos(i); pop(q.x,q.y,txt,txt[0]==='+'?'#8fdc6e':'#ff8a6a'); if(txt[0]!=='+'){ party[i].hitFlash=12; shakeHit(parseInt(txt.slice(1))||3); } }
@@ -991,10 +991,11 @@ function drawBattle(){ const b=battle;
     if(active&&!tgtMode){ g.fillStyle='#9fe8c4'; g.font='13px sans-serif'; g.textAlign='center'; g.fillText('▲',cx,cy-half-6); g.textAlign='left'; }
     if(!p.alive){ g.strokeStyle='#c55'; g.lineWidth=2; g.beginPath(); g.moveTo(cx-10,cy-8); g.lineTo(cx+10,cy+10); g.moveTo(cx+10,cy-8); g.lineTo(cx-10,cy+10); g.stroke(); g.lineWidth=1; }
     g.restore();
-    const iy=cy+half+9;
-    g.textAlign='center'; g.fillStyle=p.alive?p.color:'#777'; g.font='bold 10px sans-serif'; { const up=b.phase==='done'&&p.lvFrom, lt='Lv'+p.lv+' ', nt=`${p.name} ${p.hp}/${p.maxhp}`, lw=g.measureText(lt).width, x0=cx-(lw+g.measureText(nt).width)/2; g.textAlign='left';
-      g.fillStyle=!p.alive?'#777':up?'#ffd54a':'#cdd6ea'; g.fillText(lt,x0,iy); g.fillStyle=p.alive?p.color:'#777'; g.fillText(nt,x0+lw,iy); g.textAlign='center';
-      if(up&&gtime%40<28){ g.fillStyle='#ffd54a'; g.font='bold 11px sans-serif'; g.fillText('LEVEL UP!',cx,cy-half-16); g.font='10px sans-serif'; g.fillText('Lv'+p.lvFrom+' → Lv'+p.lv,cx,cy-half-5); } }
+    // 이름표는 두 줄: 윗줄 레벨, 아랫줄 이름과 HP
+    const ly=cy+half+7, iy=ly+10, up=b.phase==='done'&&p.lvFrom;
+    g.textAlign='center'; g.font='bold 9px sans-serif'; g.fillStyle=!p.alive?'#777':up?'#ffd54a':'#cdd6ea'; g.fillText('Lv'+p.lv,cx,ly);
+    g.fillStyle=p.alive?p.color:'#777'; g.font='bold 10px sans-serif'; g.fillText(`${p.name} ${p.hp}/${p.maxhp}`,cx,iy);
+    if(up&&gtime%40<28){ g.fillStyle='#ffd54a'; g.font='bold 11px sans-serif'; g.fillText('LEVEL UP!',cx,cy-half-16); g.font='10px sans-serif'; g.fillText('Lv'+p.lvFrom+' → Lv'+p.lv,cx,cy-half-5); }
     if(p.poison>0){ g.fillStyle='#8fdc6e'; g.font='9px sans-serif'; g.fillText('독',cx+42,iy); }
     bar(cx-30,iy+3,60,4,p.hp/p.maxhp,(p.alive&&p.hp/p.maxhp<0.25&&gtime%24<12)?'#ff5a5a':'#4a7');
     bar(cx-30,iy+9,60,3,p.mp/p.maxmp,'#48c');
