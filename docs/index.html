@@ -33,8 +33,8 @@
 var CONTENT={parts:[],areas:{},events:{},enemies:{},enemyPx:{},bossScenes:{},equip:{},items:{},skills:{},learn:{},starts:{}};
 function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]) CONTENT[k]={}; Object.assign(CONTENT[k],c[k]); } }
 </script>
-<script src="data/part1.js?v=56c65f2834"></script>
-<script src="data/part2.js?v=e7b5a11db8"></script>
+<script src="data/part1.js?v=ef20cddc51"></script>
+<script src="data/part2.js?v=abf5d51e3f"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -191,7 +191,8 @@ Object.assign(SKILLS,CONTENT.skills); Object.assign(ITEMS,CONTENT.items); Object
 const SLOTS=['weapon','head','armor','hands','feet','ring'];
 const SLOT_KO={weapon:'무기',head:'머리',armor:'몸통',hands:'손',feet:'발',ring:'반지'};
 function itemDef(id){ return ITEMS[id]||EQUIP[id]; }
-function effStr(it){ if(it&&it.slot){ const o=[]; for(const k of ['atk','def','mag','spd']) if(it[k]) o.push(k.toUpperCase()+'+'+it[k]); return o.join(' '); } return it&&it.hp?('HP+'+it.hp):it&&it.mp?('MP+'+it.mp):it&&it.revive?'부활':''; }
+function effStr(it){ if(it&&it.slot){ const o=[]; for(const k of ['atk','def','mag','spd']) if(it[k]) o.push(k.toUpperCase()+'+'+it[k]); return o.join(' '); } return it&&it.boost?(BOOST_KO[it.boost]+' +'+it.amt+' 영구'):it&&it.hp?('HP+'+it.hp):it&&it.mp?('MP+'+it.mp):it&&it.revive?'부활':''; }
+const BOOST_KO={atk:'공격',mag:'마력',def:'방어',maxhp:'최대HP'};
 const SHOP_STOCK=['potion','ether','revive','bronzeSword','woodStaff','shortBow','leatherCap','leatherArmor','leatherGloves','leatherBoots'];
 
 /* ---------- 파티 ---------- */
@@ -209,7 +210,9 @@ function joinMember(key){ if(!MK[key]||party.some(p=>p.name===key)) return false
 
 /* ---------- 적 ---------- */
 const ENEMY_DB=CONTENT.enemies; /* 부별 데이터 파일에서 정의 */
-function spawn(id){ const b=ENEMY_DB[id]; return {...b,id,hp:b.hp,maxhp:b.hp,alive:true,flash:0,poison:0}; }
+/* m = 지역별 강도 배율(enc.pow 공격·마력, enc.hpw 체력). 같은 적이 여러 지역에 나와도 깊은 곳일수록 강하게 만든다 */
+function spawn(id,m){ const b=ENEMY_DB[id], e={...b,id,hp:b.hp,maxhp:b.hp,alive:true,flash:0,poison:0};
+  if(m&&m.pow){ e.atk=Math.round(e.atk*m.pow); e.mag=Math.round(e.mag*m.pow); } if(m&&m.hpw){ e.hp=e.maxhp=Math.round(e.hp*m.hpw); } return e; }
 
 /* ---------- 지역(Area) 엔진 ----------
    토큰: 0 바닥 · 1 벽/집/나무 · 2 풀(조우) · 3 제단(저장·회복) · 4 봉인(보스) · 5 보물 */
@@ -250,6 +253,7 @@ function showMsg(l,after){ msg={lines:Array.isArray(l)?l:[l], i:0, after:after||
 function tile(x,y){ if(x<0||y<0||x>=MAPW||y>=MAPH) return '1'; return MAP[y][x]; }
 function livingParty(){ return party.filter(p=>p.alive); }
 function invList(){ return Object.keys(ITEMS).filter(k=>inventory[k]>0); }
+function battleItems(){ return invList().filter(k=>!ITEMS[k].boost); } // 열매는 전투 중 사용 불가
 /* 장비 id를 p가 지금 그 부위에 찬 것과 비교: t=증감 합계, txt='ATK+7 DEF-2' (같으면 빈 문자열) */
 function eqDiff(p,id){ const e=EQUIP[id], c=p[e.slot]&&EQUIP[p[e.slot]]; let t=0; const o=[]; for(const k of ['atk','def','mag','spd']){ const d=(e[k]||0)-((c&&c[k])||0); if(d){ t+=d; o.push(k.toUpperCase()+(d>0?'+':'')+d); } } return {t,txt:o.join(' '),cur:c}; }
 function diffColor(t){ return t>0?'#8fdc6e':t<0?'#ff8a6a':'#8a93ad'; }
@@ -546,7 +550,7 @@ function fieldTap(p){ const tx=Math.floor((p.x+camOX)/TILE), ty=Math.floor((p.y+
   const dx=tx-player.x, dy=ty-player.y; if(!dx&&!dy) return;
   fieldMove = Math.abs(dx)>=Math.abs(dy) ? (dx>0?'right':'left') : (dy>0?'down':'up'); }
 function updateField(){ if(msg) return;
-  if(encAlert>0){ encAlert--; if(encAlert===0&&encPending){ const es=encPending; encPending=null; startBattle(es,false); } return; } // 조우 경고 중 이동 정지
+  if(encAlert>0){ encAlert--; if(encAlert===0&&encPending){ const es=encPending; encPending=null; startBattle(es,false,{scale:cur.enc}); } return; } // 조우 경고 중 이동 정지
   if(!player.moving){ let dir=null;
     for(const d of ['up','down','left','right']) if(keys[d]){ dir=d; break; }
     if(!dir&&joyDir) dir=joyDir;
@@ -640,6 +644,7 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
 /* ================= 메뉴(파티/아이템) ================= */
 let menuSel=0, menuMode='party', menuItemSel=0;
 function useItemField(id,p){ const it=ITEMS[id]; if((inventory[id]||0)<=0) return;
+  if(it.boost){ inventory[id]--; p[it.boost]+=it.amt; if(it.boost==='maxhp'&&p.alive) p.hp+=it.amt; sfx('coin'); flashMenu(p.name+' '+BOOST_KO[it.boost]+' +'+it.amt); return; }
   if(it.revive){ if(p.alive) return; inventory[id]--; p.alive=true; p.hp=Math.round(p.maxhp*it.ratio); sfx('heal'); }
   else { if(it.hp&&p.hp>=p.maxhp&&(!it.mp)) return; inventory[id]--;
     if(it.hp) p.hp=Math.min(p.maxhp,p.hp+it.hp); if(it.mp) p.mp=Math.min(p.maxmp,p.mp+it.mp); sfx('heal'); } }
@@ -679,13 +684,14 @@ function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0
     btn(bx,H-24,92,20,'장비 장착',()=>{menuMode='equip';menuItemSel=0;}); bx+=100;
     btn(W-62,H-24,54,20,'닫기',()=>state='field',{font:'11px sans-serif'});
   } else if(menuMode==='item'){
-    const list=invList(); g.fillStyle='#9fe8c4'; g.font='11px sans-serif'; g.fillText('아이템 → '+party[menuSel].name,14,H-46);
-    list.forEach((id,i)=>{ const x=10+i*120, y=H-40; const it=itemDef(id);
-      btn(x,y,112,20, `${it.name} x${inventory[id]}`, ()=>{ menuItemSel=i; useItemField(id,party[menuSel]); if(invCount()===0) menuMode='party'; },
+    const list=invList(), rows=Math.max(1,Math.ceil(list.length/4)), top=H-46-(rows-1)*23; // 한 줄에 4개씩, 많으면 위로 쌓는다
+    g.fillStyle='rgba(6,8,16,.92)'; g.fillRect(0,top-14,W,H-top+14); g.fillStyle='#9fe8c4'; g.font='11px sans-serif'; if(menuNote&&menuNoteT>0){ g.fillStyle='#ffd54a'; g.fillText(menuNote,14,top-2); menuNoteT--; } else g.fillText('아이템 → '+party[menuSel].name+(list[menuItemSel]?'   ·   '+itemDef(list[menuItemSel]).name+': '+effStr(itemDef(list[menuItemSel])):''),14,top-2);
+    list.forEach((id,i)=>{ const x=10+(i%4)*101, y=top+4+Math.floor(i/4)*23; const it=itemDef(id);
+      btn(x,y,97,20, `${it.name} x${inventory[id]}`, ()=>{ menuItemSel=i; useItemField(id,party[menuSel]); if(invCount()===0) menuMode='party'; },
         {bg:i===menuItemSel?'#23314f':'rgba(27,34,54,.9)',font:'11px sans-serif'}); });
     btn(W-62,H-22,54,18,'뒤로',()=>menuMode='party',{font:'10px sans-serif'});
   }
-  if(menuNote&&menuNoteT>0){ g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.textAlign='center'; g.fillText(menuNote,W/2,H-32); g.textAlign='left'; menuNoteT--; } }
+  if(menuMode!=='item'&&menuNote&&menuNoteT>0){ g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.textAlign='center'; g.fillText(menuNote,W/2,H-32); g.textAlign='left'; menuNoteT--; } }
 function wkind(clsName){ return clsName==='검사'?'sword':clsName==='궁수'?'bow':'staff'; }
 function slotIcon(kind,x,y,s){ const c=g, cx=x+s/2;
   if(kind==='sword'){ c.fillStyle='#d7ddea'; c.fillRect(cx-1,y+1,2,s*0.55); c.fillStyle='#caa44a'; c.fillRect(x+s*0.22,y+s*0.52,s*0.56,s*0.12); c.fillRect(cx-1,y+s*0.6,2,s*0.32); }
@@ -798,7 +804,7 @@ function drawShopConfirm(){ const it=itemDef(shopConfirm); if(!it){ shopConfirm=
 /* ================= 전투 ================= */
 let battle=null;
 const CMDS=['공격','스킬','아이템','방어','도망'];
-function startBattle(ids,boss,opts){ party.forEach(p=>{ p.lvFrom=0; }); opts=opts||{}; battle={enemies:ids.map(spawn),isBoss:boss,sealBoss:!!opts.sealBoss,onWin:opts.onWin||null,onLose:opts.onLose||null,phase:'intro',
+function startBattle(ids,boss,opts){ party.forEach(p=>{ p.lvFrom=0; }); opts=opts||{}; battle={enemies:ids.map(id=>spawn(id,opts.scale)),isBoss:boss,sealBoss:!!opts.sealBoss,onWin:opts.onWin||null,onLose:opts.onLose||null,phase:'intro',
   log:[(boss?(opts.sealBoss?'봉인 수호물':'강적'):'마물')+'이(가) 나타났다!'],
   actions:[],queue:[],inputIdx:0,cmd:0,sub:0,menu:'cmd',targetIdx:0,timer:40,pending:null,note:'',noteT:0,poisonDone:false,auto:0,result:null,round:0};
   party.forEach(p=>{p.guard=false; p.poison=0; p.stun=0; p.stunUsed=false; p.weakT=0; p.veil=0;}); joy.active=false; joyDir=null; state='battle'; sfx('sel'); playBGM('battle'); }
@@ -914,14 +920,14 @@ function chooseCommand(i){ const b=battle,p=party[b.inputIdx]; b.cmd=i; const c=
   else if(c==='방어'){ pushA({actor:b.inputIdx,type:'guard'}); nextInput(); }
   else if(c==='도망'){ pushA({actor:b.inputIdx,type:'flee'}); nextInput(); }
   else if(c==='스킬'){ p.skills.length?(b.menu='skill',b.sub=(p.ai&&p.ai.skill!=null&&p.ai.skill<p.skills.length)?p.ai.skill:0):flashMsg('스킬 없음'); }
-  else if(c==='아이템'){ invCount()>0?(b.menu='item',b.sub=0):flashMsg('아이템 없음'); } }
+  else if(c==='아이템'){ battleItems().length>0?(b.menu='item',b.sub=0):flashMsg('아이템 없음'); } }
 function chooseSkill(i){ const b=battle,p=party[b.inputIdx]; b.sub=i; const id=p.skills[i],s=SKILLS[id];
   if(p.mp<s.mp){ flashMsg('MP 부족'); return; } sfx('sel'); if(p){ p.ai=p.ai||{}; p.ai.cmd=1; p.ai.skill=i; } b.pending={type:'skill',skill:id};
   if(s.target==='allEnemies'||s.target==='allAllies'){ pushA({actor:b.inputIdx,...b.pending,target:-1}); nextInput(); }
   else if(s.target==='ally'){ b.menu='targetAlly'; b.targetIdx=firstAlly(); }
   else if(s.target==='allyDead'){ const d=firstDead(); d<0?flashMsg('대상 없음'):(b.menu='targetDead',b.targetIdx=d); }
   else { b.menu='target'; b.targetIdx=firstEnemy(); b.curX=null; } }
-function chooseItem(i){ const b=battle,list=invList(),id=list[i]; if(!id) return; const it=ITEMS[id]; b.sub=i; sfx('sel');
+function chooseItem(i){ const b=battle,list=battleItems(),id=list[i]; if(!id) return; const it=ITEMS[id]; b.sub=i; sfx('sel');
   b.pending={type:'item',item:id};
   if(it.revive){ const d=firstDead(); d<0?flashMsg('대상 없음'):(b.menu='targetDead',b.targetIdx=d); }
   else { b.menu='targetAlly'; b.targetIdx=firstAlly(); } }
@@ -991,7 +997,7 @@ function updateBattle(){ const b=battle;
       if(consume('confirm')) chooseCommand(b.cmd); }
     else if(b.menu==='skill'){ const n=p.skills.length; if(consume('up'))b.sub=(b.sub+n-1)%n; if(consume('down'))b.sub=(b.sub+1)%n;
       if(consume('confirm')) chooseSkill(b.sub); }
-    else if(b.menu==='item'){ const n=invList().length||1; if(consume('up'))b.sub=(b.sub+n-1)%n; if(consume('down'))b.sub=(b.sub+1)%n;
+    else if(b.menu==='item'){ const n=battleItems().length||1; if(consume('up'))b.sub=(b.sub+n-1)%n; if(consume('down'))b.sub=(b.sub+1)%n;
       if(consume('confirm')) chooseItem(b.sub); }
     else if(b.menu==='target'){ if(consume('up')||consume('left'))b.targetIdx=prevAlive(b.enemies,b.targetIdx);
       if(consume('down')||consume('right'))b.targetIdx=nextAlive(b.enemies,b.targetIdx); if(consume('confirm')) confirmTarget(b.targetIdx); }
@@ -1160,7 +1166,7 @@ function drawBattleUI(){ const b=battle;
   else if(b.menu==='skill'){ const sk=p.skills, n=sk.length, bw=Math.min(132,(W-16-(n-1)*6)/n);
     sk.forEach((id,i)=>{ const s=SKILLS[id]; btn(8+i*(bw+6),by,bw,32,(i===b.sub?'▶':'')+s.name+' '+s.mp,()=>chooseSkill(i),
       {bg:i===b.sub?'#2a2342':'rgba(14,18,28,.96)', fg:i===b.sub?'#c79bff':(p.mp<s.mp?'#6b7590':'#aeb8d0'), font:'12px sans-serif'}); }); }
-  else if(b.menu==='item'){ const list=invList(), n=Math.max(1,list.length), bw=Math.min(132,(W-16-(n-1)*6)/n);
+  else if(b.menu==='item'){ const list=battleItems(), n=Math.max(1,list.length), bw=Math.min(132,(W-16-(n-1)*6)/n);
     if(!list.length){ g.fillStyle='#6b7590'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('아이템 없음',W/2,by+20); g.textAlign='left'; }
     list.forEach((id,i)=>{ const it=itemDef(id); btn(8+i*(bw+6),by,bw,32,(i===b.sub?'▶':'')+it.name+' x'+inventory[id],()=>chooseItem(i),
       {bg:i===b.sub?'#23314f':'rgba(14,18,28,.96)', fg:i===b.sub?'#9fe8c4':'#aeb8d0', font:'12px sans-serif'}); }); }

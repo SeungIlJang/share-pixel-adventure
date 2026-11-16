@@ -59,6 +59,11 @@ learn:{
 items:{
   hiPotion:{name:'상급 물약',hp:160,price:60},
   hiEther: {name:'상급 마나약',mp:70,price:90},
+  /* 열매 — 능력치를 영구히 올린다. 남는 골드의 쓸 곳(수도원·왕도에서 판매). 전투 중에는 쓸 수 없다 */
+  powerSeed: {name:'힘의 열매',  boost:'atk',  amt:2, price:1200},
+  wisdomSeed:{name:'지혜의 열매',boost:'mag',  amt:2, price:1200},
+  guardSeed: {name:'수호의 열매',boost:'def',  amt:2, price:1200},
+  lifeSeed:  {name:'생명의 열매',boost:'maxhp',amt:15,price:1200},
 },
 equip:{
   /* 5단계(룬·별빛) — 살레나 항 */
@@ -236,7 +241,7 @@ areas:{
         say('엘다','미아… 네가 올 줄 알았다. 그리고 무엇을 물을지도.',NPC),
         say('엘다','그래. 나는 알고 있었다. 봉인이 빛을 가두는 그릇이라는 것을. 신전은 대대로 그것을 감춰 왔지.',NPC),
         say('엘다','지하 빙고(남쪽 ▣)에 쐐기가 박혔다. 그걸 뽑고 돌아오거라. 그때 전부 말해 주마.',NPC) ]},
-      {x:3,y:7,color:'#f0c27a',name:'수도사',glyph:'◇',shop:['hiPotion','hiEther','revive','starRobe','starCirclet','stormBoots']} ],
+      {x:3,y:7,color:'#f0c27a',name:'수도사',glyph:'◇',shop:['hiPotion','hiEther','revive','starRobe','starCirclet','stormBoots','lifeSeed','guardSeed']} ],
     warps:[ {x:1,y:5,to:'snowpass',tx:21,ty:5,label:'설산'},
             {x:8,y:9,to:'crypt',tx:2,ty:1,label:'빙고'},
             {x:14,y:5,to:'capital',tx:2,ty:5,label:'왕도',need:'ch11done',block:'눈보라가 왕도로 가는 길을 막고 있다. 지하 빙고의 쐐기를 먼저 뽑아야 한다.'} ],
@@ -262,7 +267,7 @@ areas:{
         say('근위대장','허나 왕궁 지하(북쪽 ▣)로 내려간 병사들이 돌아오지 않는다. …부탁이다. 확인해 다오.',NPC) ]},
       {x:12,y:7,color:'#d9cdb5',name:'시민',lines:[
         say('시민','밤이 길어졌어요. 그래도 여긴 마물이 안 들어오니까… 다들 모른 척하는 거죠.',NPC) ]},
-      {x:3,y:7,color:'#f0c27a',name:'왕실 무구상',glyph:'◇',shop:['hiPotion','hiEther','revive','dawnSword','dawnStaff','dawnBow','dawnPlate','heroRing','aegisRing','archRing','zephyrRing']} ],
+      {x:3,y:7,color:'#f0c27a',name:'왕실 무구상',glyph:'◇',shop:['hiPotion','hiEther','revive','dawnSword','dawnStaff','dawnBow','dawnPlate','heroRing','aegisRing','archRing','zephyrRing','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
     warps:[ {x:1,y:5,to:'abbey',tx:13,ty:5,label:'수도원'},
             {x:8,y:1,to:'palace',tx:2,ty:1,label:'왕궁'},
             {x:14,y:5,to:'sealgrove',tx:2,ty:5,label:'숲',need:'ch12done',block:'성문이 굳게 닫혀 있다. 왕궁 지하의 일을 먼저 매듭지어야 한다.'} ],
@@ -281,7 +286,7 @@ areas:{
     src:[ "111111111111111111111111","100220000000022000000001","100220011000022001100001","100000011000000001100001",
           "100000000002200000000001","100000000002200000000601","100002200000000110000001","100002200110000110022001",
           "150000000110000000022001","100030000000000000000001","111111111111111111111111" ],
-    enc:{ pool:['wedgeBrute','nightWolf','lostVoice'], rate:0.22 }, respawn:{x:2,y:5},
+    enc:{ pool:['wedgeBrute','nightWolf','lostVoice'], rate:0.22, pow:0.88 }, respawn:{x:2,y:5},
     npcs:[], warps:[ {x:1,y:5,to:'capital',tx:13,ty:5,label:'왕도'},
             {x:22,y:5,to:'riftgate',tx:2,ty:1,label:'균열',event:'ev_lord',eventFlag:'ch13done'} ],
     loot:{'1,8':{gold:900,item:'hiEther'}},
@@ -291,7 +296,7 @@ areas:{
     src:[ "1111111111111111","1000022000022001","1011022011022001","1080000011000081",
           "1000070000700001","1022011801102201","1111111191111111","1000000300000001",
           "1022007007002201","1500000060000051","1111111111111111" ],
-    enc:{ pool:['gateShade','riftBrute','voidHerald'], rate:0.26 }, respawn:{x:2,y:1},
+    enc:{ pool:['gateShade','riftBrute','voidHerald'], rate:0.26, pow:0.78, hpw:0.9 }, respawn:{x:2,y:1},
     npcs:[], warps:[ {x:1,y:1,to:'sealgrove',tx:21,ty:4,label:'숲'} ],
     loot:{'1,9':{gold:1200,item:'revive'},'14,9':{item:'hiPotion'}},
     eventTile:'ev_gateboss', eventDone:'ch14done', onEnter:'ev_gate_enter' },
