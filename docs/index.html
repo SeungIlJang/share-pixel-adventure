@@ -485,7 +485,7 @@ function drawEnemyPix(e,flash){ const base=ENEMYPX[e.look||e.id]; if(!base) retu
 let titleSel=0;
 function startNew(){ party=makeParty(); gold=30; inventory={potion:3,ether:1,revive:1}; sealsFixed=3; bossStage=0; chests={}; storyFlags={}; choices={}; playSec=0;
   player={x:3,y:3,dir:'down',px:3*TILE,py:3*TILE,moving:false,steps:0}; state='field';
-  bgm.started=true; loadArea('village',3,3,'down'); sfx('sel'); playBGM('field'); }
+  bgm.started=true; loadArea('village',3,3,'down'); sfx('sel'); playBGM(cur.bgm||'field'); }
 function doContinue(){ bgm.started=true; if(loadGame()){ state='field'; sfx('sel'); playBGM(cur?cur.bgm:'field');
     const n=currentPart(), ev='ev_p'+n+'_start'; // 앞 부를 끝낸 기록이면 다음 부의 시작 이벤트로 이어진다
     if(n>1&&!storyFlags['p'+n+'Started']&&EVENTS[ev]) runEvent(ev); else showMsg('기록을 불러왔다.'); } }
@@ -659,7 +659,7 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
 
 /* ================= 메뉴(파티/아이템) ================= */
 let menuSel=0, menuMode='party', menuItemSel=0;
-function useItemField(id,p){ const it=ITEMS[id]; if((inventory[id]||0)<=0) return;
+function useItemField(id,p){ const it=ITEMS[id]; if(!it||!p||(inventory[id]||0)<=0) return;
   if(it.boost){ inventory[id]--; p[it.boost]+=it.amt; if(it.boost==='maxhp'&&p.alive) p.hp+=it.amt; sfx('coin'); flashMenu(p.name+' '+BOOST_KO[it.boost]+' +'+it.amt); return; }
   if(it.revive){ if(p.alive) return; inventory[id]--; p.alive=true; p.hp=Math.round(p.maxhp*it.ratio); sfx('heal'); }
   else { if(it.hp&&p.hp>=p.maxhp&&(!it.mp)) return; inventory[id]--;
@@ -831,6 +831,8 @@ function nextAlive(a,i){ for(let k=1;k<=a.length;k++){const j=(i+k)%a.length; if
 function prevAlive(a,i){ for(let k=1;k<=a.length;k++){const j=(i-k+a.length)%a.length; if(a[j]&&a[j].alive) return j;} return i; }
 function nextDead(i){ for(let k=1;k<=party.length;k++){const j=(i+k)%party.length; if(!party[j].alive) return j;} return i; }
 function pushA(a){ battle.actions.push(a); }
+/* 선택을 받아도 되는 순간인지: 입력 단계이고, 지금 차례의 아군이 실제로 있을 때만 */
+function inputOK(){ const b=battle; return !!b&&b.phase==='input'&&!autoBattle&&!!party[b.inputIdx]; }
 function flashMsg(t){ battle.note=t; battle.noteT=34; }
 function enemyPos(i){ const n=battle.enemies.length, startX=150-(n-1)*36; return {x:startX+i*72, y:96+(i%2)*14}; }
 function partyPos(i){ const n=Math.max(1,party.length), gap=n<=4?102:Math.min(102,Math.floor((W-96)/(n-1))), startX=W/2-(n-1)*gap/2, // 5명 이상은 간격을 줄여 전원 배치
@@ -926,28 +928,28 @@ function drawFx(){ for(const f of fx){ if(f.delay>0) continue; const q=1-f.t/f.m
 function nextInput(){ const b=battle; b.pending=null;
   b.inputIdx++; while(b.inputIdx<party.length&&!canAct(party[b.inputIdx])) b.inputIdx++;
   if(b.inputIdx>=party.length){ enemyPlan(); return; } setCmdDefault(); b.autoT=12; }
-function battleBack(){ const b=battle;
+function battleBack(){ const b=battle; if(!inputOK()) return;
   if(b.menu==='skill'||b.menu==='item') b.menu='cmd';
   else if(b.menu==='target') b.menu = b.pending&&b.pending.type==='skill'?'skill':(b.pending&&b.pending.type==='item'?'item':'cmd');
   else if(b.menu==='targetAlly'||b.menu==='targetDead') b.menu = b.pending&&b.pending.type==='item'?'item':'skill';
   else if(b.menu==='cmd'&&b.inputIdx>0){ b.actions.pop(); do{b.inputIdx--;}while(b.inputIdx>0&&!canAct(party[b.inputIdx])); b.menu='cmd'; b.cmd=0; } }
-function chooseCommand(i){ const b=battle,p=party[b.inputIdx]; b.cmd=i; const c=CMDS[i]; sfx('sel'); if(p){ p.ai=p.ai||{}; p.ai.cmd=i; }
+function chooseCommand(i){ if(!inputOK()) return; const b=battle,p=party[b.inputIdx]; b.cmd=i; const c=CMDS[i]; sfx('sel'); if(p){ p.ai=p.ai||{}; p.ai.cmd=i; }
   if(c==='공격'){ b.pending={type:'attack'}; b.menu='target'; b.targetIdx=firstEnemy(); b.curX=null; }
   else if(c==='방어'){ pushA({actor:b.inputIdx,type:'guard'}); nextInput(); }
   else if(c==='도망'){ pushA({actor:b.inputIdx,type:'flee'}); nextInput(); }
   else if(c==='스킬'){ p.skills.length?(b.menu='skill',b.sub=(p.ai&&p.ai.skill!=null&&p.ai.skill<p.skills.length)?p.ai.skill:0):flashMsg('스킬 없음'); }
   else if(c==='아이템'){ battleItems().length>0?(b.menu='item',b.sub=0):flashMsg('아이템 없음'); } }
-function chooseSkill(i){ const b=battle,p=party[b.inputIdx]; b.sub=i; const id=p.skills[i],s=SKILLS[id];
+function chooseSkill(i){ if(!inputOK()) return; const b=battle,p=party[b.inputIdx]; b.sub=i; const id=p.skills[i],s=SKILLS[id]; if(!s) return;
   if(p.mp<s.mp){ flashMsg('MP 부족'); return; } sfx('sel'); if(p){ p.ai=p.ai||{}; p.ai.cmd=1; p.ai.skill=i; } b.pending={type:'skill',skill:id};
   if(s.target==='allEnemies'||s.target==='allAllies'){ pushA({actor:b.inputIdx,...b.pending,target:-1}); nextInput(); }
   else if(s.target==='ally'){ b.menu='targetAlly'; b.targetIdx=firstAlly(); }
   else if(s.target==='allyDead'){ const d=firstDead(); d<0?flashMsg('대상 없음'):(b.menu='targetDead',b.targetIdx=d); }
   else { b.menu='target'; b.targetIdx=firstEnemy(); b.curX=null; } }
-function chooseItem(i){ const b=battle,list=battleItems(),id=list[i]; if(!id) return; const it=ITEMS[id]; b.sub=i; sfx('sel');
+function chooseItem(i){ if(!inputOK()) return; const b=battle,list=battleItems(),id=list[i]; if(!id) return; const it=ITEMS[id]; b.sub=i; sfx('sel');
   b.pending={type:'item',item:id};
   if(it.revive){ const d=firstDead(); d<0?flashMsg('대상 없음'):(b.menu='targetDead',b.targetIdx=d); }
   else { b.menu='targetAlly'; b.targetIdx=firstAlly(); } }
-function confirmTarget(i){ const b=battle; b.targetIdx=i; pushA({actor:b.inputIdx,...b.pending,target:i}); nextInput(); }
+function confirmTarget(i){ if(!inputOK()||!battle.pending) return; const b=battle; b.targetIdx=i; pushA({actor:b.inputIdx,...b.pending,target:i}); nextInput(); }
 /* ---- 이전 선택 기억 + 자동모드 ---- */
 let autoBattle=false;
 function lowestEnemyIdx(){ let bi=-1,bh=1e18; battle.enemies.forEach((e,i)=>{ if(e.alive&&e.hp<bh){bh=e.hp;bi=i;} }); return bi<0?firstEnemy():bi; }
@@ -990,7 +992,7 @@ function tagPop(t){ if(!hitTag) return; const e=enemyPos(battle.enemies.indexOf(
 /* 입력 가능 여부. 기절한 아군은 이번 차례를 건너뛰고, 그 차례가 끝나면 기절이 풀린다 */
 function canAct(p){ if(p.alive&&p.stun){ p.stunUsed=true; return false; } return p.alive; }
 function spdOf(a){ return (a.enemy!=null)?battle.enemies[a.enemy].spd+rnd(2):spdEff(party[a.actor])+rnd(2); }
-function enemyPlan(){ const b=battle; b.round=(b.round||0)+1;
+function enemyPlan(){ const b=battle; b.round=(b.round||0)+1; b.menu='cmd'; b.pending=null; b.actions=b.actions.filter(a=>a.enemy!=null||party[a.actor]);
   b.enemies.forEach((e,i)=>{ if(!e.alive) return; let type='eatk';
     if(e.enrage&&!e.enraged&&e.hp<=e.maxhp*e.enrage){ e.enraged=true; e.atk=Math.round(e.atk*1.2); e.mag=Math.round(e.mag*1.2); b.note=e.name+' 격노! 공격이 거세진다'; b.noteT=110; sfx('dark'); }
     if(e.moves){ type=e.moves[(e.mi||0)%e.moves.length]; e.mi=(e.mi||0)+1; } // 보스 고유 행동 순서
@@ -1122,12 +1124,12 @@ function drawBattle(){ const b=battle;
       const ws=tags.map(t=>g.measureText(t[0]).width+5), tw=ws.reduce((x,y)=>x+y,0), ty=e.boss?ep.y-26:ep.y-14; let tx=Math.max(4,ep.x-tw/2); g.textAlign='left'; tags.forEach((t,k)=>{ g.fillStyle=t[1]; g.fillText(t[0],tx,ty); tx+=ws[k]; }); g.textAlign='center';
       if(storyFlags['wk_'+e.id]){ const em=elemOf(e); g.font='8px sans-serif'; if(em.weak){ g.fillStyle=EL_COL[em.weak]; g.fillText('약점 '+EL_KO[em.weak],ep.x,ep.y+35); } if(em.resist){ g.fillStyle='#8a93ad'; g.fillText('내성 '+EL_KO[em.resist],ep.x,ep.y+(em.weak?43:35)); } } }
     g.textAlign='left';
-    if(b.menu==='target'){ hz(ep.x-19,ep.y-19,38,48,()=>{ if(b.targetIdx===i) confirmTarget(i); else { b.targetIdx=i; sfx('sel'); } }); }
+    if(b.phase==='input'&&b.menu==='target'){ hz(ep.x-19,ep.y-19,38,48,()=>{ if(b.targetIdx===i) confirmTarget(i); else { b.targetIdx=i; sfx('sel'); } }); }
     if(e.flash>0) e.flash--; });
-  if(b.menu==='target'){ const tp=enemyPos(b.targetIdx); if(b.curX==null){b.curX=tp.x;b.curY=tp.y;} b.curX+=(tp.x-b.curX)*0.35; b.curY+=(tp.y-b.curY)*0.35;
+  if(b.phase==='input'&&b.menu==='target'){ const tp=enemyPos(b.targetIdx); if(b.curX==null){b.curX=tp.x;b.curY=tp.y;} b.curX+=(tp.x-b.curX)*0.35; b.curY+=(tp.y-b.curY)*0.35;
     g.strokeStyle='#f0c27a'; g.lineWidth=2; g.strokeRect(b.curX-18,b.curY-16,36,36); g.lineWidth=1; g.fillStyle='#f0c27a'; g.font='13px sans-serif'; g.textAlign='center'; g.fillText('▼',b.curX,b.curY-19); g.textAlign='left'; }
   // 주인공 파티 — 오른쪽 사이드뷰 + 왼쪽에 유닛별 HP/MP
-  const tgtMode=(b.menu==='targetAlly'||b.menu==='targetDead'), SC=1.4;
+  const tgtMode=b.phase==='input'&&(b.menu==='targetAlly'||b.menu==='targetDead'), SC=1.4;
   party.forEach((p,i)=>{ const pp=partyPos(i), lunge=(p.actAnim||0),
       cx=pp.x, cy=pp.y-lunge*(p.actKind==='recoil'?-0.5:p.actKind==='cast'?0.7:2.4)+(p.alive?Math.sin((gtime+i*9)/20)*1.3:0), half=TILE*SC*0.5;
     const active=b.phase==='input'&&i===b.inputIdx;
