@@ -105,7 +105,7 @@ enemies:{
   emberBat:{name:'불씨 박쥐',   ...reg(10,{hp:.75,spd:16}),color:'#c05a3a',look:'bat',palx:{b:'#c05a3a',B:'#8a3e28',l:'#f0a070',e:'#ffe9a0'}},
   rockBrute:{name:'바위 거수',  ...reg(10,{hp:1.5,atk:1.1,spd:8,exp:1.3}),color:'#8a5a4a',look:'brute',palx:{b:'#8a5a4a',B:'#5e3c30',l:'#b08070'}},
   garnShade:{name:'가른의 그림자',...reg(10,{hp:.9,spd:15}),color:'#6a5a3a',look:'phantom',palx:{p:'#6a5a3a',P:'#463c26',e:'#ffd54a'}},
-  garn:    {name:'화살의 사도 가른',...bos(10,{spd:16}), hp:3320,atk:80,mag:69,   color:'#a8843a',look:'raider',big:2,palx:{b:'#3a3040',B:'#262030',s:'#d8b070',e:'#ffd54a',m:'#e8d8a8'}},
+  garn:    {name:'화살의 사도 가른',...bos(10,{spd:16}), hp:3320,atk:80,mag:69,   color:'#a8843a',look:'raider',atkFx:'arrow',big:2,palx:{b:'#3a3040',B:'#262030',s:'#d8b070',e:'#ffd54a',m:'#e8d8a8'}},
   /* 11장 설산·빙고 */
   frostWolf:{name:'서리 늑대',  ...reg(11,{hp:.9,spd:14}), color:'#a8c0d8',look:'wolf',palx:{f:'#a8c0d8',F:'#7a94ae',l:'#e0f0ff',e:'#7fd0ff'}},
   iceWraith:{name:'얼음 망령',  ...reg(11,{mag:1.12}),     color:'#9ad0e8',look:'wraith',palx:{g:'#9ad0e8',G:'#6aa0ba',l:'#e0f8ff',e:'#ffffff'},aiMagic:0.5},

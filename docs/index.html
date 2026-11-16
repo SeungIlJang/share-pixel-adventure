@@ -34,7 +34,7 @@ var CONTENT={parts:[],areas:{},events:{},enemies:{},enemyPx:{},bossScenes:{},equ
 function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]) CONTENT[k]={}; Object.assign(CONTENT[k],c[k]); } }
 </script>
 <script src="data/part1.js?v=2afee6c702"></script>
-<script src="data/part2.js?v=f3b440f670"></script>
+<script src="data/part2.js?v=a26a5f9b2d"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -112,6 +112,9 @@ function sfx(type){ try{ if(!actx) return; const o=actx.createOscillator(), ga=a
   else if(type==='arrow'){f=1300;f2=500;d=0.08;w='triangle';} else if(type==='orb'){f=420;f2=900;d=0.14;w='sine';}
   else if(type==='fire'){f=260;f2=70;d=0.26;w='sawtooth';} else if(type==='ice'){f=1500;f2=2400;d=0.14;w='triangle';}
   else if(type==='bolt'){f=900;f2=60;d=0.24;w='square';}
+  else if(type==='claw'){f=780;f2=240;d=0.07;w='sawtooth';} else if(type==='bite'){f=260;f2=110;d=0.06;w='square';}
+  else if(type==='dark'){f=320;f2=90;d=0.22;w='sine';} else if(type==='splat'){f=200;f2=420;d=0.1;w='triangle';}
+  else if(type==='wind'){f=1100;f2=1900;d=0.16;w='sine';}
   else if(type==='down'){f=120;d=0.18;w='sawtooth';} else if(type==='coin'){f=980;d=0.08;w='square';}
   o.type=w; o.frequency.setValueAtTime(f,t); if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+d); ga.gain.setValueAtTime(0.06,t); ga.gain.exponentialRampToValueAtTime(0.0001,t+d);
   o.start(t); o.stop(t+d);
@@ -810,7 +813,7 @@ function partyPos(i){ const n=Math.max(1,party.length), gap=n<=4?102:Math.min(10
   ys=n>=5?[177,169,165,169,177]:[177,167,167,177]; return {x:startX+i*gap, y:ys[i]!=null?ys[i]:172}; }
 function pop(x,y,text,color,delay){ pops.push({x,y,text,color,t:46,delay:delay||0}); }
 function popE(t,txt){ const e=enemyPos(battle.enemies.indexOf(t)); pop(e.x,e.y-14,txt,txt[0]==='+'?'#8fdc6e':'#ff8a6a',hitLag); if(txt[0]!=='+') shakeHit(parseInt(txt.slice(1))||3); }
-function popP(i,txt){ if(i<0)return; const q=partyPos(i); pop(q.x,q.y,txt,txt[0]==='+'?'#8fdc6e':'#ff8a6a'); if(txt[0]!=='+'){ party[i].hitFlash=12; shakeHit(parseInt(txt.slice(1))||3); } }
+function popP(i,txt){ if(i<0)return; const q=partyPos(i); pop(q.x,q.y,txt,txt[0]==='+'?'#8fdc6e':'#ff8a6a',txt[0]==='+'?0:hitLag); if(txt[0]!=='+'){ party[i].hitFlash=12; shakeHit(parseInt(txt.slice(1))||3); } }
 function shakeHit(d){ shakeT=Math.min(9, 3+Math.round((d||3)/5)); }
 function drawPops(){ g.textAlign='center'; g.font='bold 13px sans-serif';
   for(const p of pops){ if(p.delay>0) continue; g.globalAlpha=Math.max(0,Math.min(1,p.t/18)); g.fillStyle='#000'; g.fillText(p.text,p.x+1,p.y+1); g.fillStyle=p.color; g.fillText(p.text,p.x,p.y); }
@@ -839,11 +842,35 @@ function atkFx(p,name,ts){ const s0=partyPos(party.indexOf(p)), sx=s0.x, sy=s0.y
   else if(name==='ice'){ sfx('ice'); hitLag=7; E.forEach(e=>{ proj(e,'ice','#bfeaff',7); spawnFx(e.x,e.y,'shard','#bfeaff',{delay:7,max:14}); }); }
   else if(name==='bolt'||name==='judgment'){ const big=name==='judgment'; sfx('bolt'); flash=big?8:4; E.forEach((e,i)=>{ spawnFx(e.x,e.y,'bolt',big?'#ffe27a':'#d9c8ff',{w:big?5:2.5,max:big?18:13,delay:big?0:i*2,seed:i*7+3}); spawnFx(e.x,e.y+8,'burst',big?'#ffe27a':'#d9c8ff',{delay:2,max:12,sz:big?1.3:0.7}); }); if(big) shakeT=9; }
   else { sfx('hit'); E.forEach(e=>spawnFx(e.x,e.y,'burst','#c79bff')); } }
+/* 적 공격 연출. 평타 모양은 적의 atkFx 값, 없으면 생김새(look)로 정한다. 계산에는 관여하지 않고 hitLag만 정한다 */
+const ENEMY_ATK={wolf:'claw',bat:'bite',slime:'splat',creeper:'whip',raider:'blade',gale:'wind',sentinel:'smash',golem:'smash',warden:'smash',brute:'smash',
+  wraith:'dark',shade:'dark',phantom:'dark',herald:'dark',seal1:'dark',seal2:'dark',seal3:'dark'};
+function enemyFx(e,type,ts){ const ei=battle.enemies.indexOf(e), s0=enemyPos(ei), sx=s0.x, sy=s0.y+6, P=ts.map(t=>{ const q=partyPos(party.indexOf(t)); return {x:q.x,y:q.y-4}; });
+  e.actAnim=10; hitLag=0; const col=e.color||'#c79bff';
+  const proj=(q,sub,color,lag)=>spawnFx(q.x,q.y,'proj',color,{x0:sx,y0:sy,sub,max:lag});
+  if(type==='eaoe'){ sfx('dark'); setTimeout(()=>sfx('down'),110); hitLag=6; spawnFx(sx,sy,'burst',col,{max:20,sz:3}); spawnFx(sx,sy,'burst','#fff',{max:16,sz:2,delay:3});
+    P.forEach((q,i)=>{ spawnFx(q.x,q.y,'bolt',col,{w:3,max:13,delay:5+i,seed:i*5+2}); spawnFx(q.x,q.y+6,'boom',col,{max:14,delay:6+i,sz:0.8}); }); return; }
+  if(type==='emagic'){ sfx('dark'); hitLag=8; P.forEach(q=>{ proj(q,'orb','#b98cff',8); spawnFx(q.x,q.y,'boom','#8a5cff',{delay:8,max:14,sz:0.8}); spawnFx(q.x,q.y,'burst','#d9c8ff',{delay:8,max:12}); }); return; }
+  if(type==='epoison'){ sfx('splat'); hitLag=7; P.forEach(q=>{ proj(q,'orb','#8fdc6e',7); spawnFx(q.x,q.y,'drops','#8fdc6e',{delay:7,max:18}); spawnFx(q.x,q.y,'burst','#8fdc6e',{delay:7,max:10,sz:0.5}); }); return; }
+  const k=e.atkFx||ENEMY_ATK[e.look||e.id]||'slash';
+  if(k==='claw'){ sfx('claw'); P.forEach(q=>spawnFx(q.x,q.y,'claw','#ff8a6a',{max:13})); }
+  else if(k==='bite'){ sfx('bite'); setTimeout(()=>sfx('bite'),90); P.forEach(q=>spawnFx(q.x,q.y,'bite','#fff',{max:14})); }
+  else if(k==='splat'){ sfx('splat'); hitLag=7; P.forEach(q=>{ proj(q,'orb',col,7); spawnFx(q.x,q.y,'boom',col,{delay:7,max:12,sz:0.6}); spawnFx(q.x,q.y+8,'drops',col,{delay:7,max:16}); }); }
+  else if(k==='whip'){ sfx('claw'); P.forEach(q=>spawnFx(q.x,q.y,'whip','#7bc46a',{max:14})); }
+  else if(k==='blade'){ sfx('slash'); P.forEach(q=>spawnFx(q.x,q.y,'crescent','#ff8a6a',{max:14,flip:1})); }
+  else if(k==='wind'){ sfx('wind'); P.forEach(q=>{ spawnFx(q.x,q.y,'spin','#d6f3ff',{max:18}); spawnFx(q.x,q.y,'burst','#d6f3ff',{max:14,delay:4,sz:0.6}); }); }
+  else if(k==='smash'){ sfx('heavy'); shakeT=Math.max(shakeT,7); P.forEach(q=>spawnFx(q.x,q.y+4,'heavy','#d8c8a8',{sz:1.2,max:17})); }
+  else if(k==='arrow'){ sfx('arrow'); hitLag=6; P.forEach(q=>{ proj(q,'bigarrow','#ffd54a',6); spawnFx(q.x,q.y,'burst','#ffd54a',{delay:6,max:11,sz:0.6}); }); }
+  else if(k==='dark'){ sfx('dark'); hitLag=7; P.forEach(q=>{ proj(q,'orb','#7a5cc8',7); spawnFx(q.x,q.y,'shard','#b98cff',{delay:7,max:13}); }); }
+  else { sfx('hit'); P.forEach(q=>spawnFx(q.x,q.y,'slash','#ff8a6a')); } }
 /* 아군에게 걸리는 회복·소생 연출 */
 function allyFx(t,name){ const q=partyPos(party.indexOf(t)); if(name==='revive'){ spawnFx(q.x,q.y,'beam','#ffe27a',{max:24}); spawnFx(q.x,q.y,'sparkle','#fff3b8',{max:24,delay:4}); }
   else spawnFx(q.x,q.y,'sparkle',name==='mp'?'#7cc4ff':name==='veil'?'#fff3b8':'#8fdc6e',{max:22}); }
 function drawFx(){ for(const f of fx){ if(f.delay>0) continue; const q=1-f.t/f.max, sz=f.sz||1, x=f.x, y=f.y; g.globalAlpha=Math.max(0,1-q); g.lineWidth=2.5; g.strokeStyle=f.color; g.fillStyle=f.color; g.lineCap='round';
     if(f.kind==='slash'){ const o=q*10; g.beginPath(); g.moveTo(x-12+o,y-10); g.lineTo(x+10+o,y+12); g.stroke(); g.beginPath(); g.moveTo(x+10,y-10); g.lineTo(x-12,y+12); g.stroke(); }
+    else if(f.kind==='claw'){ const k=Math.min(1,q*2.6); g.lineWidth=3; for(let i=-1;i<=1;i++){ const x0=x+12+i*7, y0=y-14+i*2; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x0-22*k,y0+26*k); g.stroke(); } g.strokeStyle='#fff'; g.lineWidth=1; for(let i=-1;i<=1;i++){ const x0=x+12+i*7, y0=y-14+i*2; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x0-22*k,y0+26*k); g.stroke(); } }
+    else if(f.kind==='bite'){ const k=Math.min(1,q*2.2), gap=16*(1-k); for(let i=0;i<4;i++){ const fx0=x-13+i*8.5; g.beginPath(); g.moveTo(fx0,y-gap-11); g.lineTo(fx0+4,y-gap-1); g.lineTo(fx0+8,y-gap-11); g.closePath(); g.fill(); g.beginPath(); g.moveTo(fx0,y+gap+11); g.lineTo(fx0+4,y+gap+1); g.lineTo(fx0+8,y+gap+11); g.closePath(); g.fill(); } if(k>=1){ g.strokeStyle='#ff8a6a'; g.lineWidth=2; g.beginPath(); g.arc(x,y,(6+(q-0.45)*30),0,7); g.stroke(); } }
+    else if(f.kind==='whip'){ const k=Math.min(1,q*2.4); g.lineWidth=4; g.beginPath(); g.moveTo(x-20,y-16); g.bezierCurveTo(x+18,y-12,x-18,y+6,x-20+38*k,y-16+30*k); g.stroke(); g.strokeStyle='#d8ffc8'; g.lineWidth=1.2; g.beginPath(); g.moveTo(x-20,y-16); g.bezierCurveTo(x+18,y-12,x-18,y+6,x-20+38*k,y-16+30*k); g.stroke(); }
     else if(f.kind==='crescent'){ const k=Math.min(1,q*2.4); g.save(); g.translate(x,y); if(f.flip) g.scale(-1,1); g.lineWidth=4; g.beginPath(); g.arc(4,2,17,-2.5,-2.5+2.9*k); g.stroke(); g.strokeStyle='#fff'; g.lineWidth=1.5; g.beginPath(); g.arc(4,2,13,-2.3,-2.3+2.5*k); g.stroke(); g.restore(); }
     else if(f.kind==='heavy'){ const k=Math.min(1,q*3), top=y-30*sz; g.lineWidth=6*sz; g.beginPath(); g.moveTo(x,top); g.lineTo(x,top+(y+10-top)*k); g.stroke(); g.strokeStyle='#fff'; g.lineWidth=2*sz; g.beginPath(); g.moveTo(x,top); g.lineTo(x,top+(y+10-top)*k); g.stroke();
       if(q>0.3){ const r=(q-0.3)*36*sz; g.strokeStyle=f.color; g.lineWidth=2.5; g.beginPath(); g.ellipse(x,y+12,6+r,(6+r)*0.36,0,0,7); g.stroke(); } }
@@ -970,15 +997,15 @@ function stepResolve(){ const b=battle; hitLag=0;
     if(it.revive){ if(t&&!t.alive){ t.alive=true; t.hp=Math.round(t.maxhp*it.ratio); allyFx(t,'revive'); } b.log.push(`${it.name} — ${t?t.name:''} 소생!`); }
     else { if(!t||!t.alive) t=party[firstAlly()]; if(it.hp) t.hp=Math.min(t.maxhp,t.hp+it.hp); if(it.mp) t.mp=Math.min(t.maxmp,t.mp+it.mp); popP(party.indexOf(t),'+'+(it.hp||it.mp)); allyFx(t,it.hp?'heal':'mp'); b.log.push(`${it.name} — ${t.name} ${it.hp?('HP+'+it.hp):('MP+'+it.mp)}`); } }
   else if(a.type==='eatk'){ const e=b.enemies[a.enemy]; if(!e.alive){b.auto=1;return;} const tg=livingParty(); if(!tg.length){loseBattle();return;}
-    const p=tg[rnd(tg.length)]; let d=dmgPhys(e.atk,1.0,defOf(p)); if(p.guard) d=Math.max(1,Math.round(d*0.45)); p.hp-=d; flash=6; sfx('hit'); popP(party.indexOf(p),'-'+d); { const q=partyPos(party.indexOf(p)); spawnFx(q.x,q.y-4,'slash','#ff8a6a'); } b.log.push(`${e.name}의 공격! ${p.name} ${d}`);
+    const p=tg[rnd(tg.length)]; let d=dmgPhys(e.atk,1.0,defOf(p)); if(p.guard) d=Math.max(1,Math.round(d*0.45)); p.hp-=d; flash=4; enemyFx(e,'eatk',[p]); popP(party.indexOf(p),'-'+d); b.log.push(`${e.name}의 공격! ${p.name} ${d}`);
     if(p.hp<=0){ p.hp=0; p.alive=false; sfx('down'); b.log.push(`${p.name} 쓰러졌다...`); } }
   else if(a.type==='eaoe'){ const e=b.enemies[a.enemy]; if(!e.alive){b.auto=1;return;} if(!livingParty().length){loseBattle();return;}
-    b.log.push(`${e.name}의 파동! 전체 공격`); flash=10; shakeHit(20); sfx('down');
+    b.log.push(`${e.name}의 파동! 전체 공격`); flash=10; shakeHit(20); enemyFx(e,'eaoe',livingParty());
     livingParty().forEach(p=>{ let d=dmgMag(e.mag,1.3,defOf(p)); if(p.guard) d=Math.max(1,Math.round(d*0.5)); p.hp-=d; popP(party.indexOf(p),'-'+d); if(p.hp<=0){p.hp=0;p.alive=false; b.log.push(`${p.name} 쓰러졌다...`);} }); }
   else if(a.type==='emagic'){ const e=b.enemies[a.enemy]; if(!e.alive){b.auto=1;return;} const tg=livingParty(); if(!tg.length){loseBattle();return;}
-    const p=tg[rnd(tg.length)]; const d=dmgMag(e.mag,1.6,defOf(p)); p.hp-=d; flash=6; sfx('hit'); popP(party.indexOf(p),'-'+d); b.log.push(`${e.name}의 주술! ${p.name} ${d}`); if(p.hp<=0){p.hp=0;p.alive=false; sfx('down'); b.log.push(`${p.name} 쓰러졌다...`);} }
+    const p=tg[rnd(tg.length)]; const d=dmgMag(e.mag,1.6,defOf(p)); p.hp-=d; flash=4; enemyFx(e,'emagic',[p]); popP(party.indexOf(p),'-'+d); b.log.push(`${e.name}의 주술! ${p.name} ${d}`); if(p.hp<=0){p.hp=0;p.alive=false; sfx('down'); b.log.push(`${p.name} 쓰러졌다...`);} }
   else if(a.type==='epoison'){ const e=b.enemies[a.enemy]; if(!e.alive){b.auto=1;return;} const tg=livingParty(); if(!tg.length){loseBattle();return;}
-    const p=tg[rnd(tg.length)]; let d=dmgPhys(e.atk,0.8,defOf(p)); if(p.guard) d=Math.max(1,Math.round(d*0.45)); p.hp-=d; p.poison=(p.poison||0)+3; flash=6; sfx('hit'); popP(party.indexOf(p),'-'+d); b.log.push(`${e.name}의 독액! ${p.name} ${d} +독`); if(p.hp<=0){p.hp=0;p.alive=false; sfx('down'); b.log.push(`${p.name} 쓰러졌다...`);} }
+    const p=tg[rnd(tg.length)]; let d=dmgPhys(e.atk,0.8,defOf(p)); if(p.guard) d=Math.max(1,Math.round(d*0.45)); p.hp-=d; p.poison=(p.poison||0)+3; flash=4; enemyFx(e,'epoison',[p]); popP(party.indexOf(p),'-'+d); b.log.push(`${e.name}의 독액! ${p.name} ${d} +독`); if(p.hp<=0){p.hp=0;p.alive=false; sfx('down'); b.log.push(`${p.name} 쓰러졌다...`);} }
   b.auto=28+hitLag; }
 function winBattle(){ const b=battle; const exp=b.enemies.reduce((s,e)=>s+e.exp,0), gg=b.enemies.reduce((s,e)=>s+(e.gold||0),0);
   gold+=gg; b.log=[`승리! 경험치 ${exp} · ◆${gg} 획득.`]; sfx('win'); const ups=[], learned=[];
@@ -1018,7 +1045,7 @@ function drawBattle(){ const b=battle;
   const tappable=(b.phase==='resolve'||b.phase==='done'||b.phase==='intro');
   if(tappable) hz(0,0,W,H,()=>{ if(b.phase==='done') endBattle(); else if(b.phase==='resolve') stepResolve(); });
   // 적
-  b.enemies.forEach((e,i)=>{ if(!e.alive) return; const ep=enemyPos(i), sh=e.flash>0?(rnd(3)-1):0, bob=Math.sin((gtime+i*14)/18)*1.3, esc=e.boss?1:0.8;
+  b.enemies.forEach((e,i)=>{ if(!e.alive) return; const ep=enemyPos(i), sh=e.flash>0?(rnd(3)-1):0, bob=Math.sin((gtime+i*14)/18)*1.3+(e.actAnim||0)*1.3, esc=e.boss?1:0.8;
     g.save(); g.translate(ep.x+sh,ep.y+bob); if(ENEMYPX[e.look||e.id]) drawEnemyPix(e,e.flash>0); else { g.scale(esc,esc); drawEnemyShape(e,e.flash>0); } g.restore();
     bar(ep.x-17,ep.y+14,34,4,e.hp/e.maxhp,'#c55');
     g.fillStyle='#cdd6ea'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText(e.name,ep.x,ep.y+26);
@@ -1115,7 +1142,7 @@ function update(){ { const now=Date.now(); if(state!=='title') playSec+=Math.min
   if(flash>0) flash--; if(shakeT>0) shakeT--; gtime++;
   if(pops.length){ for(const q of pops){ if(q.delay>0){ q.delay--; continue; } q.y-=0.5; q.t--; } pops=pops.filter(q=>q.t>0); }
   if(fx.length){ for(const f of fx){ if(f.delay>0) f.delay--; else f.t--; } fx=fx.filter(f=>f.t>0); }
-  if(battle){ party.forEach(q=>{ if(q.hitFlash>0) q.hitFlash--; if(q.actAnim>0) q.actAnim--; }); battle.enemies.forEach(e=>{ if(e.dying>0) e.dying--; }); }
+  if(battle){ party.forEach(q=>{ if(q.hitFlash>0) q.hitFlash--; if(q.actAnim>0) q.actAnim--; }); battle.enemies.forEach(e=>{ if(e.actAnim>0) e.actAnim--; if(e.dying>0) e.dying--; }); }
   clearPressed(); }
 function draw(){ g.setTransform(1,0,0,1,0,0); // 매 프레임 변환 초기화(흔들림 등 누적 방지)
   hotspots=[]; g.textAlign='left'; g.textBaseline='alphabetic'; g.font='12px sans-serif';
