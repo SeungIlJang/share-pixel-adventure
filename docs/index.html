@@ -33,8 +33,8 @@
 var CONTENT={parts:[],areas:{},events:{},enemies:{},enemyPx:{},bossScenes:{},equip:{},items:{},skills:{},learn:{},starts:{}};
 function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]) CONTENT[k]={}; Object.assign(CONTENT[k],c[k]); } }
 </script>
-<script src="data/part1.js?v=ef20cddc51"></script>
-<script src="data/part2.js?v=abf5d51e3f"></script>
+<script src="data/part1.js?v=a770b456c2"></script>
+<script src="data/part2.js?v=711cfd6342"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -273,6 +273,10 @@ function firstDead(){ return party.findIndex(p=>!p.alive); }
 
 /* ---------- 세이브 ---------- */
 function currentPart(){ let n=1; while(storyFlags['part'+n+'Clear']) n++; return n; } // 진행 중인 부(1부 클리어 → 2)
+/* 다음 목표: CONTENT.goals[부] = [[완료 플래그, 안내문], …] 에서 아직 끝내지 않은 첫 항목 */
+function currentGoal(){ const gs=(CONTENT.goals||{})[currentPart()]; if(!gs) return '다음 이야기를 준비하고 있습니다'; for(const e of gs) if(!storyFlags[e[0]]) return e[1]; return ''; }
+/* 자동 저장: 이동·전투 직후처럼 안전한 순간에만(대화·전투 중에는 저장하지 않는다) */
+function autoSave(){ if(state==='field'&&!msg&&!battle&&cur) saveGame(); }
 function saveGame(){ try{ localStorage.setItem(SAVE_KEY,JSON.stringify(
   {v:SAVE_VER,season:SEASON,part:currentPart(),savedAt:Date.now(),playSec:Math.round(playSec),
    party,area:cur?cur.id:'village',player:{x:player.x,y:player.y,dir:player.dir},gold,inventory,sealsFixed,bossStage,chests,flags:storyFlags,choices})); return true; }catch(e){ return false; } }
@@ -566,7 +570,7 @@ function updateField(){ if(msg) return;
 function onStep(){
   const wp=warpAt(player.x,player.y); if(wp){ if(wp.need&&!storyFlags[wp.need]){ showMsg([wp.block||'아직 갈 수 없다.']); sfx('sel'); return; }
     if(wp.event&&wp.eventFlag&&!storyFlags[wp.eventFlag]){ sfx('sel'); runEvent(wp.event); return; } // 챕터 이벤트 미완료 시 길목에서 발동(회피 불가 보장)
-    sfx('sel'); loadArea(wp.to,wp.tx,wp.ty); return; }
+    sfx('sel'); loadArea(wp.to,wp.tx,wp.ty); autoSave(); return; }
   const t=tile(player.x,player.y);
   if(t==='3'){ party.forEach(p=>{p.hp=p.maxhp;p.mp=p.maxmp;p.alive=true;}); sfx('heal');
     showMsg(["제단의 빛이 스며든다. (전원 회복)", saveGame()?"기록을 저장했다.":"저장 실패."]); }
@@ -634,6 +638,7 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
   g.fillStyle='#cdd6ea'; g.font='11px sans-serif'; g.fillText(cur.hud||('봉인 '+(3-sealsFixed)+'/3'),6,14);
   g.fillText('◆ '+gold,86,14);
   g.textAlign='center'; g.fillStyle='#9fe8c4'; g.font='11px sans-serif'; g.fillText(cur.name,W/2,14); g.textAlign='left';
+  { const gl=currentGoal(); if(gl){ g.fillStyle='rgba(8,10,20,.62)'; g.fillRect(0,20,W,13); g.font='9px sans-serif'; g.fillStyle='#ffd54a'; g.fillText('▸ 목표',6,30); g.fillStyle='#e8eef7'; g.fillText(gl,40,30); } }
   btn(W-112,2,52,16, bgm.muted?'♪ 끔':'♪ 켬', toggleMute, {bg:'rgba(27,34,54,.9)',font:'10px sans-serif'});
   btn(W-54,2,50,16,'≡ 메뉴',()=>{state='menu';menuMode='party';menuSel=0;},{bg:'rgba(27,34,54,.9)',font:'10px sans-serif'});
   if(joy.active){ const R=28,dx=joy.x-joy.ox,dy=joy.y-joy.oy,d=Math.hypot(dx,dy)||1,k=d>R?R/d:1,kx=joy.ox+dx*k,ky=joy.oy+dy*k;
@@ -1086,7 +1091,7 @@ function endBattle(){ const b=battle, r=b.result; party.forEach(p=>p.poison=0);
     for(let y=0;y<MAPH;y++)for(let x=0;x<MAPW;x++) if(MAP[y][x]==='4') MAP[y][x]='0';
     playBGM(cur.bgm||'field'); state='field'; battle=null; runEvent('ev_after_'+cur.boss.id); return; }
   if(b.isBoss&&r==='win'){ const ow=b.onWin; playBGM(cur.bgm||'field'); state='field'; battle=null; if(ow) runEvent(ow); return; }
-  playBGM(cur.bgm||'field'); state='field'; battle=null; }
+  playBGM(cur.bgm||'field'); state='field'; battle=null; autoSave(); }
 function drawBattle(){ const b=battle;
   g.fillStyle=b.isBoss?'#241a2e':'#243244'; g.fillRect(0,0,W,118);
   g.fillStyle=b.isBoss?'#2a2030':'#3b5a3a'; g.fillRect(0,116,W,154);
@@ -1135,12 +1140,20 @@ function drawBattle(){ const b=battle;
     if(tgtMode) hz(cx-28,cy-half-4,56,TILE*SC+30,()=>{ if(b.menu==='targetDead'&&p.alive) return; if(b.menu==='targetAlly'&&!p.alive) return; confirmTarget(i); }); });
   g.restore(); // 1134의 shake save 복구 — 누락 시 흔들림 translate가 프레임마다 누적되어 화면이 점점 밀림
   drawBattleUI(); }
+/* 스킬·아이템 버튼 배치: 4개까지는 한 줄, 그보다 많으면 두 줄로 나눈다 */
+function menuGrid(n){ if(n<=4){ const c=Math.max(1,n); return {cols:c,rows:1,w:Math.min(152,(W-16-(c-1)*6)/c),h:32,y0:H-40}; }
+  const cols=Math.ceil(n/2); return {cols,rows:2,w:(W-16-(cols-1)*6)/cols,h:30,y0:H-72}; }
+/* 스킬 한 줄 설명: 대상 · 속성 · 위력 · 부가 효과 */
+function skillDesc(s){ const tg={enemy:'단일',allEnemies:'전체',ally:'아군 1명',allAllies:'아군 전체',allyDead:'쓰러진 아군'}[s.target]||'';
+  if(s.kind==='heal'||s.kind==='healAll') return tg+' 회복'+(s.veil?' +장막':''); if(s.kind==='revive') return tg+' 소생';
+  return tg+(s.el&&s.el!=='arrow'?' '+EL_KO[s.el]:'')+' ×'+s.power+(s.hits>1?' '+s.hits+'회':'')+(s.poison?' +독':'')+(s.weaken?' +약화':'')+(s.stun?' +기절':''); }
 function drawBattleUI(){ const b=battle;
   g.fillStyle='rgba(6,8,16,.8)'; g.fillRect(0,0,W,42); g.fillStyle='#e8eef7'; g.font='11px sans-serif'; g.textAlign='left';
   (b.log||[]).slice(-3).forEach((l,i)=>g.fillText(l,8,13+i*11));
   if(b.note&&b.noteT>0){ g.fillStyle='#f0c27a'; g.fillText(b.note,8,40); }
   // 자동 버튼은 입력 턴뿐 아니라 행동이 진행되는 동안에도 항상 노출(결과 화면 제외)
   if(b.phase!=='done') btn(W-74,44,68,18, autoBattle?'⟳ 자동 ON':'⟳ 자동', toggleAuto, {bg:autoBattle?'#2a4a3a':'rgba(14,18,28,.96)', fg:autoBattle?'#9fe8c4':'#aeb8d0', font:'10px sans-serif'});
+  if(b.phase!=='done') btn(W-134,44,56,18, fastBattle?'▶▶ 2배속':'▶ 1배속', toggleFast, {bg:fastBattle?'#3a3222':'rgba(14,18,28,.96)', fg:fastBattle?'#ffd54a':'#aeb8d0', font:'10px sans-serif'});
   if(b.phase==='intro'){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭하여 진행',W-6,40); g.textAlign='left'; return; }
   if(b.phase==='resolve'){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭=빠르게 ▶',W-6,40); g.textAlign='left'; return; }
   if(b.phase==='done'){
@@ -1156,20 +1169,20 @@ function drawBattleUI(){ const b=battle;
     else { g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('탭하여 계속 ▶',W/2,36); g.textAlign='left'; }
     return; }
   if(b.phase!=='input') return; const p=party[b.inputIdx]; if(!p) return;
-  g.fillStyle='#8a93ad'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText(p.name+'의 턴',W-8,16); g.textAlign='left';
+  g.fillStyle='#8a93ad'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText(p.name+'의 턴 · MP '+p.mp+'/'+p.maxmp,W-8,16); g.textAlign='left';
   if(autoBattle){ g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('⟳ 자동 진행 중 — "자동"을 눌러 해제',W/2,H-22); g.textAlign='left'; return; }
   btn(6,44,52,18,'◀ 뒤로',()=>battleBack(),{font:'10px sans-serif'});
   const by=H-40;
   if(b.menu==='cmd'){ const n=CMDS.length, bw=(W-16-(n-1)*6)/n;
     CMDS.forEach((c,i)=>btn(8+i*(bw+6),by,bw,32,(i===b.cmd?'▶ ':'')+c,()=>chooseCommand(i),
       {bg:i===b.cmd?'#23314f':'rgba(14,18,28,.96)', fg:i===b.cmd?'#9fe8c4':'#aeb8d0', font:'13px sans-serif'})); }
-  else if(b.menu==='skill'){ const sk=p.skills, n=sk.length, bw=Math.min(132,(W-16-(n-1)*6)/n);
-    sk.forEach((id,i)=>{ const s=SKILLS[id]; btn(8+i*(bw+6),by,bw,32,(i===b.sub?'▶':'')+s.name+' '+s.mp,()=>chooseSkill(i),
-      {bg:i===b.sub?'#2a2342':'rgba(14,18,28,.96)', fg:i===b.sub?'#c79bff':(p.mp<s.mp?'#6b7590':'#aeb8d0'), font:'12px sans-serif'}); }); }
-  else if(b.menu==='item'){ const list=battleItems(), n=Math.max(1,list.length), bw=Math.min(132,(W-16-(n-1)*6)/n);
+  else if(b.menu==='skill'||b.menu==='item'){ const isSk=b.menu==='skill', list=isSk?p.skills:battleItems(), G=menuGrid(list.length);
+    if(G.rows>1){ g.fillStyle='rgba(6,8,16,.92)'; g.fillRect(0,G.y0-5,W,H-G.y0+5); }
     if(!list.length){ g.fillStyle='#6b7590'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('아이템 없음',W/2,by+20); g.textAlign='left'; }
-    list.forEach((id,i)=>{ const it=itemDef(id); btn(8+i*(bw+6),by,bw,32,(i===b.sub?'▶':'')+it.name+' x'+inventory[id],()=>chooseItem(i),
-      {bg:i===b.sub?'#23314f':'rgba(14,18,28,.96)', fg:i===b.sub?'#9fe8c4':'#aeb8d0', font:'12px sans-serif'}); }); }
+    list.forEach((id,i)=>{ const d=isSk?SKILLS[id]:itemDef(id), x=8+(i%G.cols)*(G.w+6), y=G.y0+Math.floor(i/G.cols)*(G.h+4), sel=i===b.sub, lack=isSk&&p.mp<d.mp;
+      btn(x,y,G.w,G.h,'',()=>isSk?chooseSkill(i):chooseItem(i),{bg:sel?(isSk?'#2a2342':'#23314f'):'rgba(14,18,28,.96)'});
+      g.textAlign='center'; g.fillStyle=sel?(isSk?'#c79bff':'#9fe8c4'):(lack?'#6b7590':'#aeb8d0'); g.font='12px sans-serif'; g.fillText((sel?'▶':'')+d.name+' '+(isSk?d.mp:'x'+inventory[id]),x+G.w/2,y+13);
+      g.fillStyle=lack?'#4d566b':'#8a93ad'; g.font='9px sans-serif'; g.fillText(isSk?skillDesc(d):effStr(d),x+G.w/2,y+G.h-5); g.textAlign='left'; }); }
   else if(b.menu==='target'){ const alive=b.enemies.map((e,idx)=>({e,idx})).filter(o=>o.e.alive);
     g.fillStyle='#f0c27a'; g.font='11px sans-serif'; g.textAlign='left'; g.fillText('적 선택  ·  탭해서 이동, 다시 탭 = 공격',10,by-4); g.textAlign='left';
     const n=Math.max(1,alive.length), bw=Math.min(150,(W-16-(n-1)*6)/n);
@@ -1206,7 +1219,11 @@ function draw(){ g.setTransform(1,0,0,1,0,0); // 매 프레임 변환 초기화(
   else if(state==='shop') drawShop(); else if(state==='battle') drawBattle();
   if(state==='battle'){ drawFx(); drawPops(); }
   if(msg) drawMsgBox(); }
-function loop(){ update(); draw(); requestAnimationFrame(loop); }
+/* 전투 2배속: 전투 중에만 한 화면에 두 번 진행한다. 설정은 기기에 기억 */
+let fastBattle=false; try{ fastBattle=localStorage.getItem('pixel-adventure-fast')==='1'; }catch(e){}
+function toggleFast(){ fastBattle=!fastBattle; sfx('sel'); try{ localStorage.setItem('pixel-adventure-fast',fastBattle?'1':'0'); }catch(e){} }
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) autoSave(); }); // 앱을 내리거나 닫을 때 저장
+function loop(){ update(); if(fastBattle&&state==='battle') update(); draw(); requestAnimationFrame(loop); }
 loop();
 </script>
 <script>

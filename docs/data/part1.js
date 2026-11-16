@@ -4,6 +4,20 @@
    엔진(index.html)보다 먼저 로드되고, definePart()로 CONTENT 레지스트리에 합쳐진다.
    이벤트 함수는 실행 시점에 엔진의 전역(showMsg, startBattle, storyFlags …)을 사용한다. */
 definePart(1, {
+/* 다음 목표 안내: [완료 플래그, 안내문] — 위에서부터 아직 끝내지 않은 첫 항목을 보여 준다 */
+goals:{1:[
+  ['forestEntered','마을 남쪽 ▣ 아르겐 숲으로 가자'],
+  ['key_forest','숲 서쪽 ▣ 속삭이는 수림에서 결계의 뿌리를 끊자'],
+  ['sealDone_forest','아르겐 숲의 봉인석에서 첫 번째 봉인을 되살리자'],
+  ['key_cave','숲 동쪽 ▣ 메아리 동굴 → 서쪽 ▣ 수정 공동의 포식자를 쓰러뜨리자'],
+  ['sealDone_cave','메아리 동굴의 봉인석에서 두 번째 봉인을 되살리자'],
+  ['ch3done','동굴 동쪽 ▣ 잿빛 고원에서 벌어지는 일을 매듭짓자'],
+  ['ridgeDone','고원 동쪽 ▣ 바람 능선을 넘자 — 돌풍의 주인이 길을 막는다'],
+  ['ch4done','상인 마을 북동쪽 ▣ 잊혀진 신전의 수호상을 넘어서자'],
+  ['ch5done','신전 동쪽 ▣ 균열의 입구에서 군주의 전조와 맞서자'],
+  ['abyssDone','균열 입구 동쪽 ▣ 균열 심부를 돌파하자'],
+  ['part1Clear','종언의 제단에서 마지막 봉인을 되살리자'],
+]},
 enemies:{
   wolf:  {name:'그림자 늑대',hp:46, atk:13,def:4,mag:2, spd:9, exp:9, gold:8, color:'#6a7290'},
   slime: {name:'균열 슬라임',hp:56, atk:11,def:6,mag:3, spd:4, exp:10,gold:9, color:'#5fae8a',aiPoison:0.4},
