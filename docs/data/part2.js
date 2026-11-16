@@ -40,14 +40,14 @@ const PAL={
 definePart(2, {
 /* ================= 스킬·아이템·장비 ================= */
 skills:{
-  crush:    {name:'분쇄격',  mp:8, kind:'phys', power:2.6,target:'enemy',msg:'의 분쇄격!'},
-  whirl:    {name:'회전참',  mp:12,kind:'phys', power:1.5,target:'allEnemies',msg:'의 회전참!'},
-  firestorm:{name:'화염폭풍',mp:14,kind:'magic',power:2.0,target:'allEnemies',msg:'의 화염폭풍!'},
-  judgment: {name:'심판뢰',  mp:13,kind:'magic',power:3.8,target:'enemy',msg:'의 심판뢰!'},
-  greatHeal:{name:'대치유',  mp:9, kind:'heal', power:5.0,target:'ally',msg:'의 대치유!'},
-  lightVeil:{name:'빛의장막',mp:16,kind:'healAll',power:3.4,target:'allAllies',msg:'의 빛의 장막!'},
-  pierce:   {name:'관통사격',mp:6, kind:'phys', power:2.3,target:'enemy',msg:'의 관통사격!'},
-  arrowRain:{name:'화살비',  mp:10,kind:'phys', power:1.4,target:'allEnemies',msg:'의 화살비!'},
+  crush:    {name:'분쇄격',fx:'crush',  mp:8, kind:'phys', power:2.6,target:'enemy',msg:'의 분쇄격!'},
+  whirl:    {name:'회전참',fx:'whirl',  mp:12,kind:'phys', power:1.5,target:'allEnemies',msg:'의 회전참!'},
+  firestorm:{name:'화염폭풍',fx:'firestorm',mp:14,kind:'magic',power:2.0,target:'allEnemies',msg:'의 화염폭풍!'},
+  judgment: {name:'심판뢰',fx:'judgment',  mp:13,kind:'magic',power:3.8,target:'enemy',msg:'의 심판뢰!'},
+  greatHeal:{name:'대치유',fx:'heal',  mp:9, kind:'heal', power:5.0,target:'ally',msg:'의 대치유!'},
+  lightVeil:{name:'빛의장막',fx:'veil',mp:16,kind:'healAll',power:3.4,target:'allAllies',msg:'의 빛의 장막!'},
+  pierce:   {name:'관통사격',fx:'pierce',mp:6, kind:'phys', power:2.3,target:'enemy',msg:'의 관통사격!'},
+  arrowRain:{name:'화살비',fx:'rain',  mp:10,kind:'phys', power:1.4,target:'allEnemies',msg:'의 화살비!'},
 },
 /* 레벨업 스킬 습득 */
 learn:{
