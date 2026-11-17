@@ -167,7 +167,7 @@ enemies:{
   keepKnight:{weak:'bolt',resist:'arrow',name:'성의 갑주',...reg(20,{hp:1.35,def:1.3,spd:9}),color:'#4a405a',look:'sentinel',palx:{g:'#4a405a',G:'#2e2838',l:'#8a80a0',e:'#ff4466'}},
   keepMage:  {weak:'holy', name:'성의 술사',    ...reg(20,{hp:.85,mag:1.18}),   color:'#6a3a5a',look:'wraith',palx:{g:'#6a3a5a',G:'#42243a',l:'#c080a8',e:'#ff4466'},aiMagic:0.6},
   throneGolem:{weak:'ice', name:'옥좌의 석상',  ...reg(20,{hp:1.5,atk:1.1,spd:8}),color:'#5a5060',look:'golem',palx:{g:'#5a5060',G:'#3a3440',l:'#9a90a4',e:'#ff4466'}},
-  royalShade:{weak:'holy', name:'왕의 그림자',  ...reg(20,{hp:1.0,spd:15}),     color:'#2a2030',look:'shade',palx:{g:'#3a2a44',G:'#20162a',e:'#ff4466'},aiMagic:0.35},
+  keepShade:{weak:'holy', name:'왕의 그림자',  ...reg(20,{hp:1.0,spd:15}),     color:'#2a2030',look:'shade',palx:{g:'#3a2a44',G:'#20162a',e:'#ff4466'},aiMagic:0.35},
   lord2:     {atkFx:'dark',weak:'holy',moves:['eatk','ecurse','eflurry','echarge','eblast','esmash'],enrage:0.4,name:'그림자 군주',...bos(20,{spd:14}), hp:22000,atk:160,mag:140, color:'#3a2040',look:'gatekeeper',big:2,palx:{g:'#3a2a4a',G:'#221830',e:'#ff4466'}},
   /* 21~22장 — 근원에 모여든 것들 */
   paleHound: {weak:'ice',  name:'빛바랜 사냥개',...reg(21,{hp:.9,spd:17}),      color:'#b0a888',look:'wolf',palx:{f:'#b0a888',F:'#7a745c',l:'#f0e8c8',e:'#ff8a3a'}},
@@ -259,7 +259,7 @@ drops:{
   paleHound:{item:'paleFang',rate:0.05,pity:20}, fadedGuard:{item:'fadedHelm',rate:0.05,pity:20}, famineMaw:{item:'mawRing',rate:0.05,pity:20},
   emberWisp:{item:'hiEther',rate:0.1}, lightEater:{item:'hiPotion',rate:0.12}, famineBit:{item:'hiPotion',rate:0.12}, famineEye:{item:'hiEther',rate:0.1},
   roadKnight:{item:'knightCrest',rate:0.05,pity:20}, keepMage:{item:'keepOrb',rate:0.05,pity:20}, throneGolem:{item:'throneFist',rate:0.05,pity:20},
-  crownHound:{item:'hiPotion',rate:0.12}, oathWisp:{item:'hiEther',rate:0.1}, royalShade:{item:'hiEther',rate:0.1},
+  crownHound:{item:'hiPotion',rate:0.12}, oathWisp:{item:'hiEther',rate:0.1}, keepShade:{item:'hiEther',rate:0.1},
   mothKin:{item:'hiPotion',rate:0.12}, mirrorWisp:{item:'hiEther',rate:0.1}, pageBat:{item:'hiPotion',rate:0.12}, quillShade:{item:'hiEther',rate:0.1},
 },
 
@@ -463,10 +463,10 @@ areas:{
     src:[ "11111111111111111111","10000220000000700081","10111111111111111101","10100000220000000101",
           "10101111111111110101","10001500000600090101","10101111111111110101","10100000002200008101",
           "10111111111111111101","18000002200007000001","11111111111111111111" ],
-    enc:{ pool:['keepKnight','keepMage','throneGolem','royalShade'], rate:0.22, pow:1.0, hpw:1.1 }, respawn:{x:2,y:1},
+    enc:{ pool:['keepKnight','keepMage','throneGolem','keepShade'], rate:0.22, pow:1.0, hpw:1.1 }, respawn:{x:2,y:1},
     npcs:[], warps:[ {x:1,y:1,to:'oathcourt',tx:13,ty:5,label:'뜰'} ],
     loot:{'5,5':{item:'powerSeed'}},
-    eventTile:'ev_lord', eventDone:'ch20done', onEnter:'ev_keep_enter' },
+    eventTile:'ev_lord2', eventDone:'ch20done', onEnter:'ev_keep_enter' },
 
   /* ---- 제21장 ---- */
   sourcepath:{ name:'처음 빛의 길', theme:'ash', bgm:'rift', hud:'3부 21장', pal:PAL.dusk,
@@ -838,7 +838,7 @@ events:{
       say('미아','성 안이 마을보다 어두워요. …자기 몫의 빛도 쓰지 않는 거예요, 이 사람.',M),
       say('카엘','장치(○)가 셋. 바깥 복도에 둘, 가운데 복도에 하나. 다 눌러야 옥좌의 방(▦)이 열려.',K) ], ()=>{ saveGame(); }); },
 
-  ev_lord:()=>{ if(storyFlags.ch20done) return; if(storyFlags.lordDown){ runEvent('ev_lord_after'); return; }
+  ev_lord2:()=>{ if(storyFlags.ch20done) return; if(storyFlags.lordDown){ runEvent('ev_lord2_after'); return; }
     showMsg([
       "옥좌의 방. 군주는 옥좌에 앉아 있지 않다. 그 옆 바닥에 지도처럼 늘어놓은, 꺼진 등불 수백 개를 내려다보고 있다.",
       say('그림자 군주','왔구나. 보았느냐. 너희가 무엇을 가두었는지.',LORD),
@@ -847,9 +847,9 @@ events:{
       say('그림자 군주','삼백 해 늦었다, 현자의 아이야. 이제는 나눠 쓸 만큼 남지 않았다. 나는 남은 빛을 전부 이쪽으로 돌린다.',LORD),
       say('미아','그러면 저희 쪽이—',M),
       say('그림자 군주','어두워지겠지. 너희 선조가 우리에게 한 그대로. 막고 싶다면, 이번에는 막아 보아라.',LORD) ],
-      ()=>{ startBattle(['lord2'],true,{onWin:'ev_lord_after'}); }); },
+      ()=>{ startBattle(['lord2'],true,{onWin:'ev_lord2_after'}); }); },
 
-  ev_lord_after:()=>{ storyFlags.lordDown=true; saveGame();
+  ev_lord2_after:()=>{ storyFlags.lordDown=true; saveGame();
     showMsg([
       "군주가 한쪽 무릎을 꿇는다. 그 몸에서 빛이 새어 나온다 — 사도들에게 나눠 주고 남은, 얼마 안 되는 빛이.",
       say('그림자 군주','…강해졌구나. 석 달 전에는 내 그림자조차 버거워하더니.',LORD),

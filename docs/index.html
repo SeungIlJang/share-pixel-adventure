@@ -30,14 +30,16 @@
 </div>
 <script>
 /* 콘텐츠 레지스트리 — 부별 데이터 파일(data/partN.js)이 definePart()로 내용을 등록하고, 아래 엔진이 이를 사용한다. */
-var CONTENT={parts:[],areas:{},events:{},enemies:{},enemyPx:{},bossScenes:{},equip:{},items:{},skills:{},learn:{},starts:{}};
+var CONTENT={clash:[],parts:[],areas:{},events:{},enemies:{},enemyPx:{},bossScenes:{},equip:{},items:{},skills:{},learn:{},starts:{}};
 /* learn(직업별 습득표)은 부마다 이어 붙인다 — 뒤의 부가 앞의 부 습득표를 덮어쓰지 않도록 */
 function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]) CONTENT[k]={};
-  if(k==='learn'){ for(var cl in c[k]) CONTENT[k][cl]=(CONTENT[k][cl]||[]).concat(c[k][cl]); } else Object.assign(CONTENT[k],c[k]); } }
+  if(k==='learn'){ for(var cl in c[k]) CONTENT[k][cl]=(CONTENT[k][cl]||[]).concat(c[k][cl]); }
+  else { for(var id in c[k]) if(id in CONTENT[k]) CONTENT.clash.push(k+'.'+id+' (제'+n+'부가 덮어씀)'); Object.assign(CONTENT[k],c[k]); } } // 부끼리 이름이 겹치면 뒤의 부가 앞의 것을 덮어쓴다 — 겹침은 CONTENT.clash 에 남긴다
+  if(CONTENT.clash.length&&window.console) console.warn('콘텐츠 이름 겹침: '+CONTENT.clash.join(', ')); }
 </script>
 <script src="data/part1.js?v=00f681d801"></script>
 <script src="data/part2.js?v=9c3fffcecc"></script>
-<script src="data/part3.js?v=7002a61e89"></script>
+<script src="data/part3.js?v=f3e5f0932b"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -427,7 +429,7 @@ function migrateSave(d){ const v=d.v||2;
     d.choices=d.choices||{}; d.playSec=d.playSec||0; d.season=1; }
   if(v<4){ (d.party||[]).forEach(p=>{ const L=(p.lv||1)-1; // v3 → v4: 직업별 성장 차이를 지난 레벨에도 소급
       if(p.cls==='검사'){ p.maxhp+=L; p.hp+=L; p.def+=L; p.mag-=L; } else if(p.cls==='궁수'){ p.spd+=L; p.mag-=L; } else { p.maxmp+=L; p.mp+=L; p.atk-=L; } }); }
-  d.flags=d.flags||{}; d.inventory=d.inventory||{potion:1}; markCleared(d.flags); for(const id in DROPS){ const dr=DROPS[id]; if(dr.done&&d.flags[dr.done]&&!d.flags['k_'+id]) d.flags['k_'+id]=1; } // 도감: 이미 잡은 보스는 처치 1로 기록
+  d.flags=d.flags||{}; d.inventory=d.inventory||{potion:1}; markCleared(d.flags); if(!d.flags.ch19done){ delete d.flags.lordDown; delete d.flags.ch20done; } /* 한때 2부 13장이 3부 20장 장면으로 잘못 이어지던 판에서 선 플래그를 걷어낸다 */ for(const id in DROPS){ const dr=DROPS[id]; if(dr.done&&d.flags[dr.done]&&!d.flags['k_'+id]) d.flags['k_'+id]=1; } // 도감: 이미 잡은 보스는 처치 1로 기록
   d.retroLoot=pastLoot(d.flags,d.inventory,dr=>!!(dr.done&&d.flags[dr.done])); // 이미 잡은 보스의 전리품을 한 번 지급
   (d.party||[]).forEach(p=>{ for(const sl of SLOTS) if(p[sl]===undefined) p[sl]=null; learnSkills(p); p.expNext=expNeed(p.lv||1); if(!(p.exp<p.expNext)) p.exp=Math.max(0,p.expNext-1); });
   d.v=SAVE_VER; return d; }
