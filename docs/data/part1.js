@@ -217,6 +217,16 @@ areas:{
 },
 /* 보스 고유 장비 — 상점에서 팔지 않고, 팔 수도 없다(uniq). 효과는 GEAR_FX */
 equip:{
+  /* 마물 전리품(희귀) — 상점에서 팔지 않는다. 팔 수는 있다 */
+  wolfFang:    {name:'늑대 송곳니',   slot:'ring', atk:2,fx:'critUp',rare:1,price:160},
+  wraithHood:  {name:'망령의 두건',   slot:'head', def:1,mag:2,fx:'mpSave',rare:1,price:200},
+  shadeRing:   {name:'그림자 반지',   slot:'ring', spd:2,fx:'first',rare:1,price:200},
+  vineArmor:   {name:'덩굴 갑옷',     slot:'armor',def:4,fx:'poisonWard',rare:1,price:200},
+  raiderBlade: {name:'약탈자의 검',   slot:'weapon',cls:['검사'],atk:10,fx:'lifeSteal',rare:1,price:300},
+  featherBow:  {name:'바람깃 활',     slot:'weapon',cls:['궁수'],atk:10,el:'bolt',rare:1,price:300},
+  sentryGauntlet:{name:'보초의 건틀릿',slot:'hands',def:4,fx:'guardCounter',rare:1,price:300},
+  phantomStaff:{name:'환영의 지팡이', slot:'weapon',cls:['주술사','치유사'],mag:16,fx:'weakUp',rare:1,price:400},
+  bruteRing:   {name:'괴력의 반지',   slot:'ring', atk:5,fx:'stunWard',rare:1,price:400},
   dawnShard:  {name:'여명의 조각',   slot:'ring', def:1,fx:'regen',uniq:1,price:0},
   rootGloves: {name:'가시뿌리 장갑', slot:'hands',atk:2,def:1,fx:'venomEdge',uniq:1,price:0},
   abyssHood:  {name:'심연의 두건',   slot:'head', def:2,mag:3,fx:'mpRegen',uniq:1,price:0},
@@ -235,6 +245,12 @@ drops:{
   warden:{item:'wardenPlate',done:'ch3done',part:1},      galelord:{item:'galeBoots',done:'ridgeDone',part:1},
   golem:{item:'golemCore',done:'ch4done',part:1},         herald:{item:'heraldMask',done:'ch5done',part:1},
   voidmaw:{item:'voidFang',done:'abyssDone',part:1},      seal3:{item:'dawnCrest',done:'part1Clear',part:1},
+  /* 마물: rate 확률, pity 마리째까지 못 얻으면 반드시. 장비가 아닌 것은 소모품·열매 */
+  wolf:{item:'wolfFang',rate:0.05,pity:20},      slime:{item:'potion',rate:0.12},          bat:{item:'ether',rate:0.08},
+  wraith:{item:'wraithHood',rate:0.05,pity:20},  shade:{item:'shadeRing',rate:0.05,pity:20}, creeper:{item:'vineArmor',rate:0.05,pity:20},
+  raider:{item:'raiderBlade',rate:0.05,pity:20}, gale:{item:'featherBow',rate:0.05,pity:20}, sentinel:{item:'sentryGauntlet',rate:0.05,pity:20},
+  phantom:{item:'phantomStaff',rate:0.05,pity:20}, brute:{item:'bruteRing',rate:0.05,pity:20},
+  thornling:{item:'potion',rate:0.12},           geode:{item:'guardSeed',rate:0.03},       harrier:{item:'potion',rate:0.12},  voidling:{item:'lifeSeed',rate:0.03},
 },
 /* 레벨업 습득(1부 구간). id=기술, trait=특성. 2~3레벨마다 하나씩 — 부마다 이어 붙는다(definePart) */
 learn:{
