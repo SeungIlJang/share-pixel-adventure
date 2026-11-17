@@ -140,7 +140,7 @@ areas:{
           "1000000000000001","1111111001111111","1111111111111111" ],
     enc:null, respawn:{x:3,y:3},
     npcs:[
-      {x:3,y:7,color:'#f0c27a',name:'상인',glyph:'◇',shop:['potion','ether','revive','steelSword','mithrilSword','crystalStaff','sageStaff','longBow','stormBow','ironHelm','mageHat','chainMail','plateArmor','gauntlet','windBoots','powerRing','guardRing','sageRing','swiftRing']}, /* 최상급(기사검·용옥·신궁·수호 로브)은 신전·균열·심부 보물상자 */
+      {x:3,y:7,color:'#f0c27a',name:'상인',glyph:'◇',shop:['potion','ether','revive','steelSword','mithrilSword','crystalStaff','sageStaff','longBow','stormBow','ironHelm','mageHat','chainMail','plateArmor','gauntlet','windBoots','powerRing','guardRing','sageRing','swiftRing','flameSword','frostBow','antidoteRing']}, /* 최상급(기사검·용옥·신궁·수호 로브)은 신전·균열·심부 보물상자 */
       {x:10,y:3,color:'#b7a98f',name:'마을 장로',lines:[
         {n:'장로',t:'여명이 옅어진 뒤로 바람조차 잿빛이오. 봉인을 되살려 주시게.',c:'#d9cdb5'},
         {n:'장로',t:'북쪽 잊혀진 신전에 봉인의 비밀이 잠들어 있다 하오.',c:'#d9cdb5'} ]} ],

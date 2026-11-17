@@ -35,8 +35,8 @@ var CONTENT={parts:[],areas:{},events:{},enemies:{},enemyPx:{},bossScenes:{},equ
 function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]) CONTENT[k]={};
   if(k==='learn'){ for(var cl in c[k]) CONTENT[k][cl]=(CONTENT[k][cl]||[]).concat(c[k][cl]); } else Object.assign(CONTENT[k],c[k]); } }
 </script>
-<script src="data/part1.js?v=d4a22683ef"></script>
-<script src="data/part2.js?v=20f054ef92"></script>
+<script src="data/part1.js?v=d1b0df2a42"></script>
+<script src="data/part2.js?v=89c990cefa"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -221,12 +221,39 @@ const EQUIP={
   guardRing:{name:'수호의 반지',slot:'ring',def:3,price:80},
   sageRing: {name:'현자의 반지',slot:'ring',mag:3,price:80},
   swiftRing:{name:'질풍의 반지',slot:'ring',spd:3,price:80},
+  /* 고유 효과 장비(1부) — 같은 단계 장비보다 수치는 낮고 효과가 붙는다. el=무기 속성, fx=GEAR_FX */
+  flameSword:  {name:'화염검',      slot:'weapon',cls:['검사'],atk:11,el:'fire',price:260},
+  frostBow:    {name:'서리활',      slot:'weapon',cls:['궁수'],atk:11,el:'ice', price:260},
+  antidoteRing:{name:'해독의 반지',  slot:'ring',def:1,fx:'poisonWard',price:150},
 };
 Object.assign(SKILLS,CONTENT.skills); Object.assign(ITEMS,CONTENT.items); Object.assign(EQUIP,CONTENT.equip); // 부별 데이터가 추가한 스킬·아이템·장비 합치기
 const SLOTS=['weapon','head','armor','hands','feet','ring'];
 const SLOT_KO={weapon:'무기',head:'머리',armor:'몸통',hands:'손',feet:'발',ring:'반지'};
 function itemDef(id){ return ITEMS[id]||EQUIP[id]; }
-function effStr(it){ if(it&&it.slot){ const o=[]; for(const k of ['atk','def','mag','spd']) if(it[k]) o.push(k.toUpperCase()+'+'+it[k]); return o.join(' '); } return it&&it.boost?(BOOST_KO[it.boost]+' +'+it.amt+' 영구'):it&&it.hp?('HP+'+it.hp):it&&it.mp?('MP+'+it.mp):it&&it.revive?'부활':''; }
+/* ---------- 장비 고유 효과 ----------
+   장비 하나에 효과 하나: fx(아래 표의 id) 또는 무기의 el(평타·물리 기술에 속성 부여). 이름은 좁은 칸에도 들어가게 짧게 쓴다 */
+const GEAR_FX={
+  poisonWard:  {name:'독 면역',  desc:'독에 걸리지 않는다'},
+  stunWard:    {name:'기절 면역',desc:'기절하지 않는다'},
+  curseWard:   {name:'약화 면역',desc:'약화에 걸리지 않는다'},
+  aoeGuard:    {name:'광역 -20%',desc:'적의 전체 공격으로 받는 피해 20% 감소'},
+  critUp:      {name:'치명 +15%',desc:'물리 공격의 치명타 확률 +15%'},
+  weakUp:      {name:'약점 +20%',desc:'약점을 찔렀을 때 피해가 더 커진다'},
+  lifeSteal:   {name:'처치 회복',desc:'적을 쓰러뜨리면 HP 10% 회복'},
+  mpSave:      {name:'MP -25%', desc:'스킬의 MP 소모 25% 감소'},
+  regen:       {name:'재생',    desc:'매 턴이 끝날 때 HP 4% 회복'},
+  first:       {name:'선공',    desc:'전투 첫 턴에 가장 먼저 움직인다'},
+  guardCounter:{name:'방어 반격',desc:'방어 중 물리 공격을 받으면 반드시 되받아친다'},
+};
+function gear(p,f){ return SLOTS.some(sl=>{ const e=p[sl]&&EQUIP[p[sl]]; return !!e&&e.fx===f; }); }
+/* 장비 한 점의 효과 설명(없으면 빈 문자열) */
+function fxDesc(it){ return !it?'':it.el?('평타와 물리 기술이 '+EL_KO[it.el]+' 속성이 된다'):(it.fx&&GEAR_FX[it.fx])?GEAR_FX[it.fx].desc:''; }
+/* p가 지금 장비로 얻고 있는 효과 이름들 */
+function gearFxNames(p){ const o=[]; for(const sl of SLOTS){ const e=p[sl]&&EQUIP[p[sl]]; if(!e) continue; if(e.el) o.push(EL_KO[e.el]+' 속성'); if(e.fx&&GEAR_FX[e.fx]) o.push(GEAR_FX[e.fx].name); } return o; }
+/* 무기 속성: 속성이 없거나 화살뿐인 물리 공격은 무기의 속성을 따른다 */
+function atkEl(p,el){ const w=p.weapon&&EQUIP[p.weapon]; return w&&w.el&&(!el||el==='arrow')?w.el:el; }
+function mpCost(p,s){ return gear(p,'mpSave')?Math.ceil(s.mp*0.75):s.mp; }
+function effStr(it){ if(it&&it.slot){ const o=[]; for(const k of ['atk','def','mag','spd']) if(it[k]) o.push(k.toUpperCase()+'+'+it[k]); if(it.el) o.push(EL_KO[it.el]+' 속성'); if(it.fx&&GEAR_FX[it.fx]) o.push(GEAR_FX[it.fx].name); return o.join(' '); } return it&&it.boost?(BOOST_KO[it.boost]+' +'+it.amt+' 영구'):it&&it.hp?('HP+'+it.hp):it&&it.mp?('MP+'+it.mp):it&&it.revive?'부활':''; }
 const BOOST_KO={atk:'공격',mag:'마력',def:'방어',maxhp:'최대HP'};
 const SHOP_STOCK=['potion','ether','revive','bronzeSword','woodStaff','shortBow','leatherCap','leatherArmor','leatherGloves','leatherBoots'];
 
@@ -302,7 +329,7 @@ function spdEff(p){ return p.spd + eqSum(p,'spd'); }
 function canEquip(p,id){ const e=EQUIP[id]; return !!e && !(e.slot==='weapon'&&e.cls&&!e.cls.includes(p.cls)); }
 function equip(p,id){ const e=EQUIP[id]; if(!e||(inventory[id]||0)<=0) return;
   if(!canEquip(p,id)){ flashMenu(`${p.cls}는 ${e.name} 장착 불가`); return; }
-  const old=p[e.slot]; inventory[id]--; if(old) inventory[old]=(inventory[old]||0)+1; p[e.slot]=id; sfx('sel'); }
+  const old=p[e.slot]; inventory[id]--; if(old) inventory[old]=(inventory[old]||0)+1; p[e.slot]=id; sfx('sel'); const fd=fxDesc(e); if(fd) flashMenu('★ '+e.name+' — '+fd); }
 function unequip(p,slot){ if(p[slot]){ inventory[p[slot]]=(inventory[p[slot]]||0)+1; p[slot]=null; sfx('sel'); } }
 function invCount(){ return invList().reduce((s,k)=>s+inventory[k],0); }
 function firstDead(){ return party.findIndex(p=>!p.alive); }
@@ -741,7 +768,7 @@ function drawSkillPanel(p){ const n=party.length, step=d=>{ menuSel=(menuSel+d+n
   g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText(`MP ${p.mp}/${p.maxmp}`,W-14,19); g.textAlign='left';
   g.fillStyle='#c79bff'; g.font='bold 11px sans-serif'; g.fillText('스킬',14,40);
   p.skills.forEach((id,i)=>{ const s=SKILLS[id]; if(!s) return; const x=14+(i%2)*232, y=56+Math.floor(i/2)*24;
-    g.fillStyle='#e8eef7'; g.font='12px sans-serif'; g.fillText(s.name,x,y); g.fillStyle='#7cc4ff'; g.font='10px sans-serif'; g.fillText('MP '+s.mp,x+84,y);
+    g.fillStyle='#e8eef7'; g.font='12px sans-serif'; g.fillText(s.name,x,y); g.fillStyle='#7cc4ff'; g.font='10px sans-serif'; g.fillText('MP '+mpCost(p,s),x+84,y);
     g.fillStyle='#8a93ad'; g.font='9px sans-serif'; g.fillText(skillDesc(s),x,y+11); });
   let y=56+Math.ceil(p.skills.length/2)*24+8; const tr=p.traits||[];
   g.fillStyle='#ffd54a'; g.font='bold 11px sans-serif'; g.fillText('특성',14,y); y+=15;
@@ -771,19 +798,24 @@ function drawEquipPanel(p){
     btn(x,y,222,22,'',()=>{ if(p[sl]) unequip(p,sl); },{bg:'rgba(27,34,54,.92)'});
     slotIcon(sl==='weapon'?wkind(p.cls):sl, x+5, y+4, 14);
     g.textAlign='left'; g.fillStyle='#8fb0e8'; g.font='10px sans-serif'; g.fillText(SLOT_KO[sl],x+24,y+15);
-    g.fillStyle=e?'#e8eef7':'#6b7590'; g.font='11px sans-serif'; g.fillText(e?e.name:'— 비어있음',x+56,y+15);
+    g.fillStyle=!e?'#6b7590':(e.fx||e.el)?'#ffd54a':'#e8eef7'; g.font='11px sans-serif'; g.fillText(e?e.name:'— 비어있음',x+56,y+15);
     if(e){ g.fillStyle='#9fe8c4'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(effStr(e),x+216,y+15); g.textAlign='left'; } });
-  g.fillStyle='#9fe8c4'; g.font='10px sans-serif'; g.fillText('보유 장비 (탭=장착 · 위 슬롯 탭=해제 · ▲▼=지금 장비보다 오르는/내리는 수치)',14,140);
-  const list=ownedEquip();
-  if(!list.length){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.fillText('보유한 장비가 없습니다 — 상인 ◇ 에게서 구매',14,158); }
-  list.forEach((id,i)=>{ const col=i%2, row=(i/2|0), x=12+col*230, y=148+row*19; if(y>H-46) return; const e=EQUIP[id], ok=canEquip(p,id);
+  const fxs=gearFxNames(p); g.font='10px sans-serif'; // 효과가 붙은 장비를 차고 있으면 도움말 대신 효과를 보여 준다
+  if(fxs.length){ g.fillStyle='#ffd54a'; g.fillText('★ 장비 효과: '+fxs.join(' · '),14,140); }
+  else { g.fillStyle='#9fe8c4'; g.fillText('보유 장비 (탭=장착 · 위 슬롯 탭=해제 · ▲▼=지금 장비보다 오르는/내리는 수치)',14,140); }
+  const all=ownedEquip(), PER=10, pages=Math.max(1,Math.ceil(all.length/PER)); if(menuItemSel>=pages) menuItemSel=pages-1; if(menuItemSel<0) menuItemSel=0; // menuItemSel = 보유 장비 쪽 번호
+  const list=all.slice(menuItemSel*PER,menuItemSel*PER+PER);
+  if(pages>1){ btn(W-154,H-24,26,20,'▲',()=>{ menuItemSel=(menuItemSel+pages-1)%pages; },{font:'12px sans-serif'}); btn(W-124,H-24,26,20,'▼',()=>{ menuItemSel=(menuItemSel+1)%pages; },{font:'12px sans-serif'});
+    g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText((menuItemSel+1)+'/'+pages,W-160,H-10); g.textAlign='left'; }
+  if(!all.length){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.fillText('보유한 장비가 없습니다 — 상인 ◇ 에게서 구매',14,158); }
+  list.forEach((id,i)=>{ const col=i%2, row=(i/2|0), x=12+col*230, y=148+row*19; if(y>H-46) return; const e=EQUIP[id], ok=canEquip(p,id), star=e.fx||e.el;
     btn(x,y,222,17,'',()=>{ equip(p,id); },{bg:'rgba(27,34,54,.92)'});
     slotIcon(e.slot==='weapon'?wkind(e.cls?e.cls[0]:'검사'):e.slot, x+4, y+2, 13);
-    g.textAlign='left'; g.fillStyle=ok?'#cdd6ea':'#9a6069'; g.font='10px sans-serif'; g.fillText(`${e.name} ·${SLOT_KO[e.slot]}${ok?'':' (불가)'}`,x+22,y+12);
+    g.textAlign='left'; g.fillStyle=!ok?'#9a6069':star?'#ffd54a':'#cdd6ea'; g.font='10px sans-serif'; g.fillText(`${e.name}${star?'':' ·'+SLOT_KO[e.slot]}${ok?'':' (불가)'}`,x+22,y+12);
     g.font='9px sans-serif'; g.textAlign='right'; let rx=x+216; g.fillStyle='#8a93ad'; g.fillText('x'+inventory[id],rx,y+12); rx-=g.measureText('x'+inventory[id]).width+5;
     if(ok){ const d=eqDiff(p,id), mk=d.t>0?'▲'+d.t:d.t<0?'▼'+(-d.t):'＝'; g.fillStyle=diffColor(d.t); g.fillText(mk,rx,y+12); rx-=g.measureText(mk).width+5; }
     g.fillStyle=ok?'#9fe8c4':'#9a6069'; g.fillText(effStr(e),rx,y+12); g.textAlign='left'; });
-  if(menuNote&&menuNoteT>0){ g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.textAlign='center'; g.fillText(menuNote,W/2-30,H-30); g.textAlign='left'; menuNoteT--; }
+  if(menuNote&&menuNoteT>0){ g.fillStyle='rgba(6,8,16,.95)'; g.fillRect(8,H-25,W-166,22); g.fillStyle=menuNote[0]==='★'?'#ffd54a':'#f0b89a'; g.font='10px sans-serif'; g.fillText(menuNote,14,H-10); menuNoteT--; } // 목록을 가리지 않게 맨 아래 왼쪽에
   btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
 
 /* ================= 상점 ================= */
@@ -829,8 +861,9 @@ function drawShop(){ drawField(); g.fillStyle='rgba(6,8,16,.9)'; g.fillRect(0,0,
   for(let r=0;r<vis && start+r<n;r++){ const i=start+r, id=list[i], it=itemDef(id), y=top+r*rh, sel=i===shopSel, ty=y+rh*0.62;
     btn(14,y,W-28,rh-3,'',()=>{shopSel=i; shopConfirm=id; sfx('sel');},{bg:sel?(selling?'#3a2f1f':'#23314f'):'rgba(27,34,54,.9)'});
     if(it.slot) slotIcon(it.slot==='weapon'?wkind(it.cls?it.cls[0]:'검사'):it.slot, 18, y+rh*0.5-7, 14);
-    g.textAlign='left'; g.fillStyle=sel?'#9fe8c4':'#cdd6ea'; g.font='12px sans-serif'; g.fillText(it.name+(it.cls?` (${it.cls.join('/')})`:''),38,ty);
-    g.fillStyle=it.slot?'#9fe8c4':'#8a93ad'; g.font='bold 10px sans-serif'; g.fillText(effStr(it),196,ty); g.font='10px sans-serif';
+    const star=it.fx||it.el; // 효과가 붙은 장비는 금색, 직업 표기는 첫 글자만(칸이 좁다)
+    g.textAlign='left'; g.fillStyle=star?'#ffd54a':sel?'#9fe8c4':'#cdd6ea'; g.font='12px sans-serif'; g.fillText(it.name+(it.cls?` (${star?it.cls.map(c=>c[0]).join('/'):it.cls.join('/')})`:''),38,ty);
+    g.fillStyle=star?'#ffd54a':it.slot?'#9fe8c4':'#8a93ad'; g.font=star?'bold 9px sans-serif':'bold 10px sans-serif'; g.fillText(effStr(it),star?178:196,ty); g.font='10px sans-serif';
     if(it.slot&&!selling){ let ux=342; const up=party.filter(q=>canEquip(q,id)&&eqDiff(q,id).t>0); if(up.length){ g.font='9px sans-serif'; g.fillStyle='#8fdc6e'; g.fillText('▲',ux,ty); ux+=10; up.forEach(q=>{ g.fillStyle=q.color; g.fillText(q.name[0],ux,ty); ux+=10; }); g.font='10px sans-serif'; } }
     g.fillStyle='#9fb0cf'; g.font='10px sans-serif'; g.fillText('보유 '+(inventory[id]||0),296,ty);
     const price=selling?sellPrice(id):it.price;
@@ -843,7 +876,7 @@ function drawShop(){ drawField(); g.fillStyle='rgba(6,8,16,.9)'; g.fillRect(0,0,
 function drawShopConfirm(){ const it=itemDef(shopConfirm); if(!it){ shopConfirm=null; return; }
   const selling=shopMode==='sell', price=selling?sellPrice(shopConfirm):it.price;
   const can=selling?((inventory[shopConfirm]||0)>0):(gold>=it.price);
-  const users=(it.slot&&!selling)?party.filter(q=>canEquip(q,shopConfirm)):[], ex=users.length*13+(users.length?4:0);
+  const fd=fxDesc(it), fo=fd?14:0, users=(it.slot&&!selling)?party.filter(q=>canEquip(q,shopConfirm)):[], ex=users.length*13+(users.length?4:0)+fo;
   const bw=300,bh=108+ex,bx=(W-bw)/2,by=(H-bh)/2;
   g.fillStyle='rgba(0,0,0,.55)'; g.fillRect(0,0,W,H);
   hz(0,0,W,H,()=>{ shopConfirm=null; sfx('sel'); }); // 바깥 탭 = 취소
@@ -851,7 +884,8 @@ function drawShopConfirm(){ const it=itemDef(shopConfirm); if(!it){ shopConfirm=
   g.textAlign='center';
   g.fillStyle='#cdd6ea'; g.font='bold 13px sans-serif'; g.fillText(it.name+(selling?' 을(를) 팔까요?':' 을(를) 구매할까요?'), W/2, by+28);
   g.fillStyle='#9fe8c4'; g.font='bold 11px sans-serif'; if(it.slot) g.fillText(effStr(it), W/2, by+44);
-  users.forEach((q,i)=>{ const d=eqDiff(q,shopConfirm), y=by+60+i*13; g.font='10px sans-serif'; g.textAlign='left'; g.fillStyle=q.color; g.fillText(q.name,bx+16,y);
+  if(fd){ g.fillStyle='#ffd54a'; g.font='10px sans-serif'; g.fillText('★ '+fd, W/2, by+58); }
+  users.forEach((q,i)=>{ const d=eqDiff(q,shopConfirm), y=by+60+fo+i*13; g.font='10px sans-serif'; g.textAlign='left'; g.fillStyle=q.color; g.fillText(q.name,bx+16,y);
     g.fillStyle='#8a93ad'; g.fillText('지금: '+(d.cur?d.cur.name+' '+effStr(d.cur):'없음'),bx+62,y);
     g.textAlign='right'; g.fillStyle=diffColor(d.t); g.fillText(d.txt?(d.t>0?'▲ ':d.t<0?'▼ ':'')+d.txt:'변화 없음',bx+bw-16,y); });
   g.textAlign='center';
@@ -984,7 +1018,7 @@ function chooseCommand(i){ if(!inputOK()) return; const b=battle,p=party[b.input
   else if(c==='스킬'){ p.skills.length?(b.menu='skill',b.sub=(p.ai&&p.ai.skill!=null&&p.ai.skill<p.skills.length)?p.ai.skill:0):flashMsg('스킬 없음'); }
   else if(c==='아이템'){ battleItems().length>0?(b.menu='item',b.sub=0):flashMsg('아이템 없음'); } }
 function chooseSkill(i){ if(!inputOK()) return; const b=battle,p=party[b.inputIdx]; b.sub=i; const id=p.skills[i],s=SKILLS[id]; if(!s) return;
-  if(p.mp<s.mp){ flashMsg('MP 부족'); return; } sfx('sel'); if(p){ p.ai=p.ai||{}; p.ai.cmd=1; p.ai.skill=i; } b.pending={type:'skill',skill:id};
+  if(p.mp<mpCost(p,s)){ flashMsg('MP 부족'); return; } sfx('sel'); if(p){ p.ai=p.ai||{}; p.ai.cmd=1; p.ai.skill=i; } b.pending={type:'skill',skill:id};
   if(s.target==='allEnemies'||s.target==='allAllies'||s.target==='self'){ pushA({actor:b.inputIdx,...b.pending,target:s.target==='self'?b.inputIdx:-1}); nextInput(); }
   else if(s.target==='ally'){ b.menu='targetAlly'; b.targetIdx=firstAlly(); }
   else if(s.target==='allyDead'){ const d=firstDead(); d<0?flashMsg('대상 없음'):(b.menu='targetDead',b.targetIdx=d); }
@@ -1003,7 +1037,7 @@ function autoAction(idx){ const p=party[idx], ai=p.ai||{};
   if(battle.enemies.some(e=>e.alive&&e.charged)) return {actor:idx,type:'guard'}; // 큰 공격 예고에는 방어
   let cmd = ai.cmd!=null ? ai.cmd : ((p.cls==='검사'||p.cls==='궁수')?0:1);
   if(CMDS[cmd]==='스킬' && p.skills.length){ const si=(ai.skill!=null&&ai.skill<p.skills.length)?ai.skill:0; const id=p.skills[si], s=SKILLS[id];
-    if(s && p.mp>=s.mp){
+    if(s && p.mp>=mpCost(p,s)){
       if(s.kind==='buff'){ if(!(s.target==='self'?p[s.buff]>0:livingParty().every(q=>q[s.buff]>0))) return {actor:idx,type:'skill',skill:id,target:s.target==='self'?idx:-1}; } // 이미 걸려 있으면 평타
       else if(s.kind==='debuff'){ if(!aliveEnemies().every(e=>e[s.debuff]>0)) return {actor:idx,type:'skill',skill:id,target:-1}; }
       else if(s.kind==='revive'){ const d=firstDead(); if(d>=0) return {actor:idx,type:'skill',skill:id,target:d}; }
@@ -1028,15 +1062,15 @@ const CRIT={'검사':0.08,'궁수':0.18};
 let hitTag='';
 /* 아군이 적에게 주는 피해 보정: 약점 1.4배 · 내성 0.6배 · 약화 1.3배 · 치명타 1.5배(물리만). 표시할 말은 hitTag에 남긴다 */
 function modE(p,t,d,el,phys){ const em=elemOf(t);
-  if(el&&em.weak===el){ d*=has(p,'insight')?1.6:1.4; hitTag='약점!'; storyFlags['wk_'+t.id]=1; } else if(el&&em.resist===el){ d*=0.6; hitTag='내성'; storyFlags['wk_'+t.id]=1; }
+  if(el&&em.weak===el){ d*=(has(p,'insight')?1.6:1.4)+(gear(p,'weakUp')?0.2:0); hitTag='약점!'; storyFlags['wk_'+t.id]=1; } else if(el&&em.resist===el){ d*=0.6; hitTag='내성'; storyFlags['wk_'+t.id]=1; }
   if(t.weakT>0) d*=1.3;
   if(p.atkUp>0) d*=1.25;
   if(has(p,'fury')&&p.hp<=p.maxhp*0.5) d*=1.25;
   if(has(p,'exploit')&&(t.poison>0||t.weakT>0||t.mark>0||t.stun)) d*=1.2;
-  if(phys&&((battle.round===1&&has(p,'ambush'))||Math.random()<(CRIT[p.cls]||0.05)+(t.mark>0?0.35:0))){ d*=1.5; hitTag=hitTag.indexOf('약점')===0?'약점 치명타!':hitTag==='내성'?'내성':'치명타!'; }
+  if(phys&&((battle.round===1&&has(p,'ambush'))||Math.random()<(CRIT[p.cls]||0.05)+(t.mark>0?0.35:0)+(gear(p,'critUp')?0.15:0))){ d*=1.5; hitTag=hitTag.indexOf('약점')===0?'약점 치명타!':hitTag==='내성'?'내성':'치명타!'; }
   return Math.max(1,Math.round(d)); }
 /* 아군이 받는 피해 보정 */
-function modP(p,d,e){ if(p.veil>0) d*=0.7; if(p.weakT>0) d*=1.3; if(p.taunt>0) d*=0.8; if(e&&e.sapT>0) d*=0.75; return Math.max(1,Math.round(d)); }
+function modP(p,d,e,aoe){ if(p.veil>0) d*=0.7; if(p.weakT>0) d*=1.3; if(p.taunt>0) d*=0.8; if(e&&e.sapT>0) d*=0.75; if(aoe&&gear(p,'aoeGuard')) d*=0.8; return Math.max(1,Math.round(d)); }
 /* 아군 HP를 깎는 곳은 여기 하나: 불굴(전투당 1회 HP 1로 버팀)을 처리하고 쓰러졌는지 돌려준다 */
 function hitP(p,d){ p.hp-=d; if(p.hp>0) return false;
   if(has(p,'endure')&&!p.endured){ p.endured=true; p.hp=1; const q=partyPos(party.indexOf(p)); pop(q.x,q.y-16,'불굴!','#ffd54a',hitLag); return false; }
@@ -1044,15 +1078,21 @@ function hitP(p,d){ p.hp-=d; if(p.hp>0) return false;
 /* 적이 한 명을 고를 때: 도발 중인 아군이 있으면 75% 확률로 그쪽을 친다 */
 function pickTarget(tg){ const t=tg.find(p=>p.taunt>0); return t&&Math.random()<0.75?t:tg[rnd(tg.length)]; }
 /* 반격 특성: 물리 공격을 받고 살아 있으면 30% 확률로 되받아친다 */
-function counterHit(e,p){ if(!p.alive||!e.alive||!has(p,'counter')||Math.random()>=0.3) return;
+function counterHit(e,p){ if(!p.alive||!e.alive||!((p.guard&&gear(p,'guardCounter'))||(has(p,'counter')&&Math.random()<0.3))) return;
   const d=Math.max(1,Math.round(dmgPhys(atkOf(p),0.8,e.def)*(p.atkUp>0?1.25:1))); e.hp-=d; e.flash=12; p.actAnim=12; p.actKind='lunge'; popE(e,'-'+d); battle.log.push(`${p.name}의 반격! ${e.name} ${d}`);
-  if(e.hp<=0){ e.alive=false; e_die(e); sfx('down'); battle.log.push(`${e.name} 쓰러짐!`); } }
+  if(e.hp<=0){ e.alive=false; e_die(e); sfx('down'); battle.log.push(`${e.name} 쓰러짐!`); onKill(p); } }
+/* 장비 효과: 처치 회복 · 속성 무기의 불꽃 */
+function onKill(p){ if(!p.alive||!gear(p,'lifeSteal')) return; const h=Math.min(p.maxhp-p.hp,Math.round(p.maxhp*0.1)); if(h>0){ p.hp+=h; popP(party.indexOf(p),'+'+h); } }
+function elSpark(t,el){ if(!el||el==='arrow') return; const e=enemyPos(battle.enemies.indexOf(t)); spawnFx(e.x,e.y,el==='bolt'?'bolt':el==='ice'?'shard':'boom',EL_COL[el],{delay:hitLag,max:13,w:2.5,seed:3,sz:0.7}); }
+/* 아군에게 상태이상을 걸 때는 여기서: 면역 장비가 있으면 걸리지 않고 false */
+function afflict(p,k){ if(!p.alive) return false; if(gear(p,k==='poison'?'poisonWard':k==='stun'?'stunWard':'curseWard')) return false;
+  if(k==='poison') p.poison=(p.poison||0)+3; else if(k==='stun') p.stun=1; else p.weakT=3; return true; }
 function tagPop(t){ if(!hitTag) return; const e=enemyPos(battle.enemies.indexOf(t)); pop(e.x,e.y-29,hitTag,hitTag==='내성'?'#8a93ad':'#ffd54a',hitLag); hitTag=''; }
 /* 입력 가능 여부. 기절한 아군은 이번 차례를 건너뛰고, 그 차례가 끝나면 기절이 풀린다 */
 function canAct(p){ if(p.alive&&p.stun){ p.stunUsed=true; return false; } return p.alive; }
 /* 행동 순서 값. 방어는 항상 맨 먼저(느린 아군도 맞기 전에 방어가 선다), 그다음 선제 기술·기습 특성, 나머지는 속도순 */
 function spdOf(a){ if(a.enemy!=null) return battle.enemies[a.enemy].spd+rnd(2); const p=party[a.actor]; let s=spdEff(p)+rnd(2);
-  if(a.type==='guard') s+=2000; if(a.type==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].pri) s+=1000; if(battle.round===1&&has(p,'ambush')) s+=1000; return s; }
+  if(a.type==='guard') s+=2000; if(a.type==='skill'&&SKILLS[a.skill]&&SKILLS[a.skill].pri) s+=1000; if(battle.round===1&&(has(p,'ambush')||gear(p,'first'))) s+=1000; return s; }
 function enemyPlan(){ const b=battle; b.round=(b.round||0)+1; b.menu='cmd'; b.pending=null; b.actions=b.actions.filter(a=>a.enemy!=null||party[a.actor]);
   b.enemies.forEach((e,i)=>{ if(!e.alive) return; let type='eatk';
     if(e.enrage&&!e.enraged&&e.hp<=e.maxhp*e.enrage){ e.enraged=true; e.atk=Math.round(e.atk*1.2); e.mag=Math.round(e.mag*1.2); b.note=e.name+' 격노! 공격이 거세진다'; b.noteT=110; sfx('dark'); }
@@ -1095,6 +1135,7 @@ function stepResolve(){ const b=battle; hitLag=0;
       livingParty().forEach(p=>{ if(p.poison>0){ const d=Math.max(1,Math.round(p.maxhp*0.05)); p.hp-=d; p.poison--; p.hitFlash=10; const q=partyPos(party.indexOf(p)); pop(q.x,q.y,'-'+d,'#8fdc6e'); pm.push(`${p.name} 독 ${d}`); if(p.hp<=0){p.hp=0;p.alive=false; pm.push(`${p.name} 쓰러졌다...`);} } });
       if(pm.length){ b.log=pm; b.auto=28; return; } }
     b.poisonDone=false; party.forEach(p=>{ p.guard=false; for(const k of ['weakT','veil','taunt','atkUp']) if(p[k]>0) p[k]--; if(p.stunUsed){ p.stun=0; p.stunUsed=false; }
+      if(p.alive&&gear(p,'regen')) p.hp=Math.min(p.maxhp,p.hp+Math.max(1,Math.round(p.maxhp*0.04)));
       if(p.alive&&has(p,'prayer')) p.mp=Math.min(p.maxmp,p.mp+Math.max(2,Math.round(p.maxmp*0.04))); });
     b.enemies.forEach(e=>{ for(const k of ['weakT','sapT','mark']) if(e[k]>0) e[k]--; });
     b.phase='input'; b.inputIdx=0; while(b.inputIdx<party.length&&!canAct(party[b.inputIdx])) b.inputIdx++; b.log=[]; setCmdDefault(); b.autoT=12; return; }
@@ -1103,8 +1144,8 @@ function stepResolve(){ const b=battle; hitLag=0;
   if(a.type==='guard'){ const p=party[a.actor]; if(p.alive){ p.guard=true; b.log.push(`${p.name} 방어 태세!`); } }
   else if(a.type==='flee'){ if(!b.isBoss&&Math.random()<0.6){ b.log.push('도망쳤다!'); b.result='flee'; b.phase='done'; return; } else b.log.push('도망칠 수 없었다!'); }
   else if(a.type==='attack'){ const p=party[a.actor]; if(!p.alive){ b.auto=1; return; } p.actAnim=12; let t=b.enemies[a.target]; if(!t||!t.alive) t=b.enemies[firstEnemy()]; if(!t){b.auto=1;return;}
-    hitTag=''; const d=modE(p,t,dmgPhys(atkOf(p),1.0,t.def),wkind(p.cls)==='bow'?'arrow':null,true); t.hp-=d; t.flash=12; atkFx(p,null,[t]); popE(t,'-'+d); b.log.push(`${p.name}의 공격! ${t.name} ${d}${hitTag?' ('+hitTag+')':''}`); tagPop(t); if(t.hp<=0){t.alive=false; e_die(t); sfx('down'); b.log.push(`${t.name} 쓰러짐!`);} }
-  else if(a.type==='skill'){ const p=party[a.actor]; if(!p.alive){b.auto=1;return;} p.actAnim=12; const s=SKILLS[a.skill]; p.mp=Math.max(0,p.mp-s.mp);
+    hitTag=''; const el=atkEl(p,wkind(p.cls)==='bow'?'arrow':null), d=modE(p,t,dmgPhys(atkOf(p),1.0,t.def),el,true); t.hp-=d; t.flash=12; atkFx(p,null,[t]); elSpark(t,el); popE(t,'-'+d); b.log.push(`${p.name}의 공격! ${t.name} ${d}${hitTag?' ('+hitTag+')':''}`); tagPop(t); if(t.hp<=0){t.alive=false; e_die(t); sfx('down'); b.log.push(`${t.name} 쓰러짐!`); onKill(p);} }
+  else if(a.type==='skill'){ const p=party[a.actor]; if(!p.alive){b.auto=1;return;} p.actAnim=12; const s=SKILLS[a.skill]; p.mp=Math.max(0,p.mp-mpCost(p,s));
     const healAmt=t=>Math.round(magOf(p)*s.power*(has(p,'firstAid')&&t.hp<=t.maxhp*0.3?1.5:1));
     if(s.kind==='heal'){ let t=party[a.target]; if(!t||!t.alive) t=party[firstAlly()]; const h=healAmt(t); t.hp=Math.min(t.maxhp,t.hp+h); popP(party.indexOf(t),'+'+h); allyFx(t,s.fx); p.actKind='cast'; sfx('heal');
       if(s.cleanse){ t.poison=0; t.weakT=0; t.stun=0; t.stunUsed=false; } b.log.push(`${p.name}${s.msg} ${t.name} HP+${h}${s.cleanse?' · 상태이상 해제':''}`); }
@@ -1113,10 +1154,11 @@ function stepResolve(){ const b=battle; hitLag=0;
     else if(s.kind==='debuff'){ aliveEnemies().forEach(t=>{ t[s.debuff]=s.turns; const e=enemyPos(b.enemies.indexOf(t)); spawnFx(e.x,e.y,'drops','#9a6ad8',{max:20}); spawnFx(e.x,e.y,'burst','#6a4aa8',{max:16}); }); p.actKind='cast'; sfx('dark'); b.log.push(`${p.name}${s.msg} ${s.note}`); }
     else if(s.kind==='revive'){ let t=party[a.target]; if(t&&!t.alive){ t.alive=true; t.stun=0; t.hp=Math.round(t.maxhp*s.power); allyFx(t,'revive'); p.actKind='cast'; sfx('orb'); b.log.push(`${p.name}${s.msg} ${t.name} 소생!`); } else b.log.push('대상이 없다'); }
     else { const hits=s.hits||1; const ts=s.target==='allEnemies'?aliveEnemies():[(b.enemies[a.target]&&b.enemies[a.target].alive)?b.enemies[a.target]:b.enemies[firstEnemy()]];
-      let sum=0, kills=0;
-      b.log.push(`${p.name}${s.msg}`); atkFx(p, s.fx||(s.kind==='magic'?'magic':null), ts.filter(Boolean)); ts.forEach(t=>{ if(!t) return; let tot=0; hitTag=''; for(let h=0;h<hits;h++){ const d=modE(p,t,s.kind==='magic'?dmgMag(magOf(p),s.power,t.def):dmgPhys(atkOf(p),s.power,t.def),s.el,s.kind==='phys'); t.hp-=d; tot+=d; } t.flash=12; popE(t,'-'+tot); if(s.poison) t.poison=(t.poison||0)+s.poison;
+      let sum=0, kills=0; const sel=s.kind==='phys'?atkEl(p,s.el):s.el; // 물리 기술은 무기 속성을 따른다
+      b.log.push(`${p.name}${s.msg}`); atkFx(p, s.fx||(s.kind==='magic'?'magic':null), ts.filter(Boolean)); ts.forEach(t=>{ if(!t) return; let tot=0; hitTag=''; for(let h=0;h<hits;h++){ const d=modE(p,t,s.kind==='magic'?dmgMag(magOf(p),s.power,t.def):dmgPhys(atkOf(p),s.power,t.def),sel,s.kind==='phys'); t.hp-=d; tot+=d; } t.flash=12; if(sel!==s.el) elSpark(t,sel); popE(t,'-'+tot); if(s.poison) t.poison=(t.poison||0)+s.poison;
         let ex=hitTag?' ('+hitTag+')':''; tagPop(t); if(s.poison) ex+=' +독'; if(s.weaken&&t.hp>0){ t.weakT=s.weaken; ex+=' +약화'; } if(s.stun&&t.hp>0&&!t.boss&&Math.random()<s.stun){ t.stun=1; ex+=' +기절'; } if(s.mark&&t.hp>0){ t.mark=s.mark; ex+=' +표식'; }
         sum+=tot; b.log.push(`${t.name} ${tot}${ex}`); if(t.hp<=0){t.alive=false; kills++; e_die(t); sfx('down'); b.log.push(`${t.name} 쓰러짐!`);} });
+      if(kills) onKill(p);
       let mpG=(s.mpGain?Math.round(p.maxmp*s.mpGain)+2:0)+(kills&&s.kind==='magic'&&has(p,'chain')?6:0); mpG=Math.min(mpG,p.maxmp-p.mp);
       if(mpG>0){ p.mp+=mpG; b.log.push(`${p.name} MP+${mpG}`); }
       if(s.mend&&sum>0){ const lp=livingParty(), t=lp.reduce((m,q)=>q.hp/q.maxhp<m.hp/m.maxhp?q:m,lp[0]), h=Math.min(t.maxhp-t.hp,Math.round(sum*s.mend)); if(h>0){ t.hp+=h; popP(party.indexOf(t),'+'+h); allyFx(t,'heal'); b.log.push(`빛이 ${t.name}을(를) 감싼다 HP+${h}`); } } } }
@@ -1128,22 +1170,22 @@ function stepResolve(){ const b=battle; hitLag=0;
     if(hitP(p,d)){ sfx('down'); b.log.push(`${p.name} 쓰러졌다...`); } else counterHit(e,p); }
   else if(a.type==='eaoe'){ const e=b.enemies[a.enemy]; if(!e.alive){b.auto=1;return;} if(!livingParty().length){loseBattle();return;}
     b.log.push(`${e.name}의 파동! 전체 공격`); flash=10; shakeHit(20); enemyFx(e,'eaoe',livingParty());
-    livingParty().forEach(p=>{ let d=dmgMag(e.mag,1.3,defOf(p)); if(p.guard) d=Math.max(1,Math.round(d*0.5)); d=modP(p,d,e); popP(party.indexOf(p),'-'+d); if(hitP(p,d)) b.log.push(`${p.name} 쓰러졌다...`); }); }
+    livingParty().forEach(p=>{ let d=dmgMag(e.mag,1.3,defOf(p)); if(p.guard) d=Math.max(1,Math.round(d*0.5)); d=modP(p,d,e,true); popP(party.indexOf(p),'-'+d); if(hitP(p,d)) b.log.push(`${p.name} 쓰러졌다...`); }); }
   else if(a.type==='emagic'){ const e=b.enemies[a.enemy]; if(!e.alive){b.auto=1;return;} const tg=livingParty(); if(!tg.length){loseBattle();return;}
     const p=pickTarget(tg); const d=modP(p,dmgMag(e.mag,1.6,defOf(p)),e); flash=4; enemyFx(e,'emagic',[p]); popP(party.indexOf(p),'-'+d); b.log.push(`${e.name}의 주술! ${p.name} ${d}`); if(hitP(p,d)){ sfx('down'); b.log.push(`${p.name} 쓰러졌다...`); } }
   else if(a.type==='epoison'){ const e=b.enemies[a.enemy]; if(!e.alive){b.auto=1;return;} const tg=livingParty(); if(!tg.length){loseBattle();return;}
-    const p=pickTarget(tg); let d=dmgPhys(e.atk,0.8,defOf(p)); if(p.guard) d=Math.max(1,Math.round(d*0.45)); d=modP(p,d,e); p.poison=(p.poison||0)+3; flash=4; enemyFx(e,'epoison',[p]); popP(party.indexOf(p),'-'+d); b.log.push(`${e.name}의 독액! ${p.name} ${d} +독`); if(hitP(p,d)){ sfx('down'); b.log.push(`${p.name} 쓰러졌다...`); } else counterHit(e,p); }
+    const p=pickTarget(tg); let d=dmgPhys(e.atk,0.8,defOf(p)); if(p.guard) d=Math.max(1,Math.round(d*0.45)); d=modP(p,d,e); flash=4; enemyFx(e,'epoison',[p]); popP(party.indexOf(p),'-'+d); b.log.push(`${e.name}의 독액! ${p.name} ${d}${afflict(p,'poison')?' +독':' (독 면역)'}`); if(hitP(p,d)){ sfx('down'); b.log.push(`${p.name} 쓰러졌다...`); } else counterHit(e,p); }
   else if(a.enemy!=null){ const e=b.enemies[a.enemy]; if(!e.alive){b.auto=1;return;} const tg=livingParty(); if(!tg.length){loseBattle();return;} bossMove(e,a.type,tg); }
   b.auto=28+hitLag; }
 /* 보스 고유 행동: echarge 예고 → eblast 대폭발, esmash 내려찍기(기절), edrain 흡수, ecurse 저주(약화), evenom 독 안개, eflurry 연속 공격, efocus 약한 아군 노리기 */
 function bossMove(e,type,tg){ const L=battle.log, rp=()=>pickTarget(tg); flash=4;
-  const hurt=(p,d,gm)=>{ if(p.guard) d=Math.max(1,Math.round(d*gm)); d=modP(p,d,e); popP(party.indexOf(p),'-'+d); if(hitP(p,d)) L.push(`${p.name} 쓰러졌다...`); return d; };
+  const hurt=(p,d,gm,aoe)=>{ if(p.guard) d=Math.max(1,Math.round(d*gm)); d=modP(p,d,e,aoe); popP(party.indexOf(p),'-'+d); if(hitP(p,d)) L.push(`${p.name} 쓰러졌다...`); return d; };
   if(type==='echarge'){ e.charged=true; flash=0; sfx('dark'); enemyFx(e,'echarge',[]); L.push(`${e.name}이(가) 힘을 모은다!`,'다음 차례에 큰 공격이 온다 — 방어로 버텨라!'); }
-  else if(type==='eblast'){ e.charged=false; flash=12; shakeHit(30); enemyFx(e,'eaoe',tg); tg.forEach(p=>hurt(p,dmgMag(e.mag,1.9,defOf(p)),0.35)); L.unshift(`${e.name}의 대폭발! 전체 공격`); }
-  else if(type==='esmash'){ const p=rp(), g0=p.guard; enemyFx(e,'esmash',[p]); const d=hurt(p,dmgPhys(e.atk,1.5,defOf(p)),0.45); let ex=''; if(p.alive&&!g0&&Math.random()<0.4){ p.stun=1; ex=' +기절'; } L.unshift(`${e.name}의 내려찍기! ${p.name} ${d}${ex}`); counterHit(e,p); }
+  else if(type==='eblast'){ e.charged=false; flash=12; shakeHit(30); enemyFx(e,'eaoe',tg); tg.forEach(p=>hurt(p,dmgMag(e.mag,1.9,defOf(p)),0.35,true)); L.unshift(`${e.name}의 대폭발! 전체 공격`); }
+  else if(type==='esmash'){ const p=rp(), g0=p.guard; enemyFx(e,'esmash',[p]); const d=hurt(p,dmgPhys(e.atk,1.5,defOf(p)),0.45); let ex=''; if(p.alive&&!g0&&Math.random()<0.4&&afflict(p,'stun')) ex=' +기절'; L.unshift(`${e.name}의 내려찍기! ${p.name} ${d}${ex}`); counterHit(e,p); }
   else if(type==='edrain'){ const p=rp(); enemyFx(e,'edrain',[p]); const d=hurt(p,dmgMag(e.mag,1.4,defOf(p)),0.5), h=Math.min(e.maxhp-e.hp,Math.round(d*1.5)); e.hp+=h; if(h>0) popE(e,'+'+h); L.unshift(`${e.name}의 생명 흡수! ${p.name} ${d} · 회복 ${h}`); }
-  else if(type==='ecurse'){ enemyFx(e,'ecurse',tg); tg.forEach(p=>{ hurt(p,dmgMag(e.mag,0.6,defOf(p)),0.5); if(p.alive) p.weakT=3; }); L.unshift(`${e.name}의 저주! 전원 약화 — 받는 피해 증가`); }
-  else if(type==='evenom'){ enemyFx(e,'evenom',tg); tg.forEach(p=>{ hurt(p,dmgPhys(e.atk,0.5,defOf(p)),0.45); if(p.alive) p.poison=(p.poison||0)+3; }); L.unshift(`${e.name}의 독 안개! 전원 중독`); }
+  else if(type==='ecurse'){ enemyFx(e,'ecurse',tg); tg.forEach(p=>{ hurt(p,dmgMag(e.mag,0.6,defOf(p)),0.5,true); afflict(p,'curse'); }); L.unshift(`${e.name}의 저주! 전원 약화 — 받는 피해 증가`); }
+  else if(type==='evenom'){ enemyFx(e,'evenom',tg); tg.forEach(p=>{ hurt(p,dmgPhys(e.atk,0.5,defOf(p)),0.45,true); afflict(p,'poison'); }); L.unshift(`${e.name}의 독 안개! 전원 중독`); }
   else if(type==='eflurry'){ for(let i=0;i<3;i++){ const lv=livingParty(); if(!lv.length) break; const p=pickTarget(lv); enemyFx(e,'eatk',[p]); hurt(p,dmgPhys(e.atk,0.6,defOf(p)),0.45); } L.unshift(`${e.name}의 연속 공격!`); }
   else { const p=tg.reduce((m,q)=>q.hp/q.maxhp<m.hp/m.maxhp?q:m,tg[0]); enemyFx(e,'eatk',[p]); const d=hurt(p,dmgPhys(e.atk,1.3,defOf(p)),0.45); L.unshift(`${e.name}이(가) 약해진 ${p.name}을(를) 노린다! ${d}`); counterHit(e,p); } }
 function winBattle(){ const b=battle; const exp=b.enemies.reduce((s,e)=>s+e.exp,0), gg=b.enemies.reduce((s,e)=>s+(e.gold||0),0);
@@ -1269,9 +1311,9 @@ function drawBattleUI(){ const b=battle;
   else if(b.menu==='skill'||b.menu==='item'){ const isSk=b.menu==='skill', list=isSk?p.skills:battleItems(), G=menuGrid(list.length);
     if(G.rows>1){ g.fillStyle='rgba(6,8,16,.92)'; g.fillRect(0,G.y0-5,W,H-G.y0+5); }
     if(!list.length){ g.fillStyle='#6b7590'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('아이템 없음',W/2,by+20); g.textAlign='left'; }
-    list.forEach((id,i)=>{ const d=isSk?SKILLS[id]:itemDef(id), x=8+(i%G.cols)*(G.w+6), y=G.y0+Math.floor(i/G.cols)*(G.h+4), sel=i===b.sub, lack=isSk&&p.mp<d.mp;
+    list.forEach((id,i)=>{ const d=isSk?SKILLS[id]:itemDef(id), x=8+(i%G.cols)*(G.w+6), y=G.y0+Math.floor(i/G.cols)*(G.h+4), sel=i===b.sub, cost=isSk?mpCost(p,d):0, lack=isSk&&p.mp<cost;
       btn(x,y,G.w,G.h,'',()=>isSk?chooseSkill(i):chooseItem(i),{bg:sel?(isSk?'#2a2342':'#23314f'):'rgba(14,18,28,.96)'});
-      g.textAlign='center'; g.fillStyle=sel?(isSk?'#c79bff':'#9fe8c4'):(lack?'#6b7590':'#aeb8d0'); g.font='12px sans-serif'; g.fillText((sel?'▶':'')+d.name+' '+(isSk?d.mp:'x'+inventory[id]),x+G.w/2,y+13);
+      g.textAlign='center'; g.fillStyle=sel?(isSk?'#c79bff':'#9fe8c4'):(lack?'#6b7590':'#aeb8d0'); g.font='12px sans-serif'; g.fillText((sel?'▶':'')+d.name+' '+(isSk?cost:'x'+inventory[id]),x+G.w/2,y+13);
       g.fillStyle=lack?'#4d566b':'#8a93ad'; g.font='9px sans-serif'; g.fillText(isSk?skillDesc(d):effStr(d),x+G.w/2,y+G.h-5); g.textAlign='left'; }); }
   else if(b.menu==='target'){ const alive=b.enemies.map((e,idx)=>({e,idx})).filter(o=>o.e.alive);
     g.fillStyle='#f0c27a'; g.font='11px sans-serif'; g.textAlign='left'; g.fillText('적 선택  ·  탭해서 이동, 다시 탭 = 공격',10,by-4); g.textAlign='left';

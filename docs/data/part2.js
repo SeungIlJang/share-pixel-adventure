@@ -95,6 +95,21 @@ equip:{
   aegisRing:{name:'방벽의 반지', slot:'ring',def:6,price:520},
   archRing: {name:'대현자의 반지',slot:'ring',mag:6,price:520},
   zephyrRing:{name:'서풍의 반지',slot:'ring',spd:6,price:520},
+  /* 고유 효과 장비(2부) — 같은 단계보다 수치는 낮고 효과가 붙는다. el=무기 속성, fx=GEAR_FX */
+  thunderBlade:{name:'뇌명검',       slot:'weapon',cls:['검사'],atk:22,el:'bolt',price:560},
+  emberBow:    {name:'불씨활',       slot:'weapon',cls:['궁수'],atk:22,el:'fire',price:560},
+  focusStaff:  {name:'집중의 지팡이', slot:'weapon',cls:['주술사','치유사'],mag:22,fx:'mpSave',price:560},
+  steadyHelm:  {name:'굳센 투구',     slot:'head',def:6,fx:'stunWard',price:380},
+  riposteGauntlet:{name:'받아치기 건틀릿',slot:'hands',def:4,atk:2,fx:'guardCounter',price:400},
+  mercyRobe:   {name:'자비의 로브',   slot:'armor',def:10,mag:5,fx:'regen',price:620},
+  clearCirclet:{name:'맑은 서클릿',   slot:'head',def:3,mag:4,fx:'curseWard',price:440},
+  frostEdge:   {name:'빙결검',       slot:'weapon',cls:['검사'],atk:29,el:'ice', price:950},
+  stormString: {name:'뇌전궁',       slot:'weapon',cls:['궁수'],atk:29,el:'bolt',price:950},
+  seekerStaff: {name:'탐구의 지팡이', slot:'weapon',cls:['주술사','치유사'],mag:29,fx:'weakUp',price:950},
+  bulwarkPlate:{name:'방벽 갑옷',     slot:'armor',def:17,fx:'aoeGuard',price:900},
+  hunterGloves:{name:'사냥꾼 장갑',   slot:'hands',atk:3,def:3,fx:'critUp',price:480},
+  vanguardBoots:{name:'선봉 부츠',    slot:'feet',spd:5,def:2,fx:'first',price:480},
+  reaperRing:  {name:'수확의 반지',   slot:'ring',atk:4,fx:'lifeSteal',price:560},
 },
 
 /* ================= 2부 고유 적 그림 ================= */
@@ -204,7 +219,7 @@ areas:{
       {x:12,y:7,color:'#d9cdb5',name:'늙은 선원',lines:[
         say('늙은 선원','먼바다에 나가면 말이야, 밤에 수평선 너머로 다른 색 빛이 보일 때가 있어.',NPC),
         say('늙은 선원','젊을 땐 다들 헛것이라 했지. 난 아직도 그게 뭔지 궁금하다네.',NPC) ]},
-      {x:3,y:7,color:'#f0c27a',name:'무구상',glyph:'◇',shop:['potion','hiPotion','ether','hiEther','revive','runeSword','starStaff','galeBow','runeMail','runeHelm','runeGauntlet']} ],
+      {x:3,y:7,color:'#f0c27a',name:'무구상',glyph:'◇',shop:['potion','hiPotion','ether','hiEther','revive','runeSword','starStaff','galeBow','runeMail','runeHelm','runeGauntlet','thunderBlade','emberBow','focusStaff','steadyHelm','riposteGauntlet']} ],
     warps:[ {x:1,y:5,to:'oldroad',tx:21,ty:4,label:'대로'},
             {x:8,y:9,to:'docks',tx:2,ty:1,label:'부두'},
             {x:14,y:5,to:'dunes',tx:2,ty:5,label:'사막',need:'ch8done',block:'쐐기가 뿜는 어둠이 동쪽 성문까지 덮고 있다. 먼저 부두 창고의 쐐기를 뽑아야 한다.'} ],
@@ -273,7 +288,7 @@ areas:{
         say('엘다','미아… 네가 올 줄 알았다. 그리고 무엇을 물을지도.',NPC),
         say('엘다','그래. 나는 알고 있었다. 봉인이 빛을 가두는 그릇이라는 것을. 신전은 대대로 그것을 감춰 왔지.',NPC),
         say('엘다','지하 빙고(남쪽 ▣)에 쐐기가 박혔다. 그걸 뽑고 돌아오거라. 그때 전부 말해 주마.',NPC) ]},
-      {x:3,y:7,color:'#f0c27a',name:'수도사',glyph:'◇',shop:['hiPotion','hiEther','revive','starRobe','starCirclet','stormBoots','lifeSeed','guardSeed']} ],
+      {x:3,y:7,color:'#f0c27a',name:'수도사',glyph:'◇',shop:['hiPotion','hiEther','revive','starRobe','starCirclet','stormBoots','mercyRobe','clearCirclet','lifeSeed','guardSeed']} ],
     warps:[ {x:1,y:5,to:'snowpass',tx:21,ty:5,label:'설산'},
             {x:8,y:9,to:'crypt',tx:2,ty:1,label:'빙고'},
             {x:14,y:5,to:'capital',tx:2,ty:5,label:'왕도',need:'ch11done',block:'눈보라가 왕도로 가는 길을 막고 있다. 지하 빙고의 쐐기를 먼저 뽑아야 한다.'} ],
@@ -299,7 +314,7 @@ areas:{
         say('근위대장','허나 왕궁 지하(북쪽 ▣)로 내려간 병사들이 돌아오지 않는다. …부탁이다. 확인해 다오.',NPC) ]},
       {x:12,y:7,color:'#d9cdb5',name:'시민',lines:[
         say('시민','밤이 길어졌어요. 그래도 여긴 마물이 안 들어오니까… 다들 모른 척하는 거죠.',NPC) ]},
-      {x:3,y:7,color:'#f0c27a',name:'왕실 무구상',glyph:'◇',shop:['hiPotion','hiEther','revive','dawnSword','dawnStaff','dawnBow','dawnPlate','heroRing','aegisRing','archRing','zephyrRing','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
+      {x:3,y:7,color:'#f0c27a',name:'왕실 무구상',glyph:'◇',shop:['hiPotion','hiEther','revive','dawnSword','dawnStaff','dawnBow','dawnPlate','heroRing','aegisRing','archRing','zephyrRing','frostEdge','stormString','seekerStaff','bulwarkPlate','hunterGloves','vanguardBoots','reaperRing','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
     warps:[ {x:1,y:5,to:'abbey',tx:13,ty:5,label:'수도원'},
             {x:8,y:1,to:'palace',tx:2,ty:1,label:'왕궁'},
             {x:14,y:5,to:'sealgrove',tx:2,ty:5,label:'숲',need:'ch12done',block:'성문이 굳게 닫혀 있다. 왕궁 지하의 일을 먼저 매듭지어야 한다.'} ],
