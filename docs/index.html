@@ -37,9 +37,9 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
   else { for(var id in c[k]) if(id in CONTENT[k]) CONTENT.clash.push(k+'.'+id+' (제'+n+'부가 덮어씀)'); Object.assign(CONTENT[k],c[k]); } } // 부끼리 이름이 겹치면 뒤의 부가 앞의 것을 덮어쓴다 — 겹침은 CONTENT.clash 에 남긴다
   if(CONTENT.clash.length&&window.console) console.warn('콘텐츠 이름 겹침: '+CONTENT.clash.join(', ')); }
 </script>
-<script src="data/part1.js?v=00f681d801"></script>
-<script src="data/part2.js?v=9c3fffcecc"></script>
-<script src="data/part3.js?v=f3e5f0932b"></script>
+<script src="data/part1.js?v=1dde74aacf"></script>
+<script src="data/part2.js?v=8bd110e442"></script>
+<script src="data/part3.js?v=6216340b14"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -348,6 +348,26 @@ function spawn(id,m){ const b=ENEMY_DB[id], e={...b,id,hp:b.hp,maxhp:b.hp,alive:
 const AREAS=CONTENT.areas; /* 부별 데이터 파일에서 정의 */
 /* 숨은 강적: CONTENT.elites[지역]={x,y,id,lv}. 밟으면 싸울지 묻는다. 안 싸워도 이야기는 진행된다. 쓰러뜨리면 storyFlags['elite_'+지역] */
 for(const a in (CONTENT.elites||{})) if(AREAS[a]) AREAS[a].elite=CONTENT.elites[a];
+/* ---------- 마을 부탁 ----------
+   CONTENT.quests[id]={area,x,y,name,color,shade, title, kill:{적 id:마릿수} 또는 flag:'플래그'(예: 숨은 강적 elite_지역), goal(무엇을 하면 되는지 한 줄),
+     ask:[…], doing:'…', thanks:[…], after:'…', reward:{gold, items:{id:n}}}. 대사는 모두 부탁한 사람의 말이다.
+   진행: qa_id(맡음) · qb_id(맡은 순간의 처치 수) · qd_id(끝냄). 마릿수는 맡은 뒤에 쓰러뜨린 것만 센다 */
+const QUESTS=CONTENT.quests||{};
+for(const id in QUESTS){ const q=QUESTS[id], A=AREAS[q.area]; if(A){ A.npcs=A.npcs||[]; A.npcs.push({x:q.x,y:q.y,color:q.color||'#d9cdb5',name:q.name,shade:q.shade,quest:id}); } }
+function questProg(id){ const q=QUESTS[id], b=storyFlags['qb_'+id]||{}; return Object.keys(q.kill||{}).map(e=>[e,Math.max(0,Math.min(q.kill[e],(storyFlags['k_'+e]||0)-(b[e]||0))),q.kill[e]]); }
+function questMet(id){ const q=QUESTS[id]; return q.flag?!!storyFlags[q.flag]:questProg(id).every(p=>p[1]>=p[2]); }
+function questState(id){ return storyFlags['qd_'+id]?'done':!storyFlags['qa_'+id]?'new':questMet(id)?'ready':'doing'; }
+function questGoal(id){ const q=QUESTS[id]; return q.kill?questProg(id).map(p=>ENEMY_DB[p[0]].name+' '+p[1]+'/'+p[2]).join(' · '):q.goal; }
+function questTalk(id){ const q=QUESTS[id], st=questState(id), S=t=>({n:q.name,t,c:q.color||'#d9cdb5'});
+  if(st==='done'){ showMsg([S(q.after)]); return; }
+  if(st==='doing'){ showMsg([S(q.doing),'부탁 「'+q.title+'」 — '+questGoal(id)]); return; }
+  const finish=()=>{ const r=q.reward||{}, got=[]; if(r.gold){ gold+=r.gold; got.push('◆'+r.gold); } for(const it in (r.items||{})){ inventory[it]=(inventory[it]||0)+r.items[it]; got.push(itemDef(it).name+' ×'+r.items[it]); }
+    storyFlags['qd_'+id]=1; sfx('coin'); showMsg(q.thanks.map(S).concat(['부탁 「'+q.title+'」 완료!  '+got.join(' · ')]),()=>{ saveGame(); }); };
+  if(st==='ready'){ finish(); return; }
+  askMsg(q.ask.map(S).concat(['부탁 「'+q.title+'」 — '+(q.kill?Object.keys(q.kill).map(e=>ENEMY_DB[e].name+' '+q.kill[e]+'마리').join(' · '):q.goal)]),'맡는다','다음에',()=>{
+    storyFlags['qa_'+id]=1; const b={}; for(const e in (q.kill||{})) b[e]=storyFlags['k_'+e]||0; storyFlags['qb_'+id]=b;
+    if(questMet(id)) finish(); else showMsg(['부탁을 맡았다. 끝내면 다시 찾아오자.'],()=>{ saveGame(); }); }); }
+function questCount(){ const ids=Object.keys(QUESTS); return ids.filter(id=>storyFlags['qd_'+id]).length+'/'+ids.length; }
 /* 강적은 일행이 권장 레벨보다 높으면 그만큼 강해진다(늦게 찾아가도 싱겁지 않게) */
 function eliteScale(el){ const L=party.reduce((m,p)=>Math.max(m,p.lv),1), r=Math.max(1,L/el.lv); return {pow:Math.pow(r,ELITE_POW),hpw:Math.pow(r,ELITE_HPW)}; }
 let ELITE_POW=1.0, ELITE_HPW=1.9;
@@ -692,7 +712,7 @@ function drawTitle(){
 const DIRV={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
 function tryInteractAt(tx,ty){ const adj=Math.abs(tx-player.x)+Math.abs(ty-player.y);
   if(adj>1) return false;
-  const nz=npcAt(tx,ty); if(nz){ if(nz.shop){ openShop(Array.isArray(nz.shop)?nz.shop:null); sfx('sel'); } else { showMsg((typeof nz.lines==='function'?nz.lines():nz.lines)||['…']); sfx('sel'); } return true; } // lines 가 함수면 진행에 따라 달라지는 대사
+  const nz=npcAt(tx,ty); if(nz){ if(nz.quest){ questTalk(nz.quest); sfx('sel'); } else if(nz.shop){ openShop(Array.isArray(nz.shop)?nz.shop:null); sfx('sel'); } else { showMsg((typeof nz.lines==='function'?nz.lines():nz.lines)||['…']); sfx('sel'); } return true; } // lines 가 함수면 진행에 따라 달라지는 대사
   return false; }
 function tryInteractFacing(){ const[dx,dy]=DIRV[player.dir]; return tryInteractAt(player.x+dx,player.y+dy); }
 function fieldTap(p){ const tx=Math.floor((p.x+camOX)/TILE), ty=Math.floor((p.y+camOY)/TILE);
@@ -788,6 +808,7 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
   // NPC / 상인
   if(cur.npcs) for(const nz of cur.npcs){ if(!npcOn(nz)) continue; const sx=nz.x*TILE-camOX, sy=nz.y*TILE-camOY;
     if(nz.glyph){ g.fillStyle=nz.color; g.font='16px sans-serif'; g.fillText(nz.glyph,sx+TILE*0.2,sy-1); }
+    if(nz.quest){ const st=questState(nz.quest); if(st!=='done'){ g.fillStyle=st==='doing'?'#8a93ad':'#ffd54a'; g.font='bold 15px sans-serif'; g.fillText(st==='doing'?'…':st==='ready'?'✔':'!',sx+TILE*0.34,sy-1+(st==='doing'?0:Math.sin(gtime/10)*1.5)); } } // 부탁: ! 새 부탁 · … 하는 중 · ✔ 끝내러 가자
     if(typeof nz.shade==='function'?nz.shade():nz.shade){ chibi(sx,sy,'#24243a'); g.fillStyle='#ffd9a0'; g.fillRect(sx+TILE*0.36,sy+TILE*0.34,2,2); g.fillRect(sx+TILE*0.58,sy+TILE*0.34,2,2); } // 모습을 잃은 사람: 검은 윤곽에 눈빛만
     else chibi(sx,sy,nz.color); }
   drawHeroField(player.px-camOX, player.py-camOY, party[0]);

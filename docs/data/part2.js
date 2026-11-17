@@ -40,6 +40,28 @@ const PAL={
 definePart(2, {
 /* 2부를 끝낸 기록이라면 서 있어야 하는 진행 플래그(「3부부터 시작」 기록 보정용) */
 clearFlags:{2:['abbeyEntered', 'archiveEntered', 'canyonEntered', 'capitalEntered', 'ch10done', 'ch11done', 'ch12done', 'ch13done', 'ch14done', 'ch7done', 'ch8done', 'ch9done', 'cryptEntered', 'docksEntered', 'dunesEntered', 'gateEntered', 'oldroadEntered', 'p2Started', 'palaceEntered', 'salenaEntered', 'sealEntered', 'snowEntered']},
+quests:{
+  q3:{area:'arg2',x:12,y:3,name:'방앗간 주인',color:'#c8b088',title:'수림의 늙은 뿌리',flag:'elite_grove',goal:'속삭이는 수림의 숨은 강적(強)을 쓰러뜨리자',
+    ask:['남쪽 숲 깊은 데서 땅이 운다네. 속삭이는 수림의 늙은 뿌리가 다시 꿈틀거리는 게야.','물레방아 물길이 그 뿌리 밑을 지나거든. 자네들이라면 잠재울 수 있겠나?'],
+    doing:'물길이 아직 탁해. 뿌리가 살아 있는 게지.',
+    thanks:['물이 맑아졌어! 삼십 년 방아를 돌렸지만 이렇게 잘 도는 건 처음이야. 받아 두게.'],
+    after:'방아가 잘 돌아. 밀가루는 넉넉하니 걱정 말게.',reward:{gold:500,items:{powerSeed:1}}},
+  q4:{area:'salena',x:8,y:3,name:'늙은 어부',color:'#8ab8c8',title:'그물을 찢는 것',kill:{tideSlime:6},
+    ask:['등대 불이 약해진 뒤로 부두에 물컹한 것들이 올라와 그물을 다 찢어 놔.','창고 쪽에 갈 일 있으면, 보이는 대로 좀 치워 주게.'],
+    doing:'오늘도 그물 두 장이 못 쓰게 됐어. 아직 남았나 봐.',
+    thanks:['그물이 멀쩡해! 이제 배를 낼 수 있겠어. 뱃사람은 빚을 안 져. 받게.'],
+    after:'고기가 잘 잡혀. 다음에 오면 한 마리 구워 주지.',reward:{gold:500,items:{hiPotion:3}}},
+  q5:{area:'abbey',x:12,y:3,name:'수련 사제',color:'#d8e0f0',title:'고갯길의 망령',kill:{iceWraith:6},
+    ask:['설산 고갯길에 얼음 망령이 떠돌아요. 순례자들이 수도원까지 오지 못하고 돌아가요.','원장님은 기도하라고만 하세요. …저는 누가 좀 쫓아 줬으면 해요.'],
+    doing:'어젯밤에도 고개에서 푸른 불이 보였어요.',
+    thanks:['순례자가 올라왔어요! 석 달 만이에요. 이건 제가 아껴 둔 거예요. 받아 주세요.'],
+    after:'미아 선배가 계셨던 방, 제가 쓸고 있어요. 언제든 돌아오세요.',reward:{items:{hiEther:2,wisdomSeed:1}}},
+  q6:{area:'capital',x:9,y:3,name:'늙은 근위병',color:'#c8b070',title:'회랑의 옛 왕',flag:'elite_palace',goal:'왕궁 지하 회랑의 숨은 강적(強)을 쓰러뜨리자',
+    ask:['지하 회랑 깊은 데서 밤마다 갑주 끄는 소리가 나오. 초대 왕의 망령이라고들 하지.','근위대는 들어갔다가 셋이 돌아오지 못했소. 염치없지만, 부탁하오.'],
+    doing:'어젯밤에도 소리가 났소. 아직 계신 게요.',
+    thanks:['소리가 멎었소. 이제 편히 쉬시겠지. 근위대의 이름으로 드리는 것이오.'],
+    after:'회랑이 조용하오. 돌아오지 못한 셋의 이름은 내가 벽에 새겼소.',reward:{gold:1500,items:{guardSeed:1}}},
+},
 talks:{
   t7:{ch:7,when:'ch7done',title:'석 달 만의 길',lines:[
     ['코르','석 달 쉬었더니 활시위가 뻑뻑해.'],

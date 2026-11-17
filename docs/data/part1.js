@@ -4,6 +4,19 @@
    엔진(index.html)보다 먼저 로드되고, definePart()로 CONTENT 레지스트리에 합쳐진다.
    이벤트 함수는 실행 시점에 엔진의 전역(showMsg, startBattle, storyFlags …)을 사용한다. */
 definePart(1, {
+/* 마을 부탁(1부) */
+quests:{
+  q1:{area:'village',x:12,y:3,name:'빵집 아주머니',color:'#e0b890',title:'밀밭의 늑대',kill:{wolf:5},
+    ask:['여명이 스러진 뒤로 숲 늑대가 밀밭까지 내려와요. 이러다간 겨울 빵을 못 구워요.','숲에 가는 길이라면, 좀 쫓아 줄래요?'],
+    doing:'늑대가 아직 어슬렁거려요. 조심해요.',
+    thanks:['밭이 조용해졌어요! 고마워요. 갓 구운 건 아니지만, 이거라도 챙겨 가요.'],
+    after:'올겨울 빵은 걱정 없겠어요. 돌아오면 따뜻한 걸로 구워 줄게요.',reward:{gold:60,items:{potion:3}}},
+  q2:{area:'merchant',x:6,y:3,name:'짐꾼',color:'#c8a878',title:'능선의 짐수레',kill:{raider:6},
+    ask:['능선을 넘다가 약탈자한테 짐수레를 통째로 털렸어. 주인 양반한테 뭐라고 하나…','놈들 수를 좀 줄여 주면, 다음 짐은 무사히 넘길 수 있을 거야.'],
+    doing:'아직 능선 쪽에서 놈들 휘파람 소리가 나.',
+    thanks:['길이 뚫렸어! 이번 짐은 무사히 넘어왔다고. 품삯에서 떼어 주는 거야, 받아.'],
+    after:'요즘은 능선 넘는 게 산책 같아. 덕분이야.',reward:{gold:300,items:{ether:2}}},
+},
 /* 제단의 동료 대화 — 그 장을 끝낸 뒤 제단에서 나눌 수 있다 */
 talks:{
   t1:{ch:1,when:'sealDone_forest',title:'첫 봉인의 밤',lines:[
