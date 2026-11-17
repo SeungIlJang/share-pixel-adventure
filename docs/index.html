@@ -750,11 +750,14 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
     g.fillStyle='rgba(159,232,196,.85)'; g.beginPath(); g.arc(kx,ky,12,0,7); g.fill(); g.lineWidth=1; } }
 
 /* ================= 메뉴(파티/아이템) ================= */
-let menuSel=0, menuMode='party', menuItemSel=0;
-function useItemField(id,p){ const it=ITEMS[id]; if(!it||!p||(inventory[id]||0)<=0) return;
+let menuSel=0, menuMode='party', menuItemSel=0, itemConfirm=null; // itemConfirm = 사용할지 묻는 중인 아이템 id
+/* 지금 p에게 써서 효과가 있는지: 열매는 언제나, 부활석은 쓰러진 아군에게만, 회복약은 살아 있고 덜 찬 쪽이 있을 때만 */
+function itemUsable(id,p){ const it=ITEMS[id]; if(!it||!p||(inventory[id]||0)<=0) return false; if(it.boost) return true; if(it.revive) return !p.alive;
+  return p.alive&&((it.hp&&p.hp<p.maxhp)||(it.mp&&p.mp<p.maxmp)); }
+function useItemField(id,p){ const it=ITEMS[id]; if(!itemUsable(id,p)) return;
   if(it.boost){ inventory[id]--; p[it.boost]+=it.amt; if(it.boost==='maxhp'&&p.alive) p.hp+=it.amt; sfx('coin'); flashMenu(p.name+' '+BOOST_KO[it.boost]+' +'+it.amt); return; }
-  if(it.revive){ if(p.alive) return; inventory[id]--; p.alive=true; p.hp=Math.round(p.maxhp*it.ratio); sfx('heal'); }
-  else { if(it.hp&&p.hp>=p.maxhp&&(!it.mp)) return; inventory[id]--;
+  if(it.revive){ inventory[id]--; p.alive=true; p.hp=Math.round(p.maxhp*it.ratio); sfx('heal'); }
+  else { inventory[id]--;
     if(it.hp) p.hp=Math.min(p.maxhp,p.hp+it.hp); if(it.mp) p.mp=Math.min(p.maxmp,p.mp+it.mp); sfx('heal'); } }
 let menuNote='',menuNoteT=0; function flashMenu(t){ menuNote=t; menuNoteT=70; }
 function updateMenu(){
@@ -765,13 +768,29 @@ function updateMenu(){
     if(consume('confirm')){ if(invCount()>0){ menuMode='item'; menuItemSel=0; } else if(ownedEquip().length){ menuMode='equip'; menuItemSel=0; } }
   } else if(menuMode==='item'){
     const list=invList();
+    if(itemConfirm){ if(consume('confirm')){ const id=itemConfirm; itemConfirm=null; useItemField(id,party[menuSel]); if(invCount()===0) menuMode='party'; } else if(consume('cancel')){ itemConfirm=null; sfx('sel'); } return; } // 확인 창이 열려 있으면 예/아니오만
     if(consume('cancel')){ menuMode='party'; return; }
     if(list.length){ if(consume('up')) menuItemSel=(menuItemSel+list.length-1)%list.length;
       if(consume('down')) menuItemSel=(menuItemSel+1)%list.length;
-      if(consume('confirm')){ useItemField(list[menuItemSel], party[menuSel]); if(invCount()===0) menuMode='party'; } }
+      if(consume('confirm')){ itemConfirm=list[menuItemSel]; sfx('sel'); } }
   } else { /* equip · skills · book — 탭으로 조작 */
     if(consume('cancel')){ if(menuMode==='book'&&bookSel) bookSel=null; else menuMode='party'; return; }
   } }
+/* 아이템 사용 확인 창: 누구에게 무엇을 쓰는지, 지금 수치가 어떻게 되는지 보여 주고 예/아니오 */
+function drawItemConfirm(){ const id=itemConfirm, it=ITEMS[id], p=party[menuSel]; if(!it||!p||(inventory[id]||0)<=0){ itemConfirm=null; return; }
+  const ok=itemUsable(id,p), bw=300, bh=112, bx=(W-bw)/2, by=(H-bh)/2, close=()=>{ itemConfirm=null; sfx('sel'); };
+  g.fillStyle='rgba(0,0,0,.55)'; g.fillRect(0,0,W,H); hz(0,0,W,H,close); // 바깥 탭 = 취소
+  g.fillStyle='rgba(12,16,30,.98)'; g.fillRect(bx,by,bw,bh); g.strokeStyle='#9fe8c4'; g.lineWidth=1.5; g.strokeRect(bx+1,by+1,bw-2,bh-2); g.lineWidth=1; g.textAlign='center';
+  g.fillStyle='#cdd6ea'; g.font='bold 13px sans-serif'; g.fillText(it.name+' 을(를) '+p.name+'에게 사용할까요?',W/2,by+26);
+  g.fillStyle='#9fe8c4'; g.font='bold 11px sans-serif'; g.fillText(effStr(it)+'    (남은 수 '+inventory[id]+'개)',W/2,by+44);
+  let st, col='#8a93ad'; // 쓰면 어떻게 되는지
+  if(!ok){ st=it.revive?p.name+'은(는) 쓰러지지 않았다 — 쓸 수 없다':!p.alive?p.name+'은(는) 쓰러져 있다 — 부활석이 필요하다':'이미 가득 차 있다 — 쓸 수 없다'; col='#f0b89a'; }
+  else if(it.boost) st=BOOST_KO[it.boost]+' '+p[it.boost]+' → '+(p[it.boost]+it.amt)+'  (영구히 오른다)';
+  else if(it.revive) st='쓰러짐 → HP '+Math.round(p.maxhp*it.ratio)+'/'+p.maxhp;
+  else st=[it.hp?'HP '+p.hp+' → '+Math.min(p.maxhp,p.hp+it.hp)+'/'+p.maxhp:'', it.mp?'MP '+p.mp+' → '+Math.min(p.maxmp,p.mp+it.mp)+'/'+p.maxmp:''].filter(Boolean).join('    ');
+  g.fillStyle=col; g.font='11px sans-serif'; g.fillText(st,W/2,by+62); g.textAlign='left';
+  btn(bx+18,by+bh-34,118,24,'예',()=>{ if(!ok){ sfx('sel'); return; } itemConfirm=null; useItemField(id,p); if(invCount()===0) menuMode='party'; },{bg:ok?'#2a4a3a':'#3a2a2a',fg:ok?'#9fe8c4':'#8a6a6a',font:'13px sans-serif'});
+  btn(bx+bw-136,by+bh-34,118,24,'아니오',close,{font:'13px sans-serif'}); }
 function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0,W,H);
   if(menuMode==='equip'){ drawEquipPanel(party[menuSel]); return; }
   if(menuMode==='skills'){ drawSkillPanel(party[menuSel]); return; }
@@ -799,10 +818,11 @@ function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0
     const list=invList(), rows=Math.max(1,Math.ceil(list.length/4)), top=H-46-(rows-1)*23; // 한 줄에 4개씩, 많으면 위로 쌓는다
     g.fillStyle='rgba(6,8,16,.92)'; g.fillRect(0,top-14,W,H-top+14); g.fillStyle='#9fe8c4'; g.font='11px sans-serif'; if(menuNote&&menuNoteT>0){ g.fillStyle='#ffd54a'; g.fillText(menuNote,14,top-2); menuNoteT--; } else g.fillText('아이템 → '+party[menuSel].name+(list[menuItemSel]?'   ·   '+itemDef(list[menuItemSel]).name+': '+effStr(itemDef(list[menuItemSel])):''),14,top-2);
     list.forEach((id,i)=>{ const x=10+(i%4)*101, y=top+4+Math.floor(i/4)*23; const it=itemDef(id);
-      btn(x,y,97,20, `${it.name} x${inventory[id]}`, ()=>{ menuItemSel=i; useItemField(id,party[menuSel]); if(invCount()===0) menuMode='party'; },
+      btn(x,y,97,20, `${it.name} x${inventory[id]}`, ()=>{ menuItemSel=i; itemConfirm=id; sfx('sel'); },
         {bg:i===menuItemSel?'#23314f':'rgba(27,34,54,.9)',font:'11px sans-serif'}); });
     btn(W-62,H-22,54,18,'뒤로',()=>menuMode='party',{font:'10px sans-serif'});
-  }
+    if(itemConfirm) drawItemConfirm();
+  } else itemConfirm=null;
   if(menuMode!=='item'&&menuNote&&menuNoteT>0){ g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.textAlign='center'; g.fillText(menuNote,W/2,H-32); g.textAlign='left'; menuNoteT--; } }
 /* 스킬·특성 화면: 배운 기술(두 열), 특성, 다음에 배울 것 */
 function drawSkillPanel(p){ const n=party.length, step=d=>{ menuSel=(menuSel+d+n)%n; sfx('sel'); };
