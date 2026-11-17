@@ -38,6 +38,8 @@ const PAL={
 };
 
 definePart(2, {
+/* 2부를 끝낸 기록이라면 서 있어야 하는 진행 플래그(「3부부터 시작」 기록 보정용) */
+clearFlags:{2:['abbeyEntered', 'archiveEntered', 'canyonEntered', 'capitalEntered', 'ch10done', 'ch11done', 'ch12done', 'ch13done', 'ch14done', 'ch7done', 'ch8done', 'ch9done', 'cryptEntered', 'docksEntered', 'dunesEntered', 'gateEntered', 'oldroadEntered', 'p2Started', 'palaceEntered', 'salenaEntered', 'sealEntered', 'snowEntered']},
 goals:{2:[
   ['ch7done','아르겐 동쪽 ▣ 옛 대로의 쐐기 파수대장을 쓰러뜨리자'],
   ['ch8done','살레나 항 남쪽 ▣ 부두 창고의 쐐기를 뽑자'],
@@ -407,7 +409,8 @@ areas:{
           "1000070000700001","1022011801102201","1111111191111111","1000000300000001",
           "1022007007002201","1500000060000051","1111111111111111" ],
     enc:{ pool:['gateShade','riftBrute','voidHerald'], rate:0.26, pow:0.83, hpw:1.08 }, respawn:{x:2,y:1},
-    npcs:[], warps:[ {x:1,y:1,to:'sealgrove',tx:21,ty:4,label:'숲'} ],
+    npcs:[], warps:[ {x:1,y:1,to:'sealgrove',tx:21,ty:4,label:'숲'},
+            {x:8,y:9,to:'ashfield',tx:2,ty:5,label:'균열',when:'part2Clear'} ], /* 문지기를 쓰러뜨린 뒤에는 그 자리가 저편으로 가는 길 */
     loot:{'1,9':{gold:1200,item:'revive'},'14,9':{item:'hiPotion'}},
     eventTile:'ev_gateboss', eventDone:'ch14done', onEnter:'ev_gate_enter' },
 },
@@ -654,7 +657,7 @@ events:{
       say('테리','봉인을 세운 건 우리야. 그게 뭘 가뒀는지 — 우리 눈으로 봐야 해.',T),
       "네 사람은 서로를 돌아보고, 균열 안으로 걸음을 내디딘다.",
       "— 모두의 픽셀모험 · 제2부 「그림자 군주」 끝 —",
-      "제3부 「균열 너머」에서 계속…   (제3부는 준비 중입니다)" ],
+      "제3부 「균열 너머」에서 계속…   타이틀에서 「이어하기」를 누르면 제3부가 시작됩니다." ],
       ()=>{ storyFlags.ch14done=true; storyFlags.part2Clear=true; saveGame(); stopBGM(); bgm.started=false; state='title'; titleSel=1; }); },
 },
 });
