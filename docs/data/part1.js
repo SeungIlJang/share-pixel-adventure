@@ -129,7 +129,7 @@ areas:{
     src:[ "1111111111111111","1000000000000001","1022000000002201","1000000000000001",
           "1011000000001101","1002200000022001","1000000060000001","1050000000000001",
           "1022003000002201","1000000000000001","1111111111111111" ],
-    enc:{ pool:['raider','gale','shade'], rate:0.22, pow:1.6, hpw:1.3 }, respawn:{x:6,y:8},
+    enc:{ pool:['raider','gale','shade'], rate:0.22, pow:1.65, hpw:1.5 }, respawn:{x:6,y:8},
     npcs:[], warps:[ {x:8,y:1,to:'cave',tx:14,ty:8,label:'동굴'},
             {x:14,y:9,to:'ridge',tx:2,ty:1,label:'능선',event:'ev_kor_encounter',eventFlag:'ch3done'} ],
     eventTile:'ev_kor_encounter', eventDone:'ch3done', onEnter:'ev_highlands_enter' },
@@ -152,7 +152,7 @@ areas:{
     src:[ "1111111111111111","1000000000000001","1020000700002001","1000000000000001",
           "1011100000011101","1050080000080031","1111111191111111","1000000000000001",
           "1000007007000001","1000000060000001","1111111111111111" ],
-    enc:{ pool:['wraith','shade','sentinel'], rate:0.22, pow:2.2, hpw:1.6 }, respawn:{x:14,y:5},
+    enc:{ pool:['wraith','shade','sentinel'], rate:0.22, pow:2.31, hpw:2.0 }, respawn:{x:14,y:5},
     npcs:[
       {x:3,y:3,color:'#9ab0c4',name:'비문',lines:[
         "비문: 『세 봉인은 여명의 빛을 가두어 균열을 봉하였노라.』",
@@ -167,7 +167,7 @@ areas:{
     src:[ "1111111111111111","1000000000000001","1022000000002201","1000000000000001",
           "1011100000011101","1002200220022001","1000000060000001","1050000000000031",
           "1022000000002201","1000000000000001","1111111111111111" ],
-    enc:{ pool:['phantom','brute','raider','wraith'], rate:0.3, pow:1.9, hpw:1.4 }, respawn:{x:14,y:7},
+    enc:{ pool:['phantom','brute','raider','wraith'], rate:0.3, pow:2.0, hpw:1.68 }, respawn:{x:14,y:7},
     npcs:[], warps:[ {x:8,y:1,to:'temple',tx:13,ty:8,label:'신전'},
             {x:14,y:9,to:'abyss',tx:2,ty:1,label:'심부',event:'ev_rift_herald',eventFlag:'ch5done'} ],
     eventTile:'ev_rift_herald', eventDone:'ch5done', loot:{'2,7':{item:'dragonStaff'}}, onEnter:'ev_rift_enter' },
@@ -192,7 +192,7 @@ areas:{
     src:[ "1111111111111111","1000001000100051","1022001080100001","1022000000102201",
           "1000117000002201","1800110000000001","1111111111911111","1000000700000001",
           "1022000000022001","1050000060000001","1111111111111111" ],
-    enc:{ pool:['wraith','shade','creeper','geode'], rate:0.26, pow:1.55, hpw:1.2 }, respawn:{x:2,y:1},
+    enc:{ pool:['wraith','shade','creeper','geode'], rate:0.26, pow:1.6, hpw:1.38 }, respawn:{x:2,y:1},
     npcs:[], warps:[ {x:1,y:1,to:'cave',tx:2,ty:5,label:'동굴'} ],
     loot:{'14,1':{item:'crystalStaff'},'2,9':{gold:120,item:'ether'}},
     eventTile:'ev_cavern_maw', eventDone:'key_cave', onEnter:'ev_cavern_enter' },
@@ -200,7 +200,7 @@ areas:{
     src:[ "1111111111111111","1000001000000051","1002201022011001","1002201022010001",
           "1100001000010701","1000111000010001","1070000011000001","1022000011002201",
           "1522000000002201","1000001100060001","1111111111111111" ],
-    enc:{ pool:['raider','gale','harrier'], rate:0.24, pow:2.0, hpw:1.6 }, respawn:{x:2,y:2},
+    enc:{ pool:['raider','gale','harrier'], rate:0.24, pow:2.1, hpw:1.92 }, respawn:{x:2,y:2},
     npcs:[], warps:[ {x:1,y:1,to:'highlands',tx:13,ty:9,label:'고원'},
             {x:14,y:9,to:'merchant',tx:8,ty:2,label:'마을',event:'ev_ridge_lord',eventFlag:'ridgeDone'} ],
     loot:{'14,1':{item:'longBow'},'1,8':{item:'powerRing'}},
@@ -209,11 +209,18 @@ areas:{
     src:[ "1111111111111111","1000220000220081","1011101111011101","1080700000070001",
           "1022000000002201","1022011001102201","1111111911111111","1000000000000051",
           "1022007007002201","1500000000060001","1111111111111111" ],
-    enc:{ pool:['phantom','brute','voidling'], rate:0.28, pow:1.45, hpw:1.2 }, respawn:{x:2,y:1},
+    enc:{ pool:['phantom','brute','voidling'], rate:0.28, pow:1.52, hpw:1.5 }, respawn:{x:2,y:1},
     npcs:[], warps:[ {x:1,y:1,to:'rift',tx:13,ty:9,label:'균열'},
             {x:14,y:9,to:'altar',tx:8,ty:2,label:'제단',event:'ev_abyss_maw',eventFlag:'abyssDone'} ],
     loot:{'14,7':{item:'divineBow'},'1,9':{item:'guardianRobe'}},
     eventTile:'ev_abyss_maw', eventDone:'abyssDone', onEnter:'ev_abyss_enter' },
+},
+/* 레벨업 습득(1부 구간). id=기술, trait=특성. 2~3레벨마다 하나씩 — 부마다 이어 붙는다(definePart) */
+learn:{
+  '검사':  [{lv:3,id:'cleave'},{lv:5,trait:'counter'},{lv:7,id:'taunt'},{lv:10,id:'warcry'},{lv:12,trait:'endure'}],
+  '주술사':[{lv:3,id:'frostLance'},{lv:5,trait:'insight'},{lv:7,id:'thunder'},{lv:9,id:'manaDrain'},{lv:12,id:'sapMist'}],
+  '치유사':[{lv:3,id:'cleanse'},{lv:5,id:'cureAll'},{lv:7,trait:'prayer'},{lv:8,id:'revive'},{lv:11,id:'holyArrow'}],
+  '궁수':  [{lv:3,id:'venom'},{lv:5,trait:'ambush'},{lv:8,id:'mark'},{lv:11,id:'quickShot'}],
 },
 events:{
   ev_village_intro:()=>{ if(storyFlags.introDone) return; storyFlags.introDone=true;
@@ -247,7 +254,7 @@ events:{
       {n:'미아',t:'…여행자님? 저는 빛의 신전의 미아. 봉인을 되살리러 왔어요.',c:'#9fe8c4'},
       {n:'카엘',t:'치유술을 쓰는 사제라니 — 큰 힘이 되겠어.',c:'#c79bff'},
       {n:'미아',t:'함께 가게 해주세요. 두 번째 봉인은 이 아래 깊은 곳에 있어요.',c:'#9fe8c4'} ],
-      ()=>{ joinMember('미아'); showMsg([{n:'미아',t:'미아가 합류했다! (치유·치유의 바람·소생)',c:'#9fe8c4'}]); }); },
+      ()=>{ joinMember('미아'); showMsg([{n:'미아',t:'미아가 합류했다! ('+skillNames('미아')+')',c:'#9fe8c4'}]); }); },
   ev_after_seal2:()=>{
     showMsg([
       {n:'미아',t:'두 번째 봉인도 여명을 되찾았어요!',c:'#9fe8c4'},
@@ -274,7 +281,7 @@ events:{
       {n:'코르',t:'봉인이라… 재밌겠어. 끝까지 따라가 주지.',c:'#f0c27a'},
       "— 제3장 「잿빛 고원」 코르 합류 —",
       "동쪽 상인 마을 ◇ 에서 장비를 보강하고 다음 봉인을 준비하자." ],
-      ()=>{ joinMember('코르'); storyFlags.ch3done=true; showMsg([{n:'코르',t:'코르가 합류했다! (연격·독침)',c:'#f0c27a'}], ()=>{ saveGame(); }); }); },
+      ()=>{ joinMember('코르'); storyFlags.ch3done=true; showMsg([{n:'코르',t:'코르가 합류했다! ('+skillNames('코르')+')',c:'#f0c27a'}], ()=>{ saveGame(); }); }); },
   ev_merchant_enter:()=>{ if(storyFlags.merchEntered) return; storyFlags.merchEntered=true;
     showMsg([
       "바람맞이 상인 마을 — 고원의 바람을 등진 작은 교역 마을.",
