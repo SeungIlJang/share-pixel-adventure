@@ -40,7 +40,7 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
 <script src="data/part1.js?v=22db5a6361"></script>
 <script src="data/part2.js?v=71ec656b03"></script>
 <script src="data/part3.js?v=bc7f810cc0"></script>
-<script src="data/art.js?v=6c49cb2799"></script>
+<script src="data/art.js?v=cd834ceb08"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -804,7 +804,7 @@ function drawTile(sx,sy,x,y,t,hh){ const set=cur.tiles, v=hh<3?'1':'2', fl=tileI
   else if(t==='2'){ const e=tileImg(set,'enc'); if(e) g.drawImage(e,sx,sy); }
   const ob=t==='3'?'altar':t==='4'?'seal':t==='5'?'chest':t==='7'?'trap':t==='9'?'gate':t==='8'?(storyFlags['sw_'+cur.id+'_'+x+','+y]?'switchOn':'switchOff')
     :(t==='6'&&cur.eventTile&&!(cur.eventDone?storyFlags[cur.eventDone]:storyFlags['et_'+cur.id]))?'boss':null;
-  if(ob){ const o=tileImg('obj',ob); if(o){ const bob=ob==='altar'||ob==='boss'||ob==='seal'?Math.round(Math.sin(gtime/12)*1.2):0; g.drawImage(o,sx,sy+bob); } } return true; }
+  if(ob){ const o=tileImg('obj',ob); if(o){ const bob=ob==='altar'||ob==='boss'||ob==='seal'?Math.round(Math.sin(gtime/12)*1.2):ob==='trap'&&gtime%80<7?-2:0; g.drawImage(o,sx,sy+bob); } } return true; }
 function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H);
   camOX=clamp(player.px-W/2+TILE/2,0,Math.max(0,MAPW*TILE-W)); camOY=clamp(player.py-H/2+TILE/2,0,Math.max(0,MAPH*TILE-H));
   for(let y=0;y<MAPH;y++)for(let x=0;x<MAPW;x++){ const sx=x*TILE-camOX, sy=y*TILE-camOY, t=MAP[y][x];
