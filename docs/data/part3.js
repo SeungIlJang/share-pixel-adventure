@@ -52,7 +52,13 @@ goals:{3:[
   ['p3After','이야기를 모두 마쳤다 — 숨은 강적(強)과 전리품, 도감을 채워 보자'],
 ]},
 
+/* 숨은 강적(3부) — 길에서 벗어난 곳. 싸우지 않아도 이야기는 진행된다. lv = 권장 레벨(이보다 높으면 강해진다) */
+elites:{ ashfield:{x:20,y:9,id:'firstLost',lv:24}, cinderpath:{x:20,y:9,id:'mirrorKing',lv:27}, kingsroad:{x:1,y:9,id:'oathBreaker',lv:30}, sourcepath:{x:20,y:1,id:'firstDark',lv:32} },
 enemies:{
+  firstLost:  {elite:'ashfield',  name:'처음 길 잃은 자', hp:9000,atk:150,mag:137,def:37,spd:15,exp:4600,gold:2600,color:'#3a3a52',boss:true,weak:'holy',look:'phantom',big:2,palx:{p:'#44445e',P:'#24243a',e:'#fff3b8'},atkFx:'dark',moves:['eflurry','edrain','ecurse','efocus','eaoe']},
+  mirrorKing: {elite:'cinderpath',name:'거울 속의 왕',    hp:14000,atk:216,mag:200,def:44,spd:16,exp:5400,gold:3000,color:'#d8d0b0',boss:true,weak:'holy',resist:'fire',look:'wraith',big:2,palx:{g:'#d8d0b0',G:'#9a9478',l:'#ffffff',e:'#7cc4ff'},atkFx:'dark',moves:['emagic','echarge','eblast','ecurse','efocus']},
+  oathBreaker:{elite:'kingsroad', name:'약속을 깬 기사',  hp:19000,atk:256,mag:215,def:48,spd:17,exp:6400,gold:3400,color:'#6a2a3a',boss:true,weak:'bolt',look:'raider',big:2,palx:{b:'#6a2a3a',B:'#421824',e:'#ffe27a'},atkFx:'smash',moves:['esmash','eflurry','echarge','eblast'],enrage:0.4},
+  firstDark:  {elite:'sourcepath',name:'첫 번째 어둠',    hp:28000,atk:300,mag:268,def:54,spd:18,exp:7600,gold:4000,color:'#1a1024',boss:true,weak:'holy',look:'gatekeeper',big:2,palx:{g:'#2a1a3a',G:'#120a1c',e:'#ffe9a0'},atkFx:'dark',moves:['ecurse','eflurry','echarge','eblast','edrain','efocus'],enrage:0.5},
   /* 15장 — 모습을 잃은 자들. 빛(holy)에 약한 것이 많다 */
   ashHound:   {weak:'ice',  name:'잿빛 사냥개',  ...reg(15,{hp:.9,spd:14}),      color:'#5a5a66',look:'wolf',palx:{f:'#5a5a66',F:'#3a3a44',l:'#9a9aa8',e:'#ffb060'}},
   ashWisp:    {weak:'holy', name:'재의 불티',    ...reg(15,{hp:.8,mag:1.12}),    color:'#8a7a70',look:'wraith',palx:{g:'#8a7a70',G:'#5a4e48',l:'#d8c8b8',e:'#ffb060'},aiMagic:0.5},
@@ -110,6 +116,11 @@ members:{
 },
 
 equip:{
+  /* 숨은 강적의 고유 장비(3부) */
+  lostLantern:{name:'길 잃은 자의 등불',slot:'ring', mag:7,def:6,spd:3,fx:'first',uniq:1,price:0},
+  mirrorGuard:{name:'거울 손방패',     slot:'hands',def:11,mag:5,fx:'guardCounter',uniq:1,price:0},
+  oathBlade:  {name:'깨진 약속의 검',  slot:'weapon',cls:['검사'],atk:58,fx:'pierce',uniq:1,price:0},
+  firstLight: {name:'첫 빛의 관',      slot:'head', def:16,atk:8,mag:8,spd:4,fx:'weakUp',uniq:1,price:0},
   /* 21~22장 전리품 */
   paleFang:  {name:'빛바랜 송곳니', slot:'ring', atk:10,fx:'critUp',rare:1,price:2000},
   fadedHelm: {name:'빛바랜 투구',   slot:'head', def:19,fx:'aoeGuard',rare:1,price:2000},
@@ -170,6 +181,7 @@ drops:{
   griefHowl:{item:'hiEther',rate:0.1}, cliffBat:{item:'hiPotion',rate:0.12},
   mothQueen:{item:'queenWing',done:'ch17done',part:3}, oathEcho:{item:'oathSeal',done:'ch18done',part:3},
   cinderWolf:{item:'cinderClaw',rate:0.05,pity:20}, waxGuard:{item:'waxShield',rate:0.05,pity:20}, oathGuard:{item:'oathHelm',rate:0.05,pity:20}, inkWraith:{item:'inkRing',rate:0.05,pity:20},
+  firstLost:{item:'lostLantern',part:3,elite:1}, mirrorKing:{item:'mirrorGuard',part:3,elite:1}, oathBreaker:{item:'oathBlade',part:3,elite:1}, firstDark:{item:'firstLight',part:3,elite:1},
   lord2:{item:'lordMantle',done:'ch20done',part:3}, gnawer:{item:'sourceShard',done:'ch21done',part:3}, famineCore:{item:'sharedDawn',done:'ch22done',part:3},
   paleHound:{item:'paleFang',rate:0.05,pity:20}, fadedGuard:{item:'fadedHelm',rate:0.05,pity:20}, famineMaw:{item:'mawRing',rate:0.05,pity:20},
   emberWisp:{item:'hiEther',rate:0.1}, lightEater:{item:'hiPotion',rate:0.12}, famineBit:{item:'hiPotion',rate:0.12}, famineEye:{item:'hiEther',rate:0.1},
