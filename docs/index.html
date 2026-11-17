@@ -452,7 +452,7 @@ function currentPart(){ let n=1; while(storyFlags['part'+n+'Clear']) n++; return
 function currentGoal(){ const gs=(CONTENT.goals||{})[currentPart()]; if(!gs) return '다음 이야기를 준비하고 있습니다'; for(const e of gs) if(!storyFlags[e[0]]) return e[1]; return ''; }
 /* 자동 저장: 이동·전투 직후처럼 안전한 순간에만(대화·전투 중에는 저장하지 않는다) */
 function autoSave(){ if(state==='field'&&!msg&&!battle&&cur) saveGame(); }
-function saveGame(){ try{ localStorage.setItem(SAVE_KEY,JSON.stringify(
+function saveGame(){ try{ checkFeats(); localStorage.setItem(SAVE_KEY,JSON.stringify(
   {v:SAVE_VER,season:SEASON,part:currentPart(),savedAt:Date.now(),playSec:Math.round(playSec),
    party,area:cur?cur.id:'village',player:{x:player.x,y:player.y,dir:player.dir},gold,inventory,sealsFixed,bossStage,chests,flags:storyFlags,choices})); return true; }catch(e){ return false; } }
 /* 저장 형식 변환: 버전별 변환을 순서대로 적용한 뒤 공통 정규화. 새 버전을 만들면 여기에 단계만 추가한다. */
@@ -893,6 +893,7 @@ function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0
   if(menuMode==='equip'){ drawEquipPanel(party[menuSel]); return; }
   if(menuMode==='skills'){ drawSkillPanel(party[menuSel]); return; }
   if(menuMode==='book'){ drawBook(); return; }
+  if(menuMode==='feat'){ drawFeats(); return; }
   if(menuMode==='job'){ drawJobPanel(party[menuSel]); return; }
   if(menuMode==='respec'){ drawRespec(); return; }
   g.fillStyle='#e8eef7'; g.font='bold 14px sans-serif'; g.fillText('파티',14,20); g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText(currentPart()+'부 · 플레이 '+fmtTime(playSec),52,19);
@@ -912,7 +913,8 @@ function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0
     let bx=8; if(invCount()>0){ btn(bx,H-24,92,20,'아이템 사용',()=>{menuMode='item';menuItemSel=0;}); bx+=100; }
     btn(bx,H-24,92,20,'장비 장착',()=>{menuMode='equip';menuItemSel=0;}); bx+=100;
     btn(bx,H-24,92,20,'스킬 · 특성',()=>{menuMode='skills';}); bx+=100;
-    btn(bx,H-24,70,20,'도감',()=>{menuMode='book'; bookSel=null;}); bx+=78;
+    btn(bx,H-24,48,20,'도감',()=>{menuMode='book'; bookSel=null;}); bx+=52;
+    btn(bx,H-24,48,20,'기록',()=>{menuMode='feat';},{fg:'#ffd54a'}); bx+=52;
     if(tile(player.x,player.y)==='3'&&party.some(q=>q.job&&!q.guest)) btn(W-236,3,82,16,'직업 다시 고르기',()=>{menuMode='respec'; respec.who=null;},{bg:'#2a3a4a',fg:'#9fe8c4',font:'10px sans-serif'}); // 제단 위에 서 있을 때만
     if(JOBTEST) btn(W-150,3,74,16,'전직 시험',()=>{menuMode='job';},{bg:'#3a2a4a',fg:'#e0c0ff',font:'10px sans-serif'});
     btn(W-62,H-24,54,20,'닫기',()=>state='field',{font:'11px sans-serif'});
@@ -1018,6 +1020,48 @@ let bookPage=0, bookSel=null;
 const BOOK_IDS=Object.keys(ENEMY_DB).sort((a,b)=>(ENEMY_DB[a].elite?1:0)-(ENEMY_DB[b].elite?1:0)); // 숨은 강적은 맨 뒤 번호
 function bookSeen(id){ return !!(storyFlags['m_'+id]||storyFlags['k_'+id]||storyFlags['wk_'+id]||storyFlags['loot_'+id]); }
 function bookAreas(id){ const o=[]; for(const a in AREAS){ const A=AREAS[a]; if(A.enc&&A.enc.pool.includes(id)&&A.name&&!o.includes(A.name)) o.push(A.name); } return o; }
+/* ---------- 달성 기록 ----------
+   이미 세고 있는 값(도감·전리품·강적·부탁·대화·처치 수)에 목표와 보상을 붙인 것. 달성하면 저장할 때 자동으로 보상을 주고 알린다.
+   cur()=지금 값, max=목표, reward={gold, items}. 받은 표시는 storyFlags['feat_'+id] */
+const FEATS=(()=>{ const flag=k=>()=>storyFlags[k]?1:0, cnt=(ids,f)=>()=>ids().filter(f).length,
+    book=cnt(()=>BOOK_IDS,bookSeen), loot=cnt(()=>Object.keys(DROPS),id=>storyFlags['loot_'+id]), eli=cnt(()=>Object.keys(CONTENT.elites||{}),a=>storyFlags['elite_'+a]),
+    que=cnt(()=>Object.keys(QUESTS),id=>storyFlags['qd_'+id]), tal=cnt(()=>Object.keys(TALKS),id=>storyFlags['talk_'+id]),
+    kills=()=>Object.keys(storyFlags).reduce((s,k)=>s+(k.indexOf('k_')===0?(storyFlags[k]||0):0),0), j2=()=>party.filter(p=>p.job2).length,
+    nB=BOOK_IDS.length, nL=Object.keys(DROPS).length, nE=Object.keys(CONTENT.elites||{}).length, nQ=Object.keys(QUESTS).length, nT=Object.keys(TALKS).length;
+  return [
+    {id:'p1',  name:'세 봉인',           desc:'1부를 끝낸다',                 cur:flag('part1Clear'),max:1, reward:{gold:500}},
+    {id:'p2',  name:'균열 앞까지',       desc:'2부를 끝낸다',                 cur:flag('part2Clear'),max:1, reward:{gold:1500}},
+    {id:'p3',  name:'새벽을 나누다',     desc:'3부를 끝낸다',                 cur:flag('part3Clear'),max:1, reward:{items:{lifeSeed:2}}},
+    {id:'b1',  name:'도감 절반',         desc:'마물 도감을 절반 채운다',      cur:book,max:Math.ceil(nB/2), reward:{items:{wisdomSeed:1}}},
+    {id:'b2',  name:'도감 완성',         desc:'마물 도감을 모두 채운다',      cur:book,max:nB, reward:{items:{powerSeed:2,wisdomSeed:2,guardSeed:2}}},
+    {id:'l1',  name:'전리품 절반',       desc:'마물의 전리품을 절반 얻는다',  cur:loot,max:Math.ceil(nL/2), reward:{items:{guardSeed:1}}},
+    {id:'l2',  name:'전리품 완성',       desc:'마물의 전리품을 모두 얻는다',  cur:loot,max:nL, reward:{items:{lifeSeed:3}}},
+    {id:'e1',  name:'강적 사냥꾼',       desc:'숨은 강적을 다섯 쓰러뜨린다',  cur:eli,max:Math.min(5,nE), reward:{items:{powerSeed:1}}},
+    {id:'e2',  name:'강적의 끝',         desc:'숨은 강적을 모두 쓰러뜨린다',  cur:eli,max:nE, reward:{items:{powerSeed:2,lifeSeed:2}}},
+    {id:'q1',  name:'마을의 일꾼',       desc:'마을 부탁을 다섯 들어준다',    cur:que,max:Math.min(5,nQ), reward:{gold:2000}},
+    {id:'q2',  name:'모두의 부탁',       desc:'마을 부탁을 모두 들어준다',    cur:que,max:nQ, reward:{items:{guardSeed:2}}},
+    {id:'t1',  name:'모닥불 이야기',     desc:'동료와 이야기를 절반 나눈다',  cur:tal,max:Math.ceil(nT/2), reward:{items:{wisdomSeed:1}}},
+    {id:'t2',  name:'끝까지 들은 이야기',desc:'동료와 이야기를 모두 나눈다',  cur:tal,max:nT, reward:{items:{lifeSeed:2}}},
+    {id:'j2',  name:'네 갈래의 끝',       desc:'네 사람 모두 2차 전직한다',    cur:j2,max:4, reward:{gold:3000}},
+    {id:'k5',  name:'오백 번의 승부',     desc:'마물을 500마리 쓰러뜨린다',    cur:kills,max:500, reward:{gold:2000}},
+  ]; })();
+function featReward(r){ const o=[]; if(r.gold) o.push('◆'+r.gold); for(const it in (r.items||{})) o.push(itemDef(it).name+' ×'+r.items[it]); return o.join(' · '); }
+function featCount(){ return FEATS.filter(f=>storyFlags['feat_'+f.id]).length+'/'+FEATS.length; }
+let featToast=[], featToastT=0;
+/* 새로 달성한 것에 보상을 주고 알림을 쌓는다. 저장 직전에 부른다 */
+function checkFeats(){ if(!party||!party.length) return; for(const f of FEATS){ if(storyFlags['feat_'+f.id]||f.cur()<f.max) continue; storyFlags['feat_'+f.id]=1;
+    const r=f.reward||{}; if(r.gold) gold+=r.gold; for(const it in (r.items||{})) inventory[it]=(inventory[it]||0)+r.items[it]; featToast.push('달성! 「'+f.name+'」  '+featReward(r)); } }
+function drawFeatToast(){ if(!featToast.length) return; if(featToastT<=0){ featToastT=170; sfx('coin'); } const a=Math.min(1,featToastT/20,(170-featToastT)/12+0.2), t=featToast[0];
+  g.globalAlpha=Math.max(0,a); g.font='bold 11px sans-serif'; const w=Math.min(W-16,g.measureText(t).width+24), x=(W-w)/2; g.fillStyle='rgba(20,16,6,.94)'; g.fillRect(x,22,w,20); g.strokeStyle='#ffd54a'; g.strokeRect(x+0.5,22.5,w-1,19);
+  g.fillStyle='#ffd54a'; g.textAlign='center'; g.fillText(t,W/2,36); g.textAlign='left'; g.globalAlpha=1; if(--featToastT<=0) featToast.shift(); }
+function drawFeats(){ g.textAlign='left'; g.fillStyle='#ffd54a'; g.font='bold 13px sans-serif'; g.fillText('달성 기록  '+featCount(),14,19);
+  g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText('달성하면 보상이 바로 가방에 들어온다',150,19);
+  FEATS.forEach((f,i)=>{ const col=i<8?0:1, x=8+col*236, y=28+(i-col*8)*26, w=228, done=!!storyFlags['feat_'+f.id], c=Math.min(f.max,f.cur());
+    g.fillStyle=done?'rgba(40,36,14,.94)':'rgba(18,22,34,.94)'; g.fillRect(x,y,w,23);
+    g.fillStyle=done?'#ffd54a':'#e8eef7'; g.font='bold 11px sans-serif'; g.fillText((done?'✔ ':'')+f.name,x+6,y+10);
+    g.fillStyle=done?'#b8a860':'#8a93ad'; g.font='9px sans-serif'; g.fillText(f.desc+'  →  '+featReward(f.reward||{}),x+6,y+20);
+    g.textAlign='right'; g.fillStyle=done?'#ffd54a':'#9fe8c4'; g.font='10px sans-serif'; g.fillText(f.max>1?c+'/'+f.max:(done?'완료':'—'),x+w-6,y+10); g.textAlign='left'; });
+  btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
 function drawBook(){ const ids=BOOK_IDS, PER=24, pages=Math.max(1,Math.ceil(ids.length/PER)); bookPage=Math.max(0,Math.min(pages-1,bookPage));
   const seen=ids.filter(bookSeen).length, dk=Object.keys(DROPS), got=dk.filter(id=>storyFlags['loot_'+id]).length;
   g.textAlign='left'; g.fillStyle='#e8eef7'; g.font='bold 14px sans-serif'; g.fillText('마물 도감',14,20);
@@ -1657,7 +1701,8 @@ function draw(){ g.setTransform(1,0,0,1,0,0); // 매 프레임 변환 초기화(
   if(state==='title') drawTitle(); else if(state==='field') drawField(); else if(state==='menu') drawMenu();
   else if(state==='shop') drawShop(); else if(state==='battle') drawBattle(); else if(state==='jobpick') drawJobPick();
   if(state==='battle'){ drawFx(); drawPops(); }
-  if(msg) drawMsgBox(); }
+  if(msg) drawMsgBox();
+  if(state!=='title') drawFeatToast(); }
 /* 전투 2배속: 전투 중에만 한 화면에 두 번 진행한다. 설정은 기기에 기억 */
 let fastBattle=false; try{ fastBattle=localStorage.getItem('pixel-adventure-fast')==='1'; }catch(e){}
 function toggleFast(){ fastBattle=!fastBattle; sfx('sel'); try{ localStorage.setItem('pixel-adventure-fast',fastBattle?'1':'0'); }catch(e){} }
