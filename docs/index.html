@@ -35,9 +35,9 @@ var CONTENT={parts:[],areas:{},events:{},enemies:{},enemyPx:{},bossScenes:{},equ
 function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]) CONTENT[k]={};
   if(k==='learn'){ for(var cl in c[k]) CONTENT[k][cl]=(CONTENT[k][cl]||[]).concat(c[k][cl]); } else Object.assign(CONTENT[k],c[k]); } }
 </script>
-<script src="data/part1.js?v=d2a2df1c24"></script>
-<script src="data/part2.js?v=d6af128854"></script>
-<script src="data/part3.js?v=a3239a6ee3"></script>
+<script src="data/part1.js?v=00f681d801"></script>
+<script src="data/part2.js?v=9c3fffcecc"></script>
+<script src="data/part3.js?v=7002a61e89"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -711,6 +711,14 @@ function updateField(){ if(msg) return;
     if(player.px<tx) player.px=Math.min(player.px+sp,tx); else if(player.px>tx) player.px=Math.max(player.px-sp,tx);
     if(player.py<ty) player.py=Math.min(player.py+sp,ty); else if(player.py>ty) player.py=Math.max(player.py-sp,ty);
     if(player.px===tx&&player.py===ty){ player.moving=false; player.steps++; onStep(); } } }
+/* 제단의 동료 대화: CONTENT.talks[id]={ch(장), when(이 플래그가 선 뒤부터), title, lines:[[이름,대사]…] 또는 그것을 돌려주는 함수}.
+   제단에서 아직 나누지 않은 것 중 가장 최근 장의 것을 권한다. 「다음에」를 고르면 이번에 켜 둔 동안은 다시 묻지 않는다 */
+const TALKS=CONTENT.talks||{}, TALK_COL={'테리':'#7cc4ff','카엘':'#c79bff','미아':'#9fe8c4','코르':'#f0c27a'}; let talkSkip={};
+function nextTalk(){ let best=null, top=0; for(const id in TALKS){ const t=TALKS[id]; if(!storyFlags[t.when]) continue; top=Math.max(top,t.ch);
+    if(storyFlags['talk_'+id]||talkSkip[id]) continue; if(!best||t.ch>best.ch) best=Object.assign({id},t); } if(best) best.old=best.ch<top; return best; }
+function talkCount(){ const ids=Object.keys(TALKS); return ids.filter(id=>storyFlags['talk_'+id]).length+'/'+ids.length; }
+function talkLines(t){ const ls=typeof t.lines==='function'?t.lines():t.lines;
+  return (t.old?['— 지난 일을 떠올린다 · 제'+t.ch+'장 무렵 —']:[]).concat(ls.map(l=>Array.isArray(l)?{n:l[0],t:l[1],c:TALK_COL[l[0]]||'#d9cdb5'}:l)); }
 function onStep(){
   const wp=warpAt(player.x,player.y); if(wp){ if(wp.need&&!storyFlags[wp.need]){ showMsg([wp.block||'아직 갈 수 없다.']); sfx('sel'); return; }
     if(wp.event&&wp.eventFlag&&!storyFlags[wp.eventFlag]){ sfx('sel'); runEvent(wp.event); return; } // 챕터 이벤트 미완료 시 길목에서 발동(회피 불가 보장)
@@ -719,7 +727,10 @@ function onStep(){
   { const el=cur.elite; if(el&&player.x===el.x&&player.y===el.y&&!storyFlags['elite_'+cur.id]){ eliteAsk(el); return; } }
   const t=tile(player.x,player.y);
   if(t==='3'){ party.forEach(p=>{p.hp=p.maxhp;p.mp=p.maxmp;p.alive=true;}); sfx('heal');
-    showMsg(["제단의 빛이 스며든다. (전원 회복)", saveGame()?"기록을 저장했다.":"저장 실패."]); }
+    const base=["제단의 빛이 스며든다. (전원 회복)", saveGame()?"기록을 저장했다.":"저장 실패."], tk=nextTalk();
+    if(tk) askMsg(base.concat(['동료들이 제단 곁에 둘러앉는다. 이야기를 나눌까? — 「'+tk.title+'」']),'이야기한다','다음에',
+      ()=>{ storyFlags['talk_'+tk.id]=1; showMsg(talkLines(tk).concat(['(나눈 이야기 '+talkCount()+')']),()=>{ saveGame(); }); }, ()=>{ talkSkip[tk.id]=1; });
+    else showMsg(base); }
   else if(t==='4'){ const bz=cur.boss; if(!bz) return; const key='bi_'+bz.id;
     if(bz.need&&!storyFlags[bz.need]){ showMsg([bz.block||'봉인석이 결계에 막혀 있다.']); sfx('sel'); return; } // 심층 맵의 결계를 먼저 풀어야 함
     if(!storyFlags[key]){ storyFlags[key]=true; showMsg(bossScene(bz.id,'intro'), ()=>startBattle([bz.id],true,{sealBoss:true})); }
