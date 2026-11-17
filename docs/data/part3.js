@@ -1,5 +1,5 @@
 /* 모두의 픽셀모험 — 제3부 「균열 너머」 데이터 (제작 중)
-   지금 들어 있는 것: 제15장, 1차 전직 직업 8개와 그 기술·특성. 16장부터는 아직 없다. */
+   지금 들어 있는 것: 제15~16장, 1차 전직 직업 8개와 그 기술·특성, 임시 동료 가른. 17장부터는 아직 없다. */
 (function(){
 "use strict";
 /* ---- 화자 색 ---- */
@@ -17,6 +17,9 @@ function bos(ch,m){ m=m||{}; const k=ch-7; return {
 const PAL={
   ash:  { bg:'#08080c', floor:'#2c2c34', wall:'#1a1a22', grass:'#3a3a48', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(200,200,220,.07)', rock:'#3a3a46', rock2:'#30303c', tuft:'#6a6a80' },
   lamp: { bg:'#0a0908', floor:'#34302c', wall:'#1e1a16', grass:'#3a3a48', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(255,200,140,.08)', roof:'#6a5a4a', roof2:'#5a4c3e' },
+  vale: { bg:'#07080c', floor:'#282c36', wall:'#161a24', grass:'#343c50', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(180,200,240,.07)', rock:'#343a48', rock2:'#2a303c', tuft:'#5a6a8a' },
+  rest: { bg:'#090808', floor:'#302c2a', wall:'#1c1816', grass:'#3a3a48', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(255,190,130,.07)', roof:'#5a5048', roof2:'#4a423c' },
+  deep: { bg:'#050508', floor:'#22242e', wall:'#101218', grass:'#2e3246', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(160,170,220,.07)', rock:'#2e303c', rock2:'#262832' },
   tower:{ bg:'#06060a', floor:'#262630', wall:'#14141c', grass:'#34344a', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(255,190,120,.07)', rock:'#34343e', rock2:'#2a2a34' },
 };
 
@@ -26,7 +29,9 @@ definePart(3,{
 goals:{3:[
   ['p3Child','동쪽으로 걸어 사람이 사는 곳을 찾자'],
   ['ch15done','잿등 마을 남쪽 ▣ 꺼진 등대의 「돌아오지 못한 자」를 만나자'],
-  ['ch16done','제16장은 준비 중입니다 — 그동안 숨은 강적(強)과 전리품을 찾아보자'],
+  ['garnJoined','잿등 마을 동쪽 골짜기로 가자'],
+  ['ch16done','쉼터 남쪽 ▣ 골짜기 밑바닥의 「잊힌 무리」를 막자'],
+  ['ch17done','제17장은 준비 중입니다 — 그동안 숨은 강적(強)과 전리품을 찾아보자'],
 ]},
 
 enemies:{
@@ -37,9 +42,26 @@ enemies:{
   lampMoth:   {weak:'arrow',name:'등불 나방',    ...reg(15,{hp:.75,spd:17}),     color:'#b08a5a',look:'bat',palx:{b:'#b08a5a',B:'#7a5e3a',l:'#f0d0a0'}},
   hollowGuard:{weak:'bolt',resist:'arrow',name:'빈 갑주',...reg(15,{hp:1.35,def:1.3,spd:9}),color:'#5a5a70',look:'sentinel',palx:{g:'#5a5a70',G:'#3a3a4c',l:'#9a9ab0',e:'#ffb060'}},
   returner:   {atkFx:'dark',weak:'holy',moves:['eatk','efocus','edrain','eflurry','eaoe'],enrage:0.35,name:'돌아오지 못한 자',...bos(15), hp:7200,atk:96,mag:84, color:'#2a2a3a',look:'phantom',big:2,palx:{p:'#34344a',P:'#1c1c28',e:'#ffb060'}},
+  /* 16장 — 이름까지 잊은 자들 */
+  faceless:  {weak:'holy', name:'얼굴 없는 자', ...reg(16,{hp:1.05}),           color:'#30304a',look:'shade',palx:{g:'#40405e',G:'#26263a',e:'#cfd8ff'},aiMagic:0.3},
+  griefHowl: {weak:'holy', name:'울음 그림자',  ...reg(16,{hp:.8,mag:1.15}),    color:'#5a6088',look:'wraith',palx:{g:'#5a6088',G:'#3a3e5c',l:'#b0b8e0',e:'#cfd8ff'},aiMagic:0.55},
+  cliffBat:  {weak:'arrow',name:'벼랑 박쥐',    ...reg(16,{hp:.75,spd:18}),     color:'#4a5068',look:'bat',palx:{b:'#4a5068',B:'#30344a',l:'#8a94b8'}},
+  valeBrute: {weak:'fire', name:'엉긴 덩이',    ...reg(16,{hp:1.45,atk:1.1,spd:8}),color:'#3a3450',look:'brute',palx:{b:'#3a3450',B:'#241f36',l:'#6a6490',e:'#cfd8ff'}},
+  lampEater: {weak:'ice',  name:'등불 먹는 것', ...reg(16,{hp:.95,spd:13}),     color:'#6a5a4a',look:'creeper',palx:{g:'#6a5a4a',G:'#463a2e',l:'#b09a7a',e:'#ffb060'}},
+  throng:    {atkFx:'dark',weak:'holy',moves:['eatk','ecurse','eflurry','edrain','eaoe'],enrage:0.35,name:'잊힌 무리',...bos(16), hp:11000,atk:118,mag:102, color:'#2a2840',look:'brute',big:2,palx:{b:'#34324e',B:'#1c1a2c',l:'#5a5880',e:'#cfd8ff'}},
+},
+
+members:{
+  /* 16장의 임시 동료. 장비 없이도 제 몫을 하도록 기본 능력치를 높게 잡았다(장비를 끼우면 그만큼 더 세지고, 떠날 때 돌려받는다) */
+  '가른':{cls:'궁수', stats:[150,30,62,36,10,24], skills:['garnVolley'], color:GARN, set:{guest:true,title:'화살의 사도',learnKey:'garn',palx:{a:'#5a6480',A:'#3c445c',l:'#8e9ab8'}}},
 },
 
 equip:{
+  /* 16장 전리품 */
+  facelessMask:{name:'얼굴 없는 가면', slot:'head',def:15,fx:'evade',rare:1,price:1100},
+  clumpCore:   {name:'엉긴 덩이의 심', slot:'ring',def:6,fx:'thorns',rare:1,price:1000},
+  eaterFang:   {name:'불 먹는 이빨',   slot:'ring',atk:8,fx:'lifeSteal',rare:1,price:1100},
+  nameLamp:    {name:'이름들의 등불',  slot:'ring',mag:5,def:5,spd:2,fx:'mpRegen',uniq:1,price:0},
   /* 7단계(잿빛) — 잿등 마을 */
   ashSword: {name:'잿빛검',        slot:'weapon',cls:['검사'],atk:40,price:1600},
   ashStaff: {name:'잿빛 지팡이',   slot:'weapon',cls:['주술사','치유사'],mag:40,price:1600},
@@ -58,6 +80,9 @@ drops:{
   returner:{item:'halenBird',done:'ch15done',part:3},
   ashHound:{item:'ashFang',rate:0.05,pity:20}, formless:{item:'hollowCloak',rate:0.05,pity:20}, hollowGuard:{item:'hollowHelm',rate:0.05,pity:20},
   ashWisp:{item:'hiEther',rate:0.1}, lampMoth:{item:'hiPotion',rate:0.12},
+  throng:{item:'nameLamp',done:'ch16done',part:3},
+  faceless:{item:'facelessMask',rate:0.05,pity:20}, valeBrute:{item:'clumpCore',rate:0.05,pity:20}, lampEater:{item:'eaterFang',rate:0.05,pity:20},
+  griefHowl:{item:'hiEther',rate:0.1}, cliffBat:{item:'hiPotion',rate:0.12},
 },
 
 areas:{
@@ -97,7 +122,7 @@ areas:{
       {x:3,y:7,color:'#f0c27a',shade:true,name:'그림자 상인',glyph:'◇',shop:['hiPotion','hiEther','revive','ashSword','ashStaff','ashBow','ashPlate','ashRobe','ashHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
     warps:[ {x:1,y:5,to:'ashfield',tx:21,ty:5,label:'들판'},
             {x:8,y:9,to:'deadlight',tx:2,ty:1,label:'등대'},
-            {x:14,y:5,to:'lamptown',tx:13,ty:5,label:'골짜기',need:'ch16ready',block:'동쪽 골짜기로 가는 길은 다음 이야기에서 이어진다. (제16장은 준비 중입니다)'} ],
+            {x:14,y:5,to:'valeroad',tx:2,ty:5,label:'골짜기',need:'ch15done',block:'동쪽 골짜기는 등불지기가 막아선다. 「먼저 남쪽 등대의 일을 봐 주시오.」'} ],
     onEnter:'ev_lamp_enter' },
 
   /* 나선 등대: 바깥 고리 → 안쪽 고리 → 한가운데 등실. 장치 둘은 바깥 고리의 양 끝 */
@@ -109,6 +134,50 @@ areas:{
     npcs:[], warps:[ {x:1,y:1,to:'lamptown',tx:8,ty:8,label:'마을'} ],
     loot:{'10,5':{item:'ashRobe'},'14,9':{gold:1500,item:'hiEther'}},
     eventTile:'ev_returner', eventDone:'ch15done', onEnter:'ev_dead_enter' },
+
+  /* ---- 제16장 ---- */
+  valeroad:{ name:'잃은 자들의 골짜기', theme:'ash', bgm:'rift', hud:'3부 16장', pal:PAL.vale,
+    src:[ "1111111111111111111111","1000022000001000000051","1011022000001002200001","1011000011000002200101",
+          "1000000011000000000101","1000000000060000000001","1001100000000110000001","1001100220000110022001",
+          "1000000220070000022001","1050000000000000000001","1111111111111111111111" ],
+    enc:{ pool:['faceless','griefHowl','cliffBat'], rate:0.2, pow:1.04, hpw:1.12 }, respawn:{x:2,y:5},
+    npcs:[], warps:[ {x:1,y:5,to:'lamptown',tx:13,ty:5,label:'마을'},
+            {x:20,y:5,to:'hollowrest',tx:2,ty:5,label:'쉼터',event:'ev_garn_meet',eventFlag:'garnMet'} ],
+    loot:{'20,1':{item:'wisdomSeed'},'2,9':{gold:1200,item:'hiEther'}},
+    eventTile:'ev_garn_meet', eventDone:'garnMet' },
+
+  hollowrest:{ name:'이름 없는 쉼터', theme:'town', bgm:'town', hud:'3부 16장', pal:PAL.rest,
+    src:[ "1111111111111111","1000000000000001","1011100000111001","1000000300000001",
+          "1000000000000001","1000000000000001","1011000000011001","1000000000000001",
+          "1000000000000001","1111111101111111","1111111111111111" ],
+    enc:null, respawn:{x:3,y:5},
+    npcs:[
+      {x:8,y:5,color:GARN,name:'가른',when:'ch16done',lines:[
+        say('가른','팔은 조금씩 돌아오고 있다. 불 옆에 앉아 있으면 윤곽이 다시 선다.',GARN),
+        say('가른','코르에게 전해라. 겨눌 것을 스스로 정한 궁수는, 나보다 멀리 쏜다고.',GARN) ]},
+      {x:5,y:3,color:'#6a6884',shade:true,name:'이름 없는 이',lines:()=> storyFlags.ch16done ? [
+          say('이름 없는 이','…이름이… 하나 돌아왔어… 「소라」… 그게 나였어…',FOLK) ] : [
+          say('이름 없는 이','…불… 따뜻해… 내 이름이… 뭐였더라…',FOLK) ]},
+      {x:10,y:3,color:'#7a7896',shade:true,name:'얼굴만 남은 이',lines:()=> storyFlags.p3Child==='share' ? [
+          say('얼굴만 남은 이','잿등 마을 아이가 얼굴을 돌려받았다는 소문이 여기까지 왔어. 너희지?',FOLK),
+          say('얼굴만 남은 이','빛을 나눠 받는다는 게 어떤 건지, 우리는 잊은 지 오래야. 고맙다는 말도.',FOLK) ] : [
+          say('얼굴만 남은 이','검 든 저편 사람이 아이를 쫓았다더군. …너희는 아니겠지.',FOLK),
+          say('얼굴만 남은 이','가른도 처음엔 활을 겨누고 왔어. 사람은, 보고 나면 바뀌기도 하더라.',FOLK) ]},
+      {x:12,y:7,color:'#f0c27a',shade:true,name:'빛 줍는 이',glyph:'◇',shop:['hiPotion','hiEther','revive','ashSword','ashStaff','ashBow','ashPlate','ashRobe','ashHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
+    warps:[ {x:1,y:5,to:'valeroad',tx:19,ty:5,label:'골짜기'},
+            {x:8,y:9,to:'valedeep',tx:2,ty:1,label:'밑바닥'},
+            {x:14,y:5,to:'hollowrest',tx:13,ty:5,label:'등불 도시',need:'ch17ready',block:'등불 도시로 가는 길은 다음 이야기에서 이어진다. (제17장은 준비 중입니다)'} ],
+    onEnter:'ev_rest_enter' },
+
+  /* 갈지자 벼랑길: 층마다 끝에서 끝까지 걸어야 다음 층으로 내려간다. 장치는 두 층의 막다른 끝 */
+  valedeep:{ name:'골짜기 밑바닥', theme:'temple', bgm:'dungeon', hud:'3부 16장', pal:PAL.deep,
+    src:[ "111111111111111111","100022000007000001","111111111111111101","180000220000050001",
+          "110111111111111111","100002200070000081","111111111111101111","150000022000000001",
+          "111111111111911111","150006000000000001","111111111111111111" ],
+    enc:{ pool:['faceless','valeBrute','lampEater'], rate:0.22, pow:1.35, hpw:1.3 }, respawn:{x:2,y:1},
+    npcs:[], warps:[ {x:1,y:1,to:'hollowrest',tx:8,ty:8,label:'쉼터'} ],
+    loot:{'13,3':{item:'guardSeed'},'1,7':{gold:1800,item:'hiPotion'},'1,9':{item:'lifeSeed'}},
+    eventTile:'ev_throng', eventDone:'ch16done', onEnter:'ev_deep_enter' },
 },
 
 starts:{
@@ -200,8 +269,79 @@ events:{
           id ? '테리는 「'+jobName(party.find(q=>q.name==='테리'))+'」(으)로 전직했다!  '+(got||[]).join(' · ') : '',
           say('카엘','(…다음은 내 차례겠지. 내가 숨긴 것의 값을 치를 차례.)',K),
           "— 제15장 「빛 없는 땅」 완료 —",
-          "등대에 불이 들어 마을이 조금 밝아졌다. 동쪽 골짜기로 가는 길은 다음 이야기에서 이어진다." ].filter(Boolean),
+          "등대에 불이 들어 마을이 조금 밝아졌다. 마을 동쪽으로 골짜기 가는 길이 열렸다." ].filter(Boolean),
           ()=>{ storyFlags.ch15done=true; saveGame(); }); }); }); },
+
+  /* ================= 제16장 「모습을 잃은 자들」 ================= */
+  ev_garn_meet:()=>{ if(storyFlags.garnMet) return; storyFlags.garnMet=true;
+    showMsg([
+      "— 제16장 「모습을 잃은 자들」 —",
+      "발 앞에 화살 한 대가 꽂힌다. 깃은 — 코르의 것과 같은 매의 깃.",
+      say('코르','…형.',C),
+      say('가른','거기까지다. 이 골짜기 아래엔 이름을 잊은 자들이 모여 있다. 검 든 손님은 받지 않는다.',GARN),
+      say('코르','5년이야. 5년을 찾았어. 쐐기 앞에서 그림자로 녹아 사라지고는 — 이번에도 그 말부터 해?',C),
+      storyFlags.p3Child==='share' ? say('테리','우린 이제 알아. 저들이 사람이라는 걸. 베러 온 게 아니야.',T) : say('테리','…알아. 저들이 사람이라는 걸. 늦게 알았지만.',T),
+      say('가른','(활을 내린다) …남쪽 등대에 불이 든 걸 봤다. 너희가 한 일이냐.',GARN),
+      say('가른','따라와라. 내가 왜 저쪽 활을 들었는지, 말로는 못 한다. 보여 주마.',GARN),
+      "가른을 따라 동쪽 끝으로 가자." ], ()=>{ saveGame(); }); },
+
+  ev_rest_enter:()=>{ if(storyFlags.garnJoined) return; storyFlags.garnJoined=true; joinMember('가른');
+    showMsg([
+      "벼랑에 기대어 지은 쉼터. 등불은 단 하나 — 그 둘레에, 윤곽조차 흐려진 그림자들이 겹겹이 앉아 있다.",
+      say('가른','이름을 잊은 자들이다. 마을에서도 받아 주지 못한다. 불빛에서 떨어지면 들판을 헤매다 균열로 흘러간다.',GARN),
+      say('가른','5년 전에 내가 쫓던 그림자도 그랬다. 따라와 보니 이 등불 앞에서 쓰러지더군. 제 아이 이름을 부르면서.',GARN),
+      say('코르','…그래서 안 돌아온 거야? 편지 한 장 없이.',C),
+      say('가른','돌아가면 다시 쏴야 했다. 넘어오는 것마다. 그럴 바엔 이쪽에서 불을 지키는 편이 나았다.',GARN),
+      say('카엘','이 등불의 빛… 쐐기에서 온 거군. 네 개의 쐐기가 우리 쪽 빛을 끌어다, 이런 곳에 대고 있었어.',K),
+      say('가른','그래. 그걸 너희가 뽑았지. 원망은 않는다 — 너희 마을도 말라 가고 있었으니까. 다만 그날부터 이 불은 줄고 있다.',GARN),
+      say('가른','불이 줄자 밑바닥의 것들이 뭉치기 시작했다. 이름도 얼굴도 없는 것들이 한 덩이가 되어, 마지막 불빛을 향해 기어오른다.',GARN),
+      say('가른','저게 여기 닿으면 이 사람들까지 삼켜진다. 혼자서는 못 막는다. …코르. 활을 빌려 다오.',GARN),
+      say('코르','빌려주는 거야. 준 게 아니고. 끝나면 5년 치 얘기를 다 들을 거니까.',C),
+      "가른이 동료가 되었다! 이 장에서는 다섯 명이 함께 싸운다.  "+skillNames('가른'),
+      "쉼터 남쪽 ▣ 으로 내려가면 골짜기 밑바닥이다. 제단 ✦ 과 빛 줍는 이 ◇ 도 있다." ], ()=>{ saveGame(); }); },
+
+  ev_deep_enter:()=>{ if(storyFlags.deepEntered) return; storyFlags.deepEntered=true;
+    showMsg([
+      "골짜기 밑바닥 — 벼랑길이 갈지자로 꺾이며 내려간다. 아래에서, 수십 명이 한꺼번에 중얼거리는 소리가 올라온다.",
+      say('가른','층마다 끝까지 걸어야 다음 층으로 내려간다. 막다른 끝의 옛 장치(○) 둘을 눌러야 맨 아래 문(▦)이 열린다.',GARN),
+      say('코르','…형은 여길 혼자 오르내린 거야?',C),
+      say('가른','매일.',GARN) ]); },
+
+  ev_throng:()=>{ if(storyFlags.ch16done) return; if(storyFlags.throngDown){ runEvent('ev_throng_after'); return; } // 이긴 뒤 전직을 고르기 전에 꺼졌다면 이어서
+    showMsg([
+      "밑바닥. 그림자들이 서로 엉겨, 집채만 한 덩이가 되어 벼랑을 긁고 있다.",
+      "덩이 속에서 얼굴들이 떠올랐다 가라앉는다. 하나같이 위쪽 — 쉼터의 불빛을 보고 있다.",
+      say('미아','저 안에… 전부 사람이에요. 몇 명인지도 모르겠어요.',M),
+      say('코르','어딜 쏴야 해, 형. 급소가 없어.',C),
+      say('가른','없다. 그래서 5년을 못 쐈다. …오늘은 쏜다. 엉긴 데를 풀어 놓기만 해라. 죽이는 게 아니다.',GARN) ],
+      ()=>{ startBattle(['throng','faceless','faceless'],true,{onWin:'ev_throng_after'}); }); },
+
+  ev_throng_after:()=>{ storyFlags.throngDown=true; saveGame();
+    showMsg([
+      "덩이가 풀린다. 엉겨 있던 그림자들이 하나씩 떨어져 나와, 바닥에 주저앉는다.",
+      "가른이 한쪽 무릎을 꿇는다. 활을 쥔 팔이 덩이에 스쳐, 윤곽을 잃었다.",
+      say('코르','형, 팔이—!',C),
+      say('가른','괜찮다. 불 옆에 있으면 돌아온다. …당분간 시위는 못 당기겠지만.',GARN),
+      say('가른','코르. 너는 5년 동안 무엇을 겨눴느냐.',GARN),
+      say('코르','…형을 데려간 그림자. 그놈만 맞히면 다 끝날 줄 알았어.',C),
+      say('코르','근데 그 그림자는, 여기서 제 아이 이름을 부르다 쓰러졌다며. 난 5년을 없는 과녁에 겨눈 거야.',C),
+      say('미아','코르…',M),
+      say('코르','됐어. 이제 뭘 겨눌지는 내가 정해.',C) ],
+      ()=>{ openJobPick('코르',(id,got)=>{
+        const line = id==='sniper' ? say('코르','한 발이면 돼. 꼭 맞혀야 하는 것 하나만 겨눈다. 다시는 엉뚱한 걸 쏘지 않게.',C)
+                   : id==='ranger' ? say('코르','한자리에 서서 겨누는 건 그만둘래. 형처럼 뛰어다니면서, 닿는 데까지 다 막을 거야.',C)
+                   : say('코르','…가자.',C);
+        const left=leaveMember('가른');
+        showMsg([ line,
+          id ? '코르는 「'+jobName(party.find(q=>q.name==='코르'))+'」(으)로 전직했다!  '+(got||[]).join(' · ') : '',
+          say('가른','…좋은 눈이 됐구나. 나는 여기 남는다. 이 팔이 돌아올 때까지는 불이나 지키마.',GARN),
+          say('가른','골짜기를 벗어나 동쪽으로 더 가면 등불 도시가 있다. 로완이 거기 있다 — 미아, 네 신전에서 쫓겨난 그 사제다.',GARN),
+          say('미아','(…서리의 사도. 저에게 「덮지 마라」 하신 분.)',M),
+          say('코르','형. 다 끝나면 데리러 올게. 이번엔 내가 찾으러 오는 거니까, 어디 가지 마.',C),
+          left ? "가른이 파티를 떠났다. (끼워 준 장비는 가방으로 돌아왔다)" : '',
+          "— 제16장 「모습을 잃은 자들」 완료 —",
+          "밑바닥의 그림자들이 쉼터로 올라와 불 곁에 앉았다. 등불 도시로 가는 길은 다음 이야기에서 이어진다." ].filter(Boolean),
+          ()=>{ storyFlags.ch16done=true; saveGame(); }); }); }); },
 },
 
 
@@ -231,6 +371,10 @@ traits:{
 },
 
 skills:{
+  /* 가른(임시 동료) */
+  garnVolley:{name:'사도의 연사',  fx:'rain',  el:'arrow',mp:7, kind:'phys',power:1.3,hits:3,target:'enemy',msg:'의 연사!',desc:'단일 ×1.3 3회'},
+  garnPierce:{name:'꿰뚫는 화살',  fx:'pierce',el:'arrow',mp:9, kind:'phys',power:3.2,pen:0.5,target:'enemy',msg:'의 꿰뚫는 화살!',desc:'단일 ×3.2 방어 절반 무시'},
+  garnMark:  {name:'급소 짚기',    fx:'pierce',el:'arrow',mp:6, kind:'phys',power:1.4,mark:4,target:'enemy',msg:'의 급소 짚기!',desc:'단일 ×1.4 +표식(받는 피해↑)'},
   /* 수호기사 */
   shieldBash:{name:'방패 강타',  fx:'heavy',el:'holy',mp:6, kind:'phys',power:2.4,stun:0.5,target:'enemy',msg:'의 방패 강타!',desc:'단일 빛 ×2.4 +기절 50%'},
   aegis:     {name:'수호의 맹세',mp:10,kind:'buff',buff:'veil',turns:4,target:'allAllies',msg:'의 수호의 맹세!',note:'전원이 받는 피해가 줄어든다',desc:'아군 전체 피해↓ 3턴'},
@@ -266,6 +410,7 @@ skills:{
 },
 
 learn:{
+  garn:       [{lv:1,trait:'twice'},  {lv:1,id:'garnPierce'}, {lv:1,id:'garnMark'}],
   guardian:   [{lv:0,trait:'cover'},  {lv:0,id:'shieldBash'}, {lv:26,id:'aegis'},     {lv:29,id:'holyBlade'}],
   blademaster:[{lv:0,trait:'keen'},   {lv:0,id:'tripleSlash'},{lv:26,id:'crescent'},  {lv:29,id:'iai'}],
   archsage:   [{lv:0,trait:'attune'}, {lv:0,id:'prism'},      {lv:26,id:'focus'},     {lv:29,id:'meteor'}],
