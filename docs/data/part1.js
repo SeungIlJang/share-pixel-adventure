@@ -18,6 +18,9 @@ goals:{1:[
   ['abyssDone','균열 입구 동쪽 ▣ 균열 심부를 돌파하자'],
   ['part1Clear','종언의 제단에서 마지막 봉인을 되살리자'],
 ]},
+/* 1부를 끝낸 기록이라면 서 있어야 하는 진행 플래그(「2부부터 시작」 기록 보정용) */
+clearFlags:{1:['introDone','forestEntered','caveEntered','hiEntered','ch3done','merchEntered','templeEntered','ch4done','riftEntered','ch5done','altarEntered',
+  'groveEntered','key_forest','cavernEntered','key_cave','ridgeEntered','ridgeDone','abyssEntered','abyssDone','sealDone_forest','sealDone_cave','sealDone_altar']},
 /* 숨은 강적 — 지역의 길에서 벗어난 곳에 있고, 싸우지 않아도 이야기는 진행된다. lv = 권장 레벨(이보다 높으면 강해진다) */
 elites:{ grove:{x:8,y:9,id:'elderRoot',lv:7}, ridge:{x:1,y:5,id:'stormEye',lv:12}, temple:{x:1,y:1,id:'titan',lv:12}, abyss:{x:14,y:5,id:'hunger',lv:14} },
 enemies:{
@@ -116,7 +119,7 @@ areas:{
         "이정표: 숲 깊은 곳(남동쪽)에 봉인 封 이 잠들어 있다.",
         "이정표: 봉인석은 뿌리 결계에 감싸여 있다 — 서쪽 ▣ 속삭이는 수림에서 결계를 끊어라.",
         "이정표: 봉인 앞에 서면 수호물이 깨어난다 — 레벨과 장비를 갖추고 가라." ]} ],
-    warps:[ {x:8,y:1,to:'village',tx:8,ty:8,label:'마을'},
+    warps:[ {x:8,y:1,to:'village',tx:8,ty:8,label:'마을',alt:{flag:'part1Clear',to:'arg2',tx:8,ty:8}}, /* 2부에서는 석 달 뒤의 마을로 */
             {x:1,y:6,to:'grove',tx:13,ty:4,label:'수림'},
             {x:14,y:8,to:'cave',tx:8,ty:2,label:'동굴',need:'sealDone_forest',block:'봉인의 기운이 길을 막는다. 먼저 이 숲의 봉인을 되살려라.'} ],
     boss:{ id:'seal1', chapter:1, need:'key_forest', block:'봉인석이 뿌리 결계에 감싸여 있다. 서쪽 ▣ 속삭이는 수림에서 결계의 뿌리를 끊어야 한다.' }, onEnter:'ev_forest_enter' },

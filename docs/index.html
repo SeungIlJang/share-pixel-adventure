@@ -35,8 +35,8 @@ var CONTENT={parts:[],areas:{},events:{},enemies:{},enemyPx:{},bossScenes:{},equ
 function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]) CONTENT[k]={};
   if(k==='learn'){ for(var cl in c[k]) CONTENT[k][cl]=(CONTENT[k][cl]||[]).concat(c[k][cl]); } else Object.assign(CONTENT[k],c[k]); } }
 </script>
-<script src="data/part1.js?v=2f7b81b810"></script>
-<script src="data/part2.js?v=5f86d8df69"></script>
+<script src="data/part1.js?v=d2a2df1c24"></script>
+<script src="data/part2.js?v=c26e34f7a0"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -304,7 +304,8 @@ const AREAS=CONTENT.areas; /* 부별 데이터 파일에서 정의 */
 /* 숨은 강적: CONTENT.elites[지역]={x,y,id,lv}. 밟으면 싸울지 묻는다. 안 싸워도 이야기는 진행된다. 쓰러뜨리면 storyFlags['elite_'+지역] */
 for(const a in (CONTENT.elites||{})) if(AREAS[a]) AREAS[a].elite=CONTENT.elites[a];
 /* 강적은 일행이 권장 레벨보다 높으면 그만큼 강해진다(늦게 찾아가도 싱겁지 않게) */
-function eliteScale(el){ const L=party.reduce((m,p)=>Math.max(m,p.lv),1), r=Math.max(1,L/el.lv); return {pow:Math.pow(r,0.55),hpw:Math.pow(r,1.6)}; }
+function eliteScale(el){ const L=party.reduce((m,p)=>Math.max(m,p.lv),1), r=Math.max(1,L/el.lv); return {pow:Math.pow(r,ELITE_POW),hpw:Math.pow(r,ELITE_HPW)}; }
+let ELITE_POW=1.0, ELITE_HPW=1.9;
 function eliteAsk(el){ const b=ENEMY_DB[el.id], area=cur.id; sfx('dark');
   askMsg(['불길한 기운이 서려 있다 — 「'+b.name+'」','이곳의 주인보다 훨씬 강하다. 져도 골드는 잃지 않는다. (권장 Lv'+el.lv+')'],'싸운다','물러난다',()=>{
     startBattle([el.id],true,{scale:eliteScale(el),noPenalty:true,onWin:()=>{ storyFlags['elite_'+area]=1; showMsg(['「'+b.name+'」을(를) 쓰러뜨렸다! 서려 있던 기운이 걷힌다.'],()=>{ saveGame(); }); }}); }); }
@@ -372,13 +373,16 @@ function saveGame(){ try{ localStorage.setItem(SAVE_KEY,JSON.stringify(
   {v:SAVE_VER,season:SEASON,part:currentPart(),savedAt:Date.now(),playSec:Math.round(playSec),
    party,area:cur?cur.id:'village',player:{x:player.x,y:player.y,dir:player.dir},gold,inventory,sealsFixed,bossStage,chests,flags:storyFlags,choices})); return true; }catch(e){ return false; } }
 /* 저장 형식 변환: 버전별 변환을 순서대로 적용한 뒤 공통 정규화. 새 버전을 만들면 여기에 단계만 추가한다. */
+/* 끝낸 부의 진행 플래그를 모두 세운다: CONTENT.clearFlags[부]. 「N부부터 시작」으로 만든 기록은 앞 부의 플래그가 비어 있어,
+   그대로 앞 부 지역에 돌아가면 끝난 이야기와 보스가 다시 나온다 */
+function markCleared(f){ const cf=CONTENT.clearFlags||{}; for(const n in cf) if(f['part'+n+'Clear']) for(const k of cf[n]) f[k]=true; }
 function migrateSave(d){ const v=d.v||2;
   if(v<3){ const f=d.flags=d.flags||{}; // v2(버전 표기 없음) → v3: 심층 맵 추가 전 기록의 관문 통과 처리 + 새 필드
     if(f.sealDone_forest) f.key_forest=true; if(f.sealDone_cave) f.key_cave=true; if(f.merchEntered) f.ridgeDone=true; if(f.altarEntered) f.abyssDone=true;
     d.choices=d.choices||{}; d.playSec=d.playSec||0; d.season=1; }
   if(v<4){ (d.party||[]).forEach(p=>{ const L=(p.lv||1)-1; // v3 → v4: 직업별 성장 차이를 지난 레벨에도 소급
       if(p.cls==='검사'){ p.maxhp+=L; p.hp+=L; p.def+=L; p.mag-=L; } else if(p.cls==='궁수'){ p.spd+=L; p.mag-=L; } else { p.maxmp+=L; p.mp+=L; p.atk-=L; } }); }
-  d.flags=d.flags||{}; d.inventory=d.inventory||{potion:1}; for(const id in DROPS){ const dr=DROPS[id]; if(dr.done&&d.flags[dr.done]&&!d.flags['k_'+id]) d.flags['k_'+id]=1; } // 도감: 이미 잡은 보스는 처치 1로 기록
+  d.flags=d.flags||{}; d.inventory=d.inventory||{potion:1}; markCleared(d.flags); for(const id in DROPS){ const dr=DROPS[id]; if(dr.done&&d.flags[dr.done]&&!d.flags['k_'+id]) d.flags['k_'+id]=1; } // 도감: 이미 잡은 보스는 처치 1로 기록
   d.retroLoot=pastLoot(d.flags,d.inventory,dr=>!!(dr.done&&d.flags[dr.done])); // 이미 잡은 보스의 전리품을 한 번 지급
   (d.party||[]).forEach(p=>{ for(const sl of SLOTS) if(p[sl]===undefined) p[sl]=null; learnSkills(p); p.expNext=expNeed(p.lv||1); if(!(p.exp<p.expNext)) p.exp=Math.max(0,p.expNext-1); });
   d.v=SAVE_VER; return d; }
@@ -572,7 +576,7 @@ let retroNote=0; // 이어하기 때 소급 지급한 전리품 수(안내용)
 function doContinue(){ bgm.started=true; if(loadGame()){ state='field'; sfx('sel'); playBGM(cur?cur.bgm:'field');
     const n=currentPart(), ev='ev_p'+n+'_start'; // 앞 부를 끝낸 기록이면 다음 부의 시작 이벤트로 이어진다
     if(n>1&&!storyFlags['p'+n+'Started']&&EVENTS[ev]) runEvent(ev); else showMsg(retroNote?['기록을 불러왔다.','지금까지 쓰러뜨린 강적들의 전리품 '+retroNote+'점을 받았다! 메뉴의 「장비 장착」에서 확인하자.']:'기록을 불러왔다.'); retroNote=0; } }
-function startPart(n){ const f=CONTENT.starts[n]; if(!f) return; bgm.started=true; choices={}; playSec=0; chests={}; f(); pastLoot(storyFlags,inventory,dr=>dr.part<n&&!dr.elite); /* 건너뛴 부의 보스 전리품도 갖고 시작 */ state='field'; sfx('sel'); const ev='ev_p'+n+'_start'; if(EVENTS[ev]) runEvent(ev); playBGM(cur?cur.bgm:'field'); }
+function startPart(n){ const f=CONTENT.starts[n]; if(!f) return; bgm.started=true; choices={}; playSec=0; chests={}; f(); markCleared(storyFlags); pastLoot(storyFlags,inventory,dr=>dr.part<n&&!dr.elite); /* 건너뛴 부의 보스 전리품도 갖고 시작 */ state='field'; sfx('sel'); const ev='ev_p'+n+'_start'; if(EVENTS[ev]) runEvent(ev); playBGM(cur?cur.bgm:'field'); }
 let titleConfirm=null; // 기록이 있을 때 새로 시작하는 동작은 확인을 거친다(기록 덮어쓰기 방지). 값 = 확인 시 실행할 함수
 function askStart(fn){ if(hasSave()){ titleConfirm=fn; sfx('sel'); } else fn(); }
 function askNewGame(){ askStart(startNew); }
@@ -664,7 +668,8 @@ function updateField(){ if(msg) return;
 function onStep(){
   const wp=warpAt(player.x,player.y); if(wp){ if(wp.need&&!storyFlags[wp.need]){ showMsg([wp.block||'아직 갈 수 없다.']); sfx('sel'); return; }
     if(wp.event&&wp.eventFlag&&!storyFlags[wp.eventFlag]){ sfx('sel'); runEvent(wp.event); return; } // 챕터 이벤트 미완료 시 길목에서 발동(회피 불가 보장)
-    sfx('sel'); loadArea(wp.to,wp.tx,wp.ty); autoSave(); return; }
+    const dst=(wp.alt&&storyFlags[wp.alt.flag])?wp.alt:wp; // alt: 진행에 따라 목적지가 바뀌는 길(예: 2부에서는 숲 → 2부의 마을)
+    sfx('sel'); loadArea(dst.to,dst.tx,dst.ty); autoSave(); return; }
   { const el=cur.elite; if(el&&player.x===el.x&&player.y===el.y&&!storyFlags['elite_'+cur.id]){ eliteAsk(el); return; } }
   const t=tile(player.x,player.y);
   if(t==='3'){ party.forEach(p=>{p.hp=p.maxhp;p.mp=p.maxmp;p.alive=true;}); sfx('heal');
