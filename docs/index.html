@@ -370,7 +370,8 @@ function migrateSave(d){ const v=d.v||2;
     d.choices=d.choices||{}; d.playSec=d.playSec||0; d.season=1; }
   if(v<4){ (d.party||[]).forEach(p=>{ const L=(p.lv||1)-1; // v3 → v4: 직업별 성장 차이를 지난 레벨에도 소급
       if(p.cls==='검사'){ p.maxhp+=L; p.hp+=L; p.def+=L; p.mag-=L; } else if(p.cls==='궁수'){ p.spd+=L; p.mag-=L; } else { p.maxmp+=L; p.mp+=L; p.atk-=L; } }); }
-  d.flags=d.flags||{}; d.inventory=d.inventory||{potion:1}; d.retroLoot=pastLoot(d.flags,d.inventory,dr=>!!(dr.done&&d.flags[dr.done])); // 이미 잡은 보스의 전리품을 한 번 지급
+  d.flags=d.flags||{}; d.inventory=d.inventory||{potion:1}; for(const id in DROPS){ const dr=DROPS[id]; if(dr.done&&d.flags[dr.done]&&!d.flags['k_'+id]) d.flags['k_'+id]=1; } // 도감: 이미 잡은 보스는 처치 1로 기록
+  d.retroLoot=pastLoot(d.flags,d.inventory,dr=>!!(dr.done&&d.flags[dr.done])); // 이미 잡은 보스의 전리품을 한 번 지급
   (d.party||[]).forEach(p=>{ for(const sl of SLOTS) if(p[sl]===undefined) p[sl]=null; learnSkills(p); p.expNext=expNeed(p.lv||1); if(!(p.exp<p.expNext)) p.exp=Math.max(0,p.expNext-1); });
   d.v=SAVE_VER; return d; }
 function readSave(){ try{ const raw=localStorage.getItem(SAVE_KEY)||localStorage.getItem(LEGACY_KEY); if(!raw) return null; const d=JSON.parse(raw); return d?migrateSave(d):null; }catch(e){ return null; } }
@@ -751,12 +752,13 @@ function updateMenu(){
     if(list.length){ if(consume('up')) menuItemSel=(menuItemSel+list.length-1)%list.length;
       if(consume('down')) menuItemSel=(menuItemSel+1)%list.length;
       if(consume('confirm')){ useItemField(list[menuItemSel], party[menuSel]); if(invCount()===0) menuMode='party'; } }
-  } else { /* equip — 탭으로 슬롯/장비 조작 */
-    if(consume('cancel')){ menuMode='party'; return; }
+  } else { /* equip · skills · book — 탭으로 조작 */
+    if(consume('cancel')){ if(menuMode==='book'&&bookSel) bookSel=null; else menuMode='party'; return; }
   } }
 function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0,W,H);
   if(menuMode==='equip'){ drawEquipPanel(party[menuSel]); return; }
   if(menuMode==='skills'){ drawSkillPanel(party[menuSel]); return; }
+  if(menuMode==='book'){ drawBook(); return; }
   g.fillStyle='#e8eef7'; g.font='bold 14px sans-serif'; g.fillText('파티',14,20); g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText(currentPart()+'부 · 플레이 '+fmtTime(playSec),52,19);
   g.fillStyle='#cdd6ea'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText('◆ '+gold,W-14,18); g.textAlign='left';
   party.forEach((p,i)=>{ const y=34+i*40; const sel=i===menuSel;
@@ -774,6 +776,7 @@ function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0
     let bx=8; if(invCount()>0){ btn(bx,H-24,92,20,'아이템 사용',()=>{menuMode='item';menuItemSel=0;}); bx+=100; }
     btn(bx,H-24,92,20,'장비 장착',()=>{menuMode='equip';menuItemSel=0;}); bx+=100;
     btn(bx,H-24,92,20,'스킬 · 특성',()=>{menuMode='skills';}); bx+=100;
+    btn(bx,H-24,70,20,'도감',()=>{menuMode='book'; bookSel=null;}); bx+=78;
     btn(W-62,H-24,54,20,'닫기',()=>state='field',{font:'11px sans-serif'});
   } else if(menuMode==='item'){
     const list=invList(), rows=Math.max(1,Math.ceil(list.length/4)), top=H-46-(rows-1)*23; // 한 줄에 4개씩, 많으면 위로 쌓는다
@@ -801,6 +804,47 @@ function drawSkillPanel(p){ const n=party.length, step=d=>{ menuSel=(menuSel+d+n
   else { g.fillStyle='#6b7590'; g.fillText('지금 배울 수 있는 것은 모두 배웠다',14,y); }
   if(n>1){ btn(8,H-24,60,20,'◀ 이전',()=>step(-1),{font:'11px sans-serif'}); btn(74,H-24,60,20,'다음 ▶',()=>step(1),{font:'11px sans-serif'}); }
   btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
+/* ---------- 마물 도감 ----------
+   기록은 storyFlags 에 있다: m_id 만남 · k_id 처치 수 · wk_id 약점/내성 확인 · loot_id 전리품 획득. 화면은 그 기록을 읽기만 한다 */
+let bookPage=0, bookSel=null;
+const BOOK_IDS=Object.keys(ENEMY_DB);
+function bookSeen(id){ return !!(storyFlags['m_'+id]||storyFlags['k_'+id]||storyFlags['wk_'+id]||storyFlags['loot_'+id]); }
+function bookAreas(id){ const o=[]; for(const a in AREAS){ const A=AREAS[a]; if(A.enc&&A.enc.pool.includes(id)&&A.name&&!o.includes(A.name)) o.push(A.name); } return o; }
+function drawBook(){ const ids=BOOK_IDS, PER=24, pages=Math.max(1,Math.ceil(ids.length/PER)); bookPage=Math.max(0,Math.min(pages-1,bookPage));
+  const seen=ids.filter(bookSeen).length, dk=Object.keys(DROPS), got=dk.filter(id=>storyFlags['loot_'+id]).length;
+  g.textAlign='left'; g.fillStyle='#e8eef7'; g.font='bold 14px sans-serif'; g.fillText('마물 도감',14,20);
+  g.fillStyle='#9fe8c4'; g.font='10px sans-serif'; g.fillText(`만난 마물 ${seen}/${ids.length}    전리품 ${got}/${dk.length}`,90,19);
+  ids.slice(bookPage*PER,bookPage*PER+PER).forEach((id,i)=>{ const e=ENEMY_DB[id], x=8+(i%4)*117, y=30+Math.floor(i/4)*35, s=bookSeen(id), k=storyFlags['k_'+id]||0;
+    btn(x,y,113,31,'',()=>{ if(s){ bookSel=id; sfx('sel'); } },{bg:s?'rgba(27,34,54,.92)':'rgba(16,20,30,.9)'});
+    g.save(); g.beginPath(); g.rect(x+2,y,109,31); g.clip(); g.textAlign='left'; // 긴 이름은 칸 안에서 자른다
+    g.fillStyle=!s?'#4d566b':e.boss?'#ff9a5a':'#e8eef7'; g.font='10px sans-serif'; g.fillText(s?e.name:'？？？',x+6,y+13);
+    g.fillStyle='#6b7590'; g.font='8px sans-serif'; g.fillText('No.'+(bookPage*PER+i+1),x+6,y+25);
+    if(s){ g.fillStyle='#8a93ad'; g.fillText('처치 '+k,x+34,y+25); if(storyFlags['wk_'+id]){ g.fillStyle='#ffd54a'; g.fillText('약점',x+72,y+25); } if(DROPS[id]&&storyFlags['loot_'+id]){ g.fillStyle='#7fd0ff'; g.fillText('★',x+98,y+25); } }
+    g.restore(); });
+  if(pages>1){ btn(W-154,H-24,26,20,'▲',()=>{ bookPage=(bookPage+pages-1)%pages; },{font:'12px sans-serif'}); btn(W-124,H-24,26,20,'▼',()=>{ bookPage=(bookPage+1)%pages; },{font:'12px sans-serif'});
+    g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText((bookPage+1)+'/'+pages,W-160,H-10); g.textAlign='left'; }
+  g.fillStyle='#6b7590'; g.font='9px sans-serif'; g.fillText('만난 마물을 누르면 자세히 본다  ·  ★ = 전리품을 얻음',12,H-10);
+  btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'});
+  if(bookSel&&ENEMY_DB[bookSel]) drawBookEntry(bookSel); }
+function drawBookEntry(id){ const b=ENEMY_DB[id], e=spawn(id), k=storyFlags['k_'+id]||0, bx=24, by=30, bw=W-48, bh=H-60, tx=bx+112;
+  g.fillStyle='rgba(0,0,0,.62)'; g.fillRect(0,0,W,H); hz(0,0,W,H,()=>{ bookSel=null; sfx('sel'); }); // 어디를 눌러도 닫힌다(나중에 등록한 영역이 우선)
+  g.fillStyle='rgba(12,16,30,.98)'; g.fillRect(bx,by,bw,bh); g.strokeStyle=b.boss?'#ff9a5a':'#4a7'; g.lineWidth=1.5; g.strokeRect(bx+1,by+1,bw-2,bh-2); g.lineWidth=1;
+  g.fillStyle='#1b2236'; g.fillRect(bx+12,by+14,88,88); g.save(); g.translate(bx+56,by+60); g.scale(1.5,1.5); if(ENEMYPX[e.look||e.id]) drawEnemyPix(e,false); else { const sc=b.boss?1:0.8; g.scale(sc,sc); drawEnemyShape(e,false); } g.restore();
+  g.textAlign='center'; g.fillStyle='#8a93ad'; g.font='9px sans-serif'; g.fillText('No.'+(BOOK_IDS.indexOf(id)+1)+(b.boss?'  강적':''),bx+56,by+116); g.fillText('처치 '+k,bx+56,by+130);
+  g.textAlign='left'; let y=by+26; const line=(label,text,col)=>{ g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText(label,tx,y); g.fillStyle=col||'#e8eef7'; g.fillText(text,tx+46,y); y+=16; };
+  g.fillStyle=b.boss?'#ff9a5a':'#e8eef7'; g.font='bold 13px sans-serif'; g.fillText(b.name,tx,y); y+=19;
+  line('능력치',`HP ${b.hp}   공격 ${b.atk}   방어 ${b.def}   마력 ${b.mag}   속도 ${b.spd}`);
+  line('보상',`경험치 ${b.exp}   골드 ${b.gold||0}`,'#f0c27a');
+  const em=elemOf(e), wk=storyFlags['wk_'+id];
+  if(!em.weak&&!em.resist) line('약점','없음','#8a93ad');
+  else if(!wk) line('약점','？？？  약점이나 내성 속성으로 때리면 기록된다','#6b7590');
+  else { g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText('약점',tx,y); let px=tx+46; if(em.weak){ g.fillStyle=EL_COL[em.weak]; g.fillText(EL_KO[em.weak],px,y); px+=g.measureText(EL_KO[em.weak]).width+14; } if(em.resist){ g.fillStyle='#8a93ad'; g.fillText('내성 '+EL_KO[em.resist],px,y); } y+=16; }
+  const ar=bookAreas(id); line('출현',ar.length?ar.slice(0,3).join(' · ')+(ar.length>3?' 외':''):(b.boss?'이야기의 길목':'강적과 함께 나타난다'),'#cdd6ea');
+  const dr=DROPS[id], it=dr&&itemDef(dr.item); y+=4;
+  if(!it) line('전리품','없음','#8a93ad');
+  else if(storyFlags['loot_'+id]){ line('전리품',it.name+(it.slot?'  ('+SLOT_KO[it.slot]+')':''),gearCol(it,'#9fe8c4')); const fd=fxDesc(it); g.fillStyle='#cdd6ea'; g.font='9px sans-serif'; g.fillText(effStr(it)+(fd?' — '+fd:''),tx+46,y-3); y+=12; }
+  else line('전리품','？？？  '+(dr.rate==null?'쓰러뜨리면 반드시 얻는다':dr.pity?(dr.pity+'마리째까지는 반드시 얻는다 (지금 '+k+')'):'가끔 떨어뜨린다'),'#6b7590');
+  g.fillStyle='#6b7590'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText('아무 곳이나 누르면 닫힌다',W/2,by+bh-8); g.textAlign='left'; }
 function wkind(clsName){ return clsName==='검사'?'sword':clsName==='궁수'?'bow':'staff'; }
 function slotIcon(kind,x,y,s){ const c=g, cx=x+s/2;
   if(kind==='sword'){ c.fillStyle='#d7ddea'; c.fillRect(cx-1,y+1,2,s*0.55); c.fillStyle='#caa44a'; c.fillRect(x+s*0.22,y+s*0.52,s*0.56,s*0.12); c.fillRect(cx-1,y+s*0.6,2,s*0.32); }
@@ -923,6 +967,7 @@ const CMDS=['공격','스킬','아이템','방어','도망'];
 function startBattle(ids,boss,opts){ party.forEach(p=>{ p.lvFrom=0; }); opts=opts||{}; battle={enemies:ids.map(id=>spawn(id,opts.scale)),isBoss:boss,sealBoss:!!opts.sealBoss,onWin:opts.onWin||null,onLose:opts.onLose||null,phase:'intro',
   log:[(boss?(opts.sealBoss?'봉인 수호물':'강적'):'마물')+'이(가) 나타났다!'],
   actions:[],queue:[],inputIdx:0,cmd:0,sub:0,menu:'cmd',targetIdx:0,timer:40,pending:null,note:'',noteT:0,poisonDone:false,auto:0,result:null,round:0};
+  battle.enemies.forEach(e=>{ storyFlags['m_'+e.id]=1; }); // 도감: 만난 마물
   if(opts.scale&&!boss&&Math.random()<RARE_RATE){ const e=battle.enemies[rnd(battle.enemies.length)]; // 빛나는 개체: 튼튼하고 보상이 크며 전리품을 잘 준다
     e.rareV=true; e.name='빛나는 '+e.name; e.hp=e.maxhp=Math.round(e.hp*1.8); e.atk=Math.round(e.atk*1.2); e.mag=Math.round(e.mag*1.2); e.exp*=3; e.gold=(e.gold||0)*3; battle.log=['빛나는 마물이 나타났다!','쓰러뜨리면 전리품을 얻기 쉽다']; setTimeout(()=>sfx('orb'),200); }
   party.forEach(p=>{p.guard=false; p.poison=0; p.stun=0; p.stunUsed=false; p.weakT=0; p.veil=0; p.taunt=0; p.atkUp=0; p.endured=false;}); joy.active=false; joyDir=null; state='battle'; sfx('sel'); playBGM(boss?'boss':'battle'); }
