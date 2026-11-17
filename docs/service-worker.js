@@ -13,7 +13,8 @@ const ASSETS = [
   './icon-maskable.svg',
   './data/part1.js',
   './data/part2.js',
-  './data/part3.js'
+  './data/part3.js',
+  './data/art.js'
 ];
 
 self.addEventListener('install', (e) => {

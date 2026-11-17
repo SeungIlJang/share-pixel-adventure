@@ -208,7 +208,7 @@ enemies:{
 
 members:{
   /* 16장의 임시 동료. 장비 없이도 제 몫을 하도록 기본 능력치를 높게 잡았다(장비를 끼우면 그만큼 더 세지고, 떠날 때 돌려받는다) */
-  '가른':{cls:'궁수', stats:[150,30,62,36,10,24], skills:['garnVolley'], color:GARN, set:{guest:true,title:'화살의 사도',learnKey:'garn',palx:{a:'#5a6480',A:'#3c445c',l:'#8e9ab8'}}},
+  '가른':{cls:'궁수', art:'garn', stats:[150,30,62,36,10,24], skills:['garnVolley'], color:GARN, set:{guest:true,title:'화살의 사도',learnKey:'garn',palx:{a:'#5a6480',A:'#3c445c',l:'#8e9ab8'}}},
 },
 
 equip:{
@@ -287,7 +287,7 @@ drops:{
 },
 
 areas:{
-  ashfield:{ name:'재의 들판', theme:'ash', bgm:'rift', hud:'3부 15장', pal:PAL.ash,
+  ashfield:{ name:'재의 들판', theme:'ash', tiles:'ash', bgm:'rift', hud:'3부 15장', pal:PAL.ash,
     src:[ "111111111111111111111111","100000220000000002200001","102200220011000002200501","102200000110022000000001",
           "100000000000002200011001","100000110006000000011001","100000110000007000000001","102200000220000000220001",
           "102200000220011000220001","100000050000011000000001","111111111111111111111111" ],
@@ -297,7 +297,7 @@ areas:{
     loot:{'21,2':{item:'powerSeed'},'7,9':{gold:800,item:'hiPotion'}},
     eventTile:'ev_child', eventDone:'p3Child' },
 
-  lamptown:{ name:'잿등 마을', theme:'town', bgm:'town', hud:'3부 15장', pal:PAL.lamp,
+  lamptown:{ name:'잿등 마을', theme:'town', tiles:'town', bgm:'town', hud:'3부 15장', pal:PAL.lamp,
     src:[ "1111111111111111","1000000000000001","1011100100111101","1000000000000001",
           "1000000000030001","1000000000000001","1011001100110001","1000000000000001",
           "1000000000000001","1111111101111111","1111111111111111" ],
@@ -312,7 +312,7 @@ areas:{
       {x:10,y:3,color:'#7a7694',shade:true,name:'마을 사람',lines:[
         say('마을 사람','저편 하늘에는 「해」라는 게 뜬다며? 등불을 몇 개나 모아야 그만큼 밝아?',FOLK),
         say('마을 사람','…셀 수 없다고. 그런 걸, 너희끼리만 보고 있었구나.',FOLK) ]},
-      {x:12,y:7,color:'#c8a070',shade:()=>storyFlags.p3Child!=='share'&&!storyFlags.ch15done,name:'린',lines:()=> storyFlags.ch15done ? [
+      {x:12,y:7,color:'#c8a070',look:'rin',child:true,shade:()=>storyFlags.p3Child!=='share'&&!storyFlags.ch15done,name:'린',lines:()=> storyFlags.ch15done ? [
           say('린','아빠가 돌아왔어! 나를 알아봐! …어깨는 아프대. 그래도 웃었어.',RIN),
           say('린','오빠 검에서 나던 빛, 등대에 옮겨 붙었지? 마을에서도 보여. 고마워.',RIN) ]
         : storyFlags.p3Child==='share' ? [
@@ -327,7 +327,7 @@ areas:{
     onEnter:'ev_lamp_enter' },
 
   /* 나선 등대: 바깥 고리 → 안쪽 고리 → 한가운데 등실. 장치 둘은 바깥 고리의 양 끝 */
-  deadlight:{ name:'꺼진 등대', theme:'temple', bgm:'dungeon', hud:'3부 15장', pal:PAL.tower,
+  deadlight:{ name:'꺼진 등대', theme:'temple', tiles:'tower', bgm:'dungeon', hud:'3부 15장', pal:PAL.tower,
     src:[ "1111111111111111","1000022000000081","1011111111111101","1010000022000101",
           "1010111111110101","1010100600590101","1010111111110101","1010000000220101",
           "1011101111111101","1800000700000051","1111111111111111" ],
@@ -337,7 +337,7 @@ areas:{
     eventTile:'ev_returner', eventDone:'ch15done', onEnter:'ev_dead_enter' },
 
   /* ---- 제16장 ---- */
-  valeroad:{ name:'잃은 자들의 골짜기', theme:'ash', bgm:'rift', hud:'3부 16장', pal:PAL.vale,
+  valeroad:{ name:'잃은 자들의 골짜기', theme:'ash', tiles:'ash', bgm:'rift', hud:'3부 16장', pal:PAL.vale,
     src:[ "1111111111111111111111","1000022000001000000051","1011022000001002200001","1011000011000002200101",
           "1000000011000000000101","1000000000060000000001","1001100000000110000001","1001100220000110022001",
           "1000000220070000022001","1050000000000000000001","1111111111111111111111" ],
@@ -347,13 +347,13 @@ areas:{
     loot:{'20,1':{item:'wisdomSeed'},'2,9':{gold:1200,item:'hiEther'}},
     eventTile:'ev_garn_meet', eventDone:'garnMet' },
 
-  hollowrest:{ name:'이름 없는 쉼터', theme:'town', bgm:'town', hud:'3부 16장', pal:PAL.rest,
+  hollowrest:{ name:'이름 없는 쉼터', theme:'town', tiles:'town', bgm:'town', hud:'3부 16장', pal:PAL.rest,
     src:[ "1111111111111111","1000000000000001","1011100000111001","1000000300000001",
           "1000000000000001","1000000000000001","1011000000011001","1000000000000001",
           "1000000000000001","1111111101111111","1111111111111111" ],
     enc:null, respawn:{x:3,y:5},
     npcs:[
-      {x:8,y:5,color:GARN,name:'가른',when:'ch16done',lines:[
+      {x:8,y:5,color:GARN,name:'가른',look:'garn',when:'ch16done',lines:[
         say('가른','팔은 조금씩 돌아오고 있다. 불 옆에 앉아 있으면 윤곽이 다시 선다.',GARN),
         say('가른','코르에게 전해라. 겨눌 것을 스스로 정한 궁수는, 나보다 멀리 쏜다고.',GARN) ]},
       {x:5,y:3,color:'#6a6884',shade:true,name:'이름 없는 이',lines:()=> storyFlags.ch16done ? [
@@ -371,7 +371,7 @@ areas:{
     onEnter:'ev_rest_enter' },
 
   /* 갈지자 벼랑길: 층마다 끝에서 끝까지 걸어야 다음 층으로 내려간다. 장치는 두 층의 막다른 끝 */
-  valedeep:{ name:'골짜기 밑바닥', theme:'temple', bgm:'dungeon', hud:'3부 16장', pal:PAL.deep,
+  valedeep:{ name:'골짜기 밑바닥', theme:'temple', tiles:'cliff', bgm:'dungeon', hud:'3부 16장', pal:PAL.deep,
     src:[ "111111111111111111","100022000007000001","111111111111111101","180000220000050001",
           "110111111111111111","100002200070000081","111111111111101111","150000022000000001",
           "111111111111911111","150006000000000001","111111111111111111" ],
@@ -381,7 +381,7 @@ areas:{
     eventTile:'ev_throng', eventDone:'ch16done', onEnter:'ev_deep_enter' },
 
   /* ---- 제17장 ---- */
-  cinderpath:{ name:'불티 날리는 길', theme:'ash', bgm:'rift', hud:'3부 17장', pal:PAL.cinder,
+  cinderpath:{ name:'불티 날리는 길', theme:'ash', tiles:'ash', bgm:'rift', hud:'3부 17장', pal:PAL.cinder,
     src:[ "1111111111111111111111","1500002200000000220001","1011002200110000220001","1011000000110011000001",
           "1000000110000011000101","1000000110000000000101","1002200000001100000001","1002200011001100220001",
           "1000000011000000220701","1000070000000050000001","1111111111111111111111" ],
@@ -389,13 +389,13 @@ areas:{
     npcs:[], warps:[ {x:1,y:5,to:'hollowrest',tx:13,ty:5,label:'쉼터'}, {x:20,y:5,to:'lampcity',tx:2,ty:5,label:'도시'} ],
     loot:{'1,1':{item:'powerSeed'},'14,9':{gold:1500,item:'hiEther'}} },
 
-  lampcity:{ name:'등불 도시', theme:'town', bgm:'town', hud:'3부 17장', pal:PAL.city,
+  lampcity:{ name:'등불 도시', theme:'town', tiles:'town', bgm:'town', hud:'3부 17장', pal:PAL.city,
     src:[ "111111111111111111","100000000000000001","101110011001110101","100000000000000001",
           "100000003000000001","100000000000000001","101100110011001101","100000000000000001",
           "100000000000000001","111111111011111111","111111111111111111" ],
     enc:null, respawn:{x:3,y:5},
     npcs:[
-      {x:5,y:3,color:ROWAN,name:'로완',lines:()=> storyFlags.ch17done ? ( storyFlags.p3Truth==='tell' ? [
+      {x:5,y:3,color:ROWAN,name:'로완',look:'rowan',lines:()=> storyFlags.ch17done ? ( storyFlags.p3Truth==='tell' ? [
           say('로완','사람들이 제 집 등불을 줄여 탑에 보탠다. 어두워졌지만, 아무도 속고 있지 않다.',ROWAN),
           say('로완','미아에게 전해 다오. 신전이 나를 쫓아낸 날보다, 오늘이 더 오래 기억날 거라고.',ROWAN) ] : [
           say('로완','도시는 평온하다. 거울빛 아래서. …그 평온의 값은 미아와 내가 나눠 들고 있다.',ROWAN),
@@ -418,7 +418,7 @@ areas:{
     onEnter:'ev_city_enter' },
 
   /* 빗살 구조: 위쪽 복도에서 가지 셋이 아래로 뻗고, 가지 끝마다 장치. 동쪽 끝 문 너머가 불씨 그릇 */
-  lamptower:{ name:'대등탑', theme:'temple', bgm:'dungeon', hud:'3부 17장', pal:PAL.glow,
+  lamptower:{ name:'대등탑', theme:'temple', tiles:'tower', bgm:'dungeon', hud:'3부 17장', pal:PAL.glow,
     src:[ "111111111111111111","100002200000220001","110111101111011101","110111101111011191",
           "112111101111211101","110111171111011101","180001500100081101","111111101111111101",
           "111110008111111101","111111111150060001","111111111111111111" ],
@@ -428,7 +428,7 @@ areas:{
     eventTile:'ev_queen', eventDone:'ch17done', onEnter:'ev_tower_enter' },
 
   /* ---- 제18장 ---- */
-  archivehall:{ name:'선조들의 서고', theme:'temple', bgm:'dungeon', hud:'3부 18장', pal:PAL.book,
+  archivehall:{ name:'선조들의 서고', theme:'temple', tiles:'archive', bgm:'dungeon', hud:'3부 18장', pal:PAL.book,
     src:[ "11111111111111111111","10000002200000000051","10110110110110110101","10110110110110110101",
           "10000000000220000001","10110110110110110101","10110110110110110101","10022000000000002201",
           "10110110110110110101","15000000000000000001","11111111111111111111" ],
@@ -439,7 +439,7 @@ areas:{
     onEnter:'ev_arch_enter' },
 
   /* 세 겹 복도: 가운데 복도는 가시투성이. 장치는 첫 복도 동쪽 끝과 셋째 복도 서쪽 끝 */
-  archivevault:{ name:'봉인 기록실', theme:'temple', bgm:'dungeon', hud:'3부 18장', pal:PAL.book,
+  archivevault:{ name:'봉인 기록실', theme:'temple', tiles:'archive', bgm:'dungeon', hud:'3부 18장', pal:PAL.book,
     src:[ "111111111111111111","100000022000000081","101111111111111111","100707070002200001",
           "111111111111111101","180000005000220001","111111111911111111","111100000000000111",
           "111100000600005111","111111111111111111","111111111111111111" ],
@@ -449,7 +449,7 @@ areas:{
     eventTile:'ev_oath', eventDone:'ch18done', onEnter:'ev_vault_enter' },
 
   /* ---- 제19장 ---- */
-  kingsroad:{ name:'왕의 길', theme:'ash', bgm:'rift', hud:'3부 19장', pal:PAL.road,
+  kingsroad:{ name:'왕의 길', theme:'ash', tiles:'ash', bgm:'rift', hud:'3부 19장', pal:PAL.road,
     src:[ "1111111111111111111111","1000220000000011000051","1000220011000011002201","1011000011000000002201",
           "1011000000002200000001","1000000000002200110001","1000110000000000110001","1050110022000110000001",
           "1000000022000110022001","1000007000000000022001","1111111111111111111111" ],
@@ -457,22 +457,22 @@ areas:{
     npcs:[], warps:[ {x:1,y:5,to:'lampcity',tx:15,ty:5,label:'도시'}, {x:20,y:5,to:'oathcourt',tx:2,ty:5,label:'뜰'} ],
     loot:{'20,1':{item:'lifeSeed'},'2,7':{gold:2500,item:'hiEther'}}, onEnter:'ev_road19' },
 
-  oathcourt:{ name:'약속의 뜰', theme:'town', bgm:'town', hud:'3부 19장', pal:PAL.court,
+  oathcourt:{ name:'약속의 뜰', theme:'town', tiles:'town', bgm:'town', hud:'3부 19장', pal:PAL.court,
     src:[ "1111111111111111","1000000000000001","1000000000000001","1001000000001001",
           "1000000300000001","1000000000000001","1001000000001001","1000000000000001",
           "1000000000000001","1111111111111111","1111111111111111" ],
     enc:null, respawn:{x:3,y:5},
     npcs:[
-      {x:11,y:2,color:GARN,name:'가른',lines:()=> storyFlags.ch19done ? [
+      {x:11,y:2,color:GARN,name:'가른',look:'garn',lines:()=> storyFlags.ch19done ? [
           say('가른','코르에게 준 건 내 활의 전부다. 이제 저 녀석이 나보다 멀리 본다.',GARN) ] : [
           say('가른','팔은 돌아왔다. 그러니 봐주지 않는다. 채비가 끝나면 성문으로 와라.',GARN) ]},
-      {x:12,y:4,color:ROWAN,name:'로완',lines:()=> storyFlags.ch19done ? [
+      {x:12,y:4,color:ROWAN,name:'로완',look:'rowan',lines:()=> storyFlags.ch19done ? [
           say('로완','군주께서도 덮고 계신 것이 하나 있다. 근원에 가면 알게 될 것이다.',ROWAN) ] : [
           say('로완','시험은 넷이 한꺼번에 한다. 사정은 봐주지 않는다.',ROWAN) ]},
-      {x:12,y:7,color:'#6aa0d8',name:'조수의 사도',lines:()=> storyFlags.ch19done ? [
+      {x:12,y:7,color:'#6aa0d8',name:'조수의 사도',look:'tideApostle',lines:()=> storyFlags.ch19done ? [
           say('조수의 사도','밀물이 있으면 썰물이 있어. 빛도 그래야 했던 거야. 한쪽에 고이면 썩어.',LORD) ] : [
           say('조수의 사도','죽이려는 건 아니야. 군주 앞에 설 만한지 보려는 거지.',LORD) ]},
-      {x:11,y:8,color:'#d8b860',name:'왕관의 사도',lines:()=> storyFlags.ch19done ? [
+      {x:11,y:8,color:'#d8b860',name:'왕관의 사도',look:'crownApostle',lines:()=> storyFlags.ch19done ? [
           say('왕관의 사도','모두를 구하겠다는 왕은 어리석다고 배웠다. 어리석은 쪽이 옳았으면, 하고 지금은 바란다.',LORD) ] : [
           say('왕관의 사도','왕은 모두를 구할 수 없다. 너희는 다르다는 것을, 힘으로 보여 다오.',LORD) ]},
       {x:3,y:7,color:'#f0c27a',shade:true,name:'뜰의 상인',glyph:'◇',shop:['hiPotion','hiEther','revive','mornSword','mornStaff','mornBow','mornPlate','mornRobe','mornHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
@@ -482,7 +482,7 @@ areas:{
     onEnter:'ev_court_enter' },
 
   /* ---- 제20장 ---- 세 겹 고리: 바깥 복도 → 가운데 복도 → 옥좌의 방. 장치는 바깥에 둘, 가운데에 하나 */
-  lordkeep:{ name:'군주의 성', theme:'temple', bgm:'dungeon', hud:'3부 20장', pal:PAL.keep,
+  lordkeep:{ name:'군주의 성', theme:'temple', tiles:'keep', bgm:'dungeon', hud:'3부 20장', pal:PAL.keep,
     src:[ "11111111111111111111","10000220000000700081","10111111111111111101","10100000220000000101",
           "10101111111111110101","10001500000600090101","10101111111111110101","10100000002200008101",
           "10111111111111111101","18000002200007000001","11111111111111111111" ],
@@ -492,7 +492,7 @@ areas:{
     eventTile:'ev_lord2', eventDone:'ch20done', onEnter:'ev_keep_enter' },
 
   /* ---- 제21장 ---- */
-  sourcepath:{ name:'처음 빛의 길', theme:'ash', bgm:'rift', hud:'3부 21장', pal:PAL.dusk,
+  sourcepath:{ name:'처음 빛의 길', theme:'ash', tiles:'source', bgm:'rift', hud:'3부 21장', pal:PAL.dusk,
     src:[ "1111111111111111111111","1500000220000000000001","1011100220001110022001","1000000000001110022001",
           "1002200011000000000101","1002200011000000000101","1000000000002200110001","1011000000002200110001",
           "1011000700000000000051","1000000000030000000001","1111111111111111111111" ],
@@ -501,12 +501,12 @@ areas:{
     loot:{'1,1':{item:'wisdomSeed'},'20,8':{gold:3000,item:'hiEther'}}, onEnter:'ev_source_path' },
 
   /* 세 겹: 바깥 복도 → 안쪽 복도 → 근원. 장치는 바깥 둘, 안쪽 하나 */
-  sourcecore:{ name:'빛의 근원', theme:'temple', bgm:'dungeon', hud:'3부 21장', pal:PAL.core,
+  sourcecore:{ name:'빛의 근원', theme:'temple', tiles:'source', bgm:'dungeon', hud:'3부 21장', pal:PAL.core,
     src:[ "111111111111111111","100002200000000081","101111111111111101","101000008000000101",
           "101011111111110101","100015000600090001","101011111111110101","101000022000000101",
           "101111111111111101","180000002200070001","111111111111111111" ],
     enc:{ pool:['lightEater','fadedGuard','emberWisp'], rate:0.22, pow:1.22, hpw:1.3 }, respawn:{x:2,y:1},
-    npcs:[ {x:5,y:3,color:LORD,name:'그림자 군주',when:'ch22done',lines:()=> storyFlags.p3Keeper==='turns' ? [
+    npcs:[ {x:5,y:3,color:LORD,name:'그림자 군주',look:'lordNpc',when:'ch22done',lines:()=> storyFlags.p3Keeper==='turns' ? [
           say('그림자 군주','올해는 내 차례다. 내년 이맘때, 문 앞에서 기다리마. 늦지 마라.',LORD) ] : [
           say('그림자 군주','빛은 잘 흐르고 있다. 삼백 해 만에, 지킬 것이 있는 자리에 앉았구나.',LORD) ]} ],
     warps:[ {x:1,y:1,to:'sourcepath',tx:19,ty:5,label:'길'},
@@ -515,7 +515,7 @@ areas:{
     eventTile:'ev_gnaw', eventDone:'ch21done', onEnter:'ev_core_enter' },
 
   /* ---- 제22장 ---- 장치 없이 내려가기만 하는 마지막 길. 들머리에 제단 */
-  dawnstair:{ name:'여명의 계단', theme:'temple', bgm:'dungeon', hud:'3부 22장', pal:PAL.stair,
+  dawnstair:{ name:'여명의 계단', theme:'temple', tiles:'stair', bgm:'dungeon', hud:'3부 22장', pal:PAL.stair,
     src:[ "111111111111111111","103000220000070001","111111111111111101","150002200000220001",
           "101111111111111111","100022000700000051","111111111111111101","100000002200000001",
           "101111111111111111","100000060000000001","111111111111111111" ],
