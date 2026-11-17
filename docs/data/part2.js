@@ -127,6 +127,13 @@ equip:{
   nightBow:    {name:'밤사냥 활',     slot:'weapon',cls:['궁수'],atk:31,el:'fire',rare:1,price:1000},
   voiceStaff:  {name:'잃어버린 목소리',slot:'weapon',cls:['주술사','치유사'],mag:31,fx:'regen',rare:1,price:1000},
   riftPlate:   {name:'균열 갑주',     slot:'armor',def:19,fx:'lifeSteal',rare:1,price:1000},
+  /* 숨은 강적의 고유 장비(2부) */
+  captainCoat: {name:'선장의 외투',   slot:'armor',def:16,spd:3,fx:'mpRegen',uniq:1,price:0},
+  primeSeal:   {name:'첫 기록관의 인장',slot:'ring', mag:8,def:2,fx:'weakUp',uniq:1,price:0},
+  kingBracer:  {name:'협곡왕의 팔찌', slot:'hands',atk:7,def:4,fx:'critUp',uniq:1,price:0},
+  saintVeil:   {name:'성녀의 베일',   slot:'head', def:8,mag:9,fx:'healUp',uniq:1,price:0},
+  royalGreaves:{name:'초대 왕의 군화', slot:'feet', spd:8,def:5,fx:'endure',uniq:1,price:0},
+  namelessRing:{name:'이름 없는 반지', slot:'ring', atk:7,mag:7,def:4,spd:4,fx:'dawn',uniq:1,price:0},
   /* 보스 고유 장비(2부) — 상점에서 팔지 않고, 팔 수도 없다(uniq) */
   wedgeHelm:   {name:'파수대장의 투구',slot:'head', def:9,fx:'stunWard',uniq:1,price:0},
   tidePearl:   {name:'조수의 진주',   slot:'ring', mag:6,fx:'mpSave',uniq:1,price:0},
@@ -137,6 +144,8 @@ equip:{
   shadowCloak: {name:'그림자 외투',   slot:'armor',def:18,spd:4,fx:'evade',uniq:1,price:0},
 },
 drops:{
+  wreckCaptain:{item:'captainCoat',part:2,elite:1}, keeperPrime:{item:'primeSeal',part:2,elite:1}, canyonKing:{item:'kingBracer',part:2,elite:1},
+  frozenSaint:{item:'saintVeil',part:2,elite:1}, firstKing:{item:'royalGreaves',part:2,elite:1}, nameless:{item:'namelessRing',part:2,elite:1},
   wedgeguard:{item:'wedgeHelm',done:'ch7done',part:2},   tidecaller:{item:'tidePearl',done:'ch8done',part:2},
   archivist:{item:'archiveLens',done:'ch9done',part:2},  garn:{item:'garnBracer',done:'ch10done',part:2},
   frostApostle:{item:'rowanRosary',done:'ch11done',part:2}, crownApostle:{item:'fallenCrown',done:'ch12done',part:2},
@@ -177,7 +186,16 @@ enemyPx:{
 },
 
 /* ================= 적 ================= */
+/* 숨은 강적(2부) — 길에서 벗어난 곳. 싸우지 않아도 이야기는 진행된다. lv = 권장 레벨(이보다 높으면 강해진다) */
+elites:{ docks:{x:14,y:9,id:'wreckCaptain',lv:16}, archive:{x:14,y:9,id:'keeperPrime',lv:18}, canyon:{x:1,y:1,id:'canyonKing',lv:19},
+         crypt:{x:14,y:9,id:'frozenSaint',lv:20}, palace:{x:14,y:9,id:'firstKing',lv:21}, riftgate:{x:14,y:7,id:'nameless',lv:23} },
 enemies:{
+  wreckCaptain:{elite:'docks',  name:'난파선의 선장',  hp:5500,atk:123, mag:105,def:27,spd:12,exp:1800,gold:1300,color:'#3a8a6a',boss:true,weak:'bolt',look:'tidecaller',palx:{p:'#3a8a6a',P:'#285a48',l:'#a0f0c8',e:'#ffe27a'},atkFx:'dark',moves:['evenom','eflurry','edrain','efocus']},
+  keeperPrime: {elite:'archive',name:'첫 번째 기록관',  hp:4000,atk:142, mag:125,def:29,spd:12,exp:2100,gold:1450,color:'#8a8ab0',boss:true,weak:'bolt',resist:'arrow',look:'archivist',palx:{g:'#8a8ab0',G:'#5a5a80',l:'#e0e0ff',e:'#ff7a5a'},atkFx:'smash',moves:['echarge','eblast','ecurse','esmash']},
+  canyonKing:  {elite:'canyon', name:'붉은 협곡의 왕',  hp:6400,atk:149, mag:124,def:31,spd:13,exp:2400,gold:1600,color:'#c0502a',boss:true,weak:'ice',look:'brute',big:2,palx:{b:'#c0502a',B:'#7a2e16',l:'#f09060',e:'#ffe27a'},atkFx:'smash',moves:['esmash','eflurry','echarge','eblast'],enrage:0.4},
+  frozenSaint: {elite:'crypt',  name:'얼어붙은 성녀',   hp:6510,atk:185,mag:170,def:33,spd:14,exp:2800,gold:1750,color:'#d0e8ff',boss:true,weak:'fire',resist:'ice',look:'frostApostle',palx:{g:'#d0e8ff',G:'#8ab0d8',l:'#ffffff',e:'#ff9ad5'},atkFx:'dark',moves:['ecurse','echarge','eblast','edrain','efocus']},
+  firstKing:   {elite:'palace', name:'초대 왕의 망령',  hp:7280,atk:140,mag:122,def:35,spd:14,exp:3200,gold:1900,color:'#c0a040',boss:true,weak:'bolt',look:'crownApostle',palx:{g:'#c0a040',G:'#806a20',m:'#ffffff',e:'#ff4466'},atkFx:'dark',moves:['eflurry','edrain','ecurse','efocus','eaoe']},
+  nameless:    {elite:'riftgate',name:'이름 없는 그림자',hp:10560,atk:196, mag:172,def:40,spd:15,exp:4200,gold:2400,color:'#8a1a2a',boss:true,weak:'bolt',look:'gatekeeper',big:1,palx:{g:'#8a1a2a',G:'#4a0a14',e:'#ffe27a'},atkFx:'dark',moves:['ecurse','eflurry','echarge','eblast','edrain','efocus'],enrage:0.5},
   /* 7장 옛 대로 */
   p2wolf:  {name:'쐐기 늑대',   ...reg(7,{hp:.9,spd:13}),  color:'#7a5a9a',look:'wolf',palx:{f:'#7a5a9a',F:'#54407a',l:'#a88ac8'}},
   p2scout: {name:'그림자 척후', ...reg(7,{atk:1.05}),      color:'#5a5070',look:'raider',palx:{b:'#5a5070',B:'#3e3652',e:'#c79bff'}},

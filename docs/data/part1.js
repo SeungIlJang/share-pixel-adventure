@@ -18,7 +18,13 @@ goals:{1:[
   ['abyssDone','균열 입구 동쪽 ▣ 균열 심부를 돌파하자'],
   ['part1Clear','종언의 제단에서 마지막 봉인을 되살리자'],
 ]},
+/* 숨은 강적 — 지역의 길에서 벗어난 곳에 있고, 싸우지 않아도 이야기는 진행된다. lv = 권장 레벨(이보다 높으면 강해진다) */
+elites:{ grove:{x:8,y:9,id:'elderRoot',lv:7}, ridge:{x:1,y:5,id:'stormEye',lv:12}, temple:{x:1,y:1,id:'titan',lv:12}, abyss:{x:14,y:5,id:'hunger',lv:14} },
 enemies:{
+  elderRoot:{elite:'grove', name:'천년 고목',  hp:805, atk:42,def:9, mag:31,spd:6, exp:140,gold:160,color:'#6a4a2a',boss:true,weak:'fire',look:'creeper',big:2,palx:{g:'#6a4a2a',G:'#48301a',l:'#9a7a4a',e:'#ff8a3a'},moves:['evenom','eatk','esmash','eatk']},
+  stormEye: {elite:'ridge', name:'폭풍의 눈',  hp:3250,atk:122,def:15,mag:103,spd:16,exp:480,gold:500,color:'#5a6ac8',boss:true,weak:'arrow',look:'gale',big:2,palx:{a:'#5a6ac8',A:'#3a4690',l:'#b0c0ff',e:'#ffe27a'},moves:['eflurry','echarge','eblast','eatk']},
+  titan:    {elite:'temple',name:'잠든 거신',  hp:2415,atk:104,def:22,mag:78,spd:7, exp:500,gold:540,color:'#8a7a5a',boss:true,weak:'bolt',resist:'arrow',look:'golem',big:1,palx:{g:'#8a7a5a',G:'#5a4e38',l:'#c0b08a',e:'#ff7a5a'},atkFx:'smash',moves:['esmash','eatk','esmash','echarge','eblast']},
+  hunger:   {elite:'abyss', name:'굶주린 심연',hp:2875,atk:115,def:20,mag:98,spd:12,exp:860,gold:860,color:'#5a2a8a',boss:true,weak:'ice',look:'brute',big:2,palx:{b:'#5a2a8a',B:'#38185a',l:'#9a6ad8',e:'#ff4466'},atkFx:'dark',moves:['edrain','ecurse','eatk','edrain','eaoe']},
   wolf:  {name:'그림자 늑대',hp:46, atk:13,def:4,mag:2, spd:9, exp:9, gold:8, color:'#6a7290'},
   slime: {name:'균열 슬라임',hp:56, atk:11,def:6,mag:3, spd:4, exp:10,gold:9, color:'#5fae8a',aiPoison:0.4},
   bat:   {name:'어둠 박쥐',  hp:34, atk:12,def:3,mag:2, spd:12,exp:8, gold:7, color:'#8a6aa0'},
@@ -227,6 +233,11 @@ equip:{
   sentryGauntlet:{name:'보초의 건틀릿',slot:'hands',def:4,fx:'guardCounter',rare:1,price:300},
   phantomStaff:{name:'환영의 지팡이', slot:'weapon',cls:['주술사','치유사'],mag:16,fx:'weakUp',rare:1,price:400},
   bruteRing:   {name:'괴력의 반지',   slot:'ring', atk:5,fx:'stunWard',rare:1,price:400},
+  /* 숨은 강적의 고유 장비 */
+  elderBark:  {name:'고목 껍질 갑옷', slot:'armor',def:7,fx:'regen',uniq:1,price:0},
+  stormIris:  {name:'폭풍의 눈동자', slot:'ring', spd:5,atk:3,fx:'evade',uniq:1,price:0},
+  titanHelm:  {name:'거신의 투구',   slot:'head', def:9,fx:'aoeGuard',uniq:1,price:0},
+  hungerRing: {name:'굶주림의 반지', slot:'ring', atk:6,fx:'drain',uniq:1,price:0},
   dawnShard:  {name:'여명의 조각',   slot:'ring', def:1,fx:'regen',uniq:1,price:0},
   rootGloves: {name:'가시뿌리 장갑', slot:'hands',atk:2,def:1,fx:'venomEdge',uniq:1,price:0},
   abyssHood:  {name:'심연의 두건',   slot:'head', def:2,mag:3,fx:'mpRegen',uniq:1,price:0},
@@ -240,6 +251,7 @@ equip:{
 },
 /* 전리품 표: 적 id → 장비. done = 그 보스를 이미 잡았음을 뜻하는 진행 플래그(옛 기록 소급 지급에 쓴다) */
 drops:{
+  elderRoot:{item:'elderBark',part:1,elite:1}, stormEye:{item:'stormIris',part:1,elite:1}, titan:{item:'titanHelm',part:1,elite:1}, hunger:{item:'hungerRing',part:1,elite:1},
   seal1:{item:'dawnShard',done:'sealDone_forest',part:1}, rootguard:{item:'rootGloves',done:'key_forest',part:1},
   seal2:{item:'abyssHood',done:'sealDone_cave',part:1},   crystalmaw:{item:'crystalFang',done:'key_cave',part:1},
   warden:{item:'wardenPlate',done:'ch3done',part:1},      galelord:{item:'galeBoots',done:'ridgeDone',part:1},
