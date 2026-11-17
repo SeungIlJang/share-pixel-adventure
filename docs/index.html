@@ -213,6 +213,22 @@ function clearJob(p){ if(p.job2) return; const j=jobOf(p); if(!j){ p.job=null; r
   for(const k in STAT_KEY) p[STAT_KEY[k]]-=((j.bonus&&j.bonus[k])||0)+(((j.grow||base)[k])-base[k])*L;
   p.skills=p.skills.filter(id=>!ls.some(e=>e.id===id)); p.traits=(p.traits||[]).filter(t=>!ls.some(e=>e.trait===t)); p.off=(p.off||[]).filter(id=>p.skills.includes(id));
   p.job=null; p.jobLv=null; p.hp=Math.max(p.alive?1:0,Math.min(p.hp,p.maxhp)); p.mp=Math.min(p.mp,p.maxmp); fitLoadout(p); }
+/* ---------- 제단에서 직업 다시 고르기 ----------
+   다른 갈래로 옮긴다(2차 전직을 했다면 2차 직업도 그 갈래의 것으로, 이어받는 기술도 다시 고른다).
+   전직한 레벨(jobLv·job2Lv)은 그대로 두고 능력치를 다시 셈하므로, 처음부터 그 갈래를 골랐을 때와 같은 값이 된다 */
+const RESPEC_COST=1000;
+function inheritFor(jobId){ const j=JOBS[jobId]; if(!j) return []; const o=Object.keys(JOBS).find(id=>id!==jobId&&JOBS[id].base===j.base); return o?(CONTENT.learn[o]||[]).filter(e=>e.id&&SKILLS[e.id]).map(e=>e.id):[]; }
+function respecJob(p,newJob,inh){ const base=GROW[p.cls]||GROW['검사'], oj=JOBS[p.job], nj=JOBS[newJob]; if(!oj||!nj||nj.base!==p.cls||p.guest) return null;
+  const o2=job2Of(p), L1=Math.max(0,p.lv-(p.jobLv||p.lv)), L2=o2?Math.max(0,p.lv-(p.job2Lv||p.lv)):0, rm=[], B=(j,k)=>(j.bonus&&j.bonus[k])||0, G=(j,k)=>(j.grow||base)[k];
+  /* 걷어내기: 전직 보너스와, 전직 뒤 레벨마다 기본 직업보다 더 받은 성장분 */
+  for(const k in STAT_KEY) p[STAT_KEY[k]]-=B(oj,k)+(G(oj,k)-base[k])*(L1-L2)+(o2?B(o2,k)+(G(o2,k)-base[k])*L2:0);
+  (CONTENT.learn[p.job]||[]).concat(o2?(CONTENT.learn[p.job2]||[]):[]).forEach(e=>rm.push(e.id||e.trait)); if(p.inherit) rm.push(p.inherit);
+  p.skills=p.skills.filter(id=>!rm.includes(id)); p.traits=(p.traits||[]).filter(t=>!rm.includes(t)); p.inherit=null;
+  /* 다시 입히기 */
+  p.job=newJob; const n2id=o2?job2For(p):null, n2=n2id?JOBS2[n2id]:null; p.job2=n2?n2id:null; if(!n2) p.job2Lv=null;
+  for(const k in STAT_KEY) p[STAT_KEY[k]]+=B(nj,k)+(G(nj,k)-base[k])*(L1-L2)+(n2?B(n2,k)+(G(n2,k)-base[k])*L2:0);
+  const got=learnSkills(p); if(n2&&inh&&SKILLS[inh]&&inheritFor(newJob).includes(inh)&&!p.skills.includes(inh)){ p.inherit=inh; p.skills.push(inh); got.push(SKILLS[inh].name+'(이어받음)'); }
+  p.off=(p.off||[]).filter(id=>p.skills.includes(id)); fitLoadout(p); if(p.alive){ p.hp=p.maxhp; p.mp=p.maxmp; } return got; }
 /* ---------- 기술 장착 ---------- 배운 기술 중 전투에 들고 가는 것은 MAX_SK 개까지. p.off = 빼 둔 기술 */
 const MAX_SK=8;
 function battleSkills(p){ const off=p.off||[]; return p.skills.filter(id=>!off.includes(id)); }
@@ -750,6 +766,7 @@ function onStep(){
   const t=tile(player.x,player.y);
   if(t==='3'){ party.forEach(p=>{p.hp=p.maxhp;p.mp=p.maxmp;p.alive=true;}); sfx('heal');
     const base=["제단의 빛이 스며든다. (전원 회복)", saveGame()?"기록을 저장했다.":"저장 실패."], tk=nextTalk();
+    if(!storyFlags.respecTip&&party.some(q=>q.job&&!q.guest)){ storyFlags.respecTip=1; base.push('제단 위에서 메뉴(≡)를 열면 「직업 다시 고르기」를 할 수 있다. (◆'+RESPEC_COST+')'); }
     if(tk) askMsg(base.concat(['동료들이 제단 곁에 둘러앉는다. 이야기를 나눌까? — 「'+tk.title+'」']),'이야기한다','다음에',
       ()=>{ storyFlags['talk_'+tk.id]=1; showMsg(talkLines(tk).concat(['(나눈 이야기 '+talkCount()+')']),()=>{ saveGame(); }); }, ()=>{ talkSkip[tk.id]=1; });
     else showMsg(base); }
@@ -877,6 +894,7 @@ function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0
   if(menuMode==='skills'){ drawSkillPanel(party[menuSel]); return; }
   if(menuMode==='book'){ drawBook(); return; }
   if(menuMode==='job'){ drawJobPanel(party[menuSel]); return; }
+  if(menuMode==='respec'){ drawRespec(); return; }
   g.fillStyle='#e8eef7'; g.font='bold 14px sans-serif'; g.fillText('파티',14,20); g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText(currentPart()+'부 · 플레이 '+fmtTime(playSec),52,19);
   g.fillStyle='#cdd6ea'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText('◆ '+gold,W-14,18); g.textAlign='left';
   party.forEach((p,i)=>{ const y=34+i*40; const sel=i===menuSel;
@@ -895,6 +913,7 @@ function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0
     btn(bx,H-24,92,20,'장비 장착',()=>{menuMode='equip';menuItemSel=0;}); bx+=100;
     btn(bx,H-24,92,20,'스킬 · 특성',()=>{menuMode='skills';}); bx+=100;
     btn(bx,H-24,70,20,'도감',()=>{menuMode='book'; bookSel=null;}); bx+=78;
+    if(tile(player.x,player.y)==='3'&&party.some(q=>q.job&&!q.guest)) btn(W-236,3,82,16,'직업 다시 고르기',()=>{menuMode='respec'; respec.who=null;},{bg:'#2a3a4a',fg:'#9fe8c4',font:'10px sans-serif'}); // 제단 위에 서 있을 때만
     if(JOBTEST) btn(W-150,3,74,16,'전직 시험',()=>{menuMode='job';},{bg:'#3a2a4a',fg:'#e0c0ff',font:'10px sans-serif'});
     btn(W-62,H-24,54,20,'닫기',()=>state='field',{font:'11px sans-serif'});
   } else if(menuMode==='item'){
@@ -956,6 +975,27 @@ function openJobPick(name,after){ const p=party.find(q=>q.name===name); if(!p||!
 function drawJobPick(){ drawField(); hotspots=[]; g.fillStyle='rgba(6,8,16,.9)'; g.fillRect(0,0,W,H); hz(0,0,W,H,()=>{}); // 아래 화면의 버튼은 막는다
   const jp=jobPick; if(!jp){ state='field'; return; } if(jp.tier===2){ drawJob2Panel(jp); return; } drawJobPanel(jp.p,(id,got)=>{ jobPick=null; menuNote=''; state='field'; if(jp.after) jp.after(id,got); });
   g.fillStyle='#9fe8c4'; g.font='11px sans-serif'; g.textAlign='center'; g.fillText('한 번 고르면 이 길로 간다 — 천천히 읽고 고르자',W/2,H-10); g.textAlign='left'; }
+let respec={who:null,job:null,inh:null};
+function drawRespec(){ const p=party[menuSel]; if(respec.who!==p.name) respec={who:p.name,job:p.job||null,inh:p.inherit||null};
+  g.textAlign='left'; g.fillStyle=p.color; g.font='bold 13px sans-serif'; g.fillText(`직업 다시 고르기 — ${p.name} Lv${p.lv} ${jobName(p)}`,14,19);
+  g.fillStyle='#ffd54a'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('바꾸는 값 ◆'+RESPEC_COST+'  ·  가진 돈 ◆'+gold,W-10,19); g.textAlign='left';
+  const back=()=>btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'});
+  if(p.guest||!p.job){ g.fillStyle='#8a93ad'; g.font='11px sans-serif'; g.fillText(p.guest?'임시 동료는 직업을 바꾸지 않는다.':'아직 전직하지 않았다 — 이야기를 따라가면 전직하게 된다.',14,60); menuStepper(); back(); return; }
+  jobChoices(p).forEach((id,i)=>{ const j=JOBS[id], x=8, y=28+i*98, w=230, h=92, cur=p.job===id, sel=respec.job===id, j2id=Object.keys(JOBS2).find(k=>JOBS2[k].from===id), ls=(CONTENT.learn[id]||[]).concat(p.job2&&j2id?(CONTENT.learn[j2id]||[]):[]);
+    btn(x,y,w,h,'',()=>{ if(respec.job!==id){ respec.job=id; respec.inh=(id===p.job&&p.inherit)||null; sfx('sel'); } },{bg:sel?'rgba(34,54,60,.96)':'rgba(18,22,34,.94)'});
+    g.strokeStyle=j.col; g.globalAlpha=sel?1:0.4; g.lineWidth=sel?2:1; g.strokeRect(x+0.5,y+0.5,w-1,h-1); g.globalAlpha=1; g.lineWidth=1;
+    g.fillStyle=j.col; g.font='bold 12px sans-serif'; g.fillText((sel?'▶ ':'')+j.name+(p.job2&&j2id?' → '+JOBS2[j2id].name:''),x+8,y+16); if(cur){ g.fillStyle='#8a93ad'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText('지금',x+w-8,y+16); g.textAlign='left'; }
+    g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.fillText(p.job2&&j2id?JOBS2[j2id].role:j.role,x+8,y+31);
+    g.fillStyle='#8a93ad'; g.font='9px sans-serif'; wrap(ls.map(e=>e.trait?'특성 '+TRAITS[e.trait].name:SKILLS[e.id].name).join(' · '),x+8,y+36,w-16,11); });
+  const x=242, y=28, w=230, h=190; g.fillStyle='rgba(18,22,34,.94)'; g.fillRect(x,y,w,h); g.strokeStyle='#4a5670'; g.strokeRect(x+0.5,y+0.5,w-1,h-1);
+  if(p.job2){ g.fillStyle='#ffd54a'; g.font='bold 11px sans-serif'; g.fillText('가지 않는 길에서 이어받을 기술 하나',x+8,y+16);
+    inheritFor(respec.job).forEach((sid,i)=>{ const d=SKILLS[sid], by=y+24+i*44, sel=respec.inh===sid; btn(x+8,by,w-16,38,'',()=>{ respec.inh=sid; sfx('sel'); },{bg:sel?'#2a4a3a':'rgba(14,18,28,.96)'});
+      g.fillStyle=sel?'#9fe8c4':'#e8eef7'; g.font='11px sans-serif'; g.fillText((sel?'▶ ':'')+d.name+'  MP '+d.mp,x+16,by+15); g.fillStyle='#8a93ad'; g.font='9px sans-serif'; g.fillText(skillDesc(d),x+16,by+29); }); }
+  else { g.fillStyle='#8a93ad'; g.font='10px sans-serif'; wrap('왼쪽에서 갈 길을 고른다. 능력치와 기술은 처음부터 그 길을 골랐을 때와 똑같이 맞춰진다. 이어받는 기술은 2차 전직 뒤에 생긴다.',x+8,y+8,w-16,13); }
+  const same=respec.job===p.job&&(!p.job2||respec.inh===p.inherit), need=p.job2&&!respec.inh, poor=gold<RESPEC_COST, lab=same?'지금과 같다':need?'이어받을 기술을 고르자':poor?'돈이 모자라다 (◆'+RESPEC_COST+')':'이 길로 바꾼다 (◆'+RESPEC_COST+')', can=!same&&!need&&!poor;
+  btn(x+8,y+h-26,w-16,20,lab,()=>{ if(!can) return; const got=respecJob(p,respec.job,respec.inh); if(got){ gold-=RESPEC_COST; sfx('win'); saveGame(); respec.who=null; flashMenu(p.name+' — '+jobName(p)+'(으)로 바꿨다  '+got.slice(0,4).join(' · ')); } },{bg:can?'#2a4a3a':'rgba(27,34,54,.9)',fg:can?'#9fe8c4':'#8a93ad',font:'11px sans-serif'});
+  menuStepper(); back();
+  if(menuNote&&menuNoteT>0){ g.fillStyle='rgba(6,8,16,.95)'; g.fillRect(0,H-25,W,25); g.fillStyle='#ffd54a'; g.font='10px sans-serif'; g.textAlign='center'; g.fillText(menuNote,W/2,H-9); g.textAlign='left'; menuNoteT--; } }
 const JOBTEST=/[?&]jobtest/.test(location.search); // 시험용: 주소에 ?jobtest 를 붙이면 메뉴에서 자유롭게 전직해 볼 수 있다
 function jobChoices(p){ return p.guest?[]:Object.keys(JOBS).filter(id=>JOBS[id].base===p.cls); } // 임시 동료는 전직하지 않는다
 function drawJobPanel(p,onPick){ const ids=jobChoices(p);
