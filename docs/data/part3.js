@@ -1,5 +1,5 @@
-/* 모두의 픽셀모험 — 제3부 「균열 너머」 데이터 (제작 중)
-   지금 들어 있는 것: 제15~20장, 1차·2차 전직 직업 16개와 그 기술·특성, 임시 동료 가른. 21장부터는 아직 없다. */
+/* 모두의 픽셀모험 — 제3부 「균열 너머」 데이터 (15~22장, 결말까지)
+   1차·2차 전직 직업 16개와 그 기술·특성, 임시 동료 가른이 여기 들어 있다. */
 (function(){
 "use strict";
 /* ---- 화자 색 ---- */
@@ -27,6 +27,9 @@ const PAL={
   road: { bg:'#08070a', floor:'#2e2a32', wall:'#1a161e', grass:'#3c3448', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(192,112,138,.08)', rock:'#3a3440', rock2:'#2e2a34', tuft:'#6a5a78' },
   court:{ bg:'#09080b', floor:'#34303a', wall:'#1e1a24', grass:'#3a3a48', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(192,112,138,.08)', roof:'#4a4054', roof2:'#3c3446' },
   keep: { bg:'#050406', floor:'#241f2a', wall:'#120e16', grass:'#32283c', altar:'#2a3a66', boss:'#5a1a34', chest:'#3a2e1a', detail:'rgba(192,112,138,.09)', rock:'#30283a', rock2:'#261f2e' },
+  dusk: { bg:'#0a0907', floor:'#3a342a', wall:'#221c14', grass:'#4a4430', altar:'#2a3a66', boss:'#5a3a1a', chest:'#3a2e1a', detail:'rgba(255,220,150,.09)', rock:'#463e2e', rock2:'#3a3426', tuft:'#8a7a4a' },
+  core: { bg:'#0c0a06', floor:'#3e3826', wall:'#241e10', grass:'#504828', altar:'#2a3a66', boss:'#6a4a1a', chest:'#3a2e1a', detail:'rgba(255,230,160,.12)', rock:'#4a4230', rock2:'#3e3828' },
+  stair:{ bg:'#030305', floor:'#1e1e2a', wall:'#0c0c14', grass:'#2a2a40', altar:'#2a3a66', boss:'#3a1a4a', chest:'#3a2e1a', detail:'rgba(255,230,160,.06)', rock:'#28283a', rock2:'#20202e' },
   tower:{ bg:'#06060a', floor:'#262630', wall:'#14141c', grass:'#34344a', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(255,190,120,.07)', rock:'#34343e', rock2:'#2a2a34' },
 };
 
@@ -44,7 +47,9 @@ goals:{3:[
   ['courtEntered','등불 도시 동쪽 성문으로 나가 군주의 성을 향하자'],
   ['ch19done','약속의 뜰 동쪽 성문에서 네 사도의 시험을 받자'],
   ['ch20done','군주의 성 한가운데 — 옥좌의 방으로 가자'],
-  ['ch21done','제21장은 준비 중입니다 — 그동안 숨은 강적(強)과 전리품을 찾아보자'],
+  ['ch21done','약속의 뜰 북쪽 길로 빛의 근원에 가자'],
+  ['ch22done','근원 안쪽 계단을 내려가 굶주림을 막자'],
+  ['p3After','이야기를 모두 마쳤다 — 숨은 강적(強)과 전리품, 도감을 채워 보자'],
 ]},
 
 enemies:{
@@ -85,6 +90,18 @@ enemies:{
   throneGolem:{weak:'ice', name:'옥좌의 석상',  ...reg(20,{hp:1.5,atk:1.1,spd:8}),color:'#5a5060',look:'golem',palx:{g:'#5a5060',G:'#3a3440',l:'#9a90a4',e:'#ff4466'}},
   royalShade:{weak:'holy', name:'왕의 그림자',  ...reg(20,{hp:1.0,spd:15}),     color:'#2a2030',look:'shade',palx:{g:'#3a2a44',G:'#20162a',e:'#ff4466'},aiMagic:0.35},
   lord2:     {atkFx:'dark',weak:'holy',moves:['eatk','ecurse','eflurry','echarge','eblast','esmash'],enrage:0.4,name:'그림자 군주',...bos(20,{spd:14}), hp:22000,atk:160,mag:140, color:'#3a2040',look:'gatekeeper',big:2,palx:{g:'#3a2a4a',G:'#221830',e:'#ff4466'}},
+  /* 21~22장 — 근원에 모여든 것들 */
+  paleHound: {weak:'ice',  name:'빛바랜 사냥개',...reg(21,{hp:.9,spd:17}),      color:'#b0a888',look:'wolf',palx:{f:'#b0a888',F:'#7a745c',l:'#f0e8c8',e:'#ff8a3a'}},
+  emberWisp: {weak:'ice',resist:'fire',name:'첫 빛의 불티',...reg(21,{hp:.8,mag:1.18}),color:'#f0c060',look:'wraith',palx:{g:'#f0c060',G:'#b08030',l:'#fff0c0',e:'#ffffff'},aiMagic:0.6},
+  lightEater:{weak:'fire', name:'빛 갉는 뿌리', ...reg(21,{hp:1.1,spd:12}),     color:'#4a3a2a',look:'creeper',palx:{g:'#5a4630',G:'#38281a',l:'#8a7450',e:'#ffe9a0'}},
+  fadedGuard:{weak:'bolt',resist:'arrow',name:'빛바랜 파수',...reg(21,{hp:1.4,def:1.3,spd:9}),color:'#8a8470',look:'sentinel',palx:{g:'#8a8470',G:'#5c5848',l:'#c8c2a8',e:'#ffe9a0'}},
+  gnawer:    {atkFx:'dark',weak:'fire',moves:['eatk','evenom','edrain','eflurry','eaoe'],enrage:0.35,name:'근원을 좀먹는 것',...bos(21), hp:24000,atk:168,mag:146, color:'#4a3a2a',look:'creeper',big:2,palx:{g:'#5a4630',G:'#38281a',l:'#8a7450',e:'#ffe9a0'}},
+  famineBit: {weak:'holy', name:'굶주림의 조각',...reg(22,{hp:.9,spd:14}),      color:'#2a2440',look:'slime',palx:{g:'#3a3058',G:'#221a38',l:'#6a5a98',w:'#c8b8ff'}},
+  famineMaw: {weak:'holy', name:'굶주린 아가리',...reg(22,{hp:1.5,atk:1.12,spd:9}),color:'#30203a',look:'brute',palx:{b:'#3a2848',B:'#22162c',l:'#6a5080',e:'#ffe9a0'}},
+  famineShade:{weak:'holy',name:'굶주린 그림자',...reg(22,{hp:1.0,spd:16}),     color:'#1e1a2c',look:'shade',palx:{g:'#2c2640',G:'#16121e',e:'#ffe9a0'},aiMagic:0.4},
+  famineEye: {weak:'arrow',name:'굶주린 눈',    ...reg(22,{hp:.8,mag:1.2,spd:15}),color:'#4a3a6a',look:'gale',palx:{a:'#4a3a6a',A:'#2e2444',l:'#9a80d0',e:'#ffe9a0'},aiMagic:0.6},
+  famine:    {atkFx:'dark',weak:'holy',moves:['eatk','ecurse','eflurry','edrain','eaoe'],enrage:0.35,name:'삼백 해의 굶주림',...bos(22), hp:24000,atk:176,mag:152, color:'#221a30',look:'brute',big:2,palx:{b:'#2e2440',B:'#181224',l:'#5a4a80',e:'#ffe9a0'}},
+  famineCore:{atkFx:'dark',weak:'holy',moves:['emagic','echarge','eblast','ecurse','eflurry','esmash'],enrage:0.4,name:'굶주림의 알맹이',...bos(22,{spd:15}), hp:28000,atk:184,mag:164, color:'#3a2a5a',look:'gale',big:2,palx:{a:'#3a2a5a',A:'#20163a',l:'#8a70c8',e:'#ffffff'}},
 },
 
 members:{
@@ -93,6 +110,12 @@ members:{
 },
 
 equip:{
+  /* 21~22장 전리품 */
+  paleFang:  {name:'빛바랜 송곳니', slot:'ring', atk:10,fx:'critUp',rare:1,price:2000},
+  fadedHelm: {name:'빛바랜 투구',   slot:'head', def:19,fx:'aoeGuard',rare:1,price:2000},
+  mawRing:   {name:'아가리의 반지', slot:'ring', atk:6,mag:6,fx:'lifeSteal',rare:1,price:2200},
+  sourceShard:{name:'근원의 조각',  slot:'ring', atk:8,mag:8,def:4,fx:'regen',uniq:1,price:0},
+  sharedDawn:{name:'나눈 새벽',     slot:'ring', atk:7,mag:7,def:7,spd:7,fx:'dawn',uniq:1,price:0},
   /* 9단계(샛별) — 약속의 뜰 */
   mornSword: {name:'샛별검',        slot:'weapon',cls:['검사'],atk:52,price:3400},
   mornStaff: {name:'샛별 지팡이',   slot:'weapon',cls:['주술사','치유사'],mag:52,price:3400},
@@ -147,7 +170,9 @@ drops:{
   griefHowl:{item:'hiEther',rate:0.1}, cliffBat:{item:'hiPotion',rate:0.12},
   mothQueen:{item:'queenWing',done:'ch17done',part:3}, oathEcho:{item:'oathSeal',done:'ch18done',part:3},
   cinderWolf:{item:'cinderClaw',rate:0.05,pity:20}, waxGuard:{item:'waxShield',rate:0.05,pity:20}, oathGuard:{item:'oathHelm',rate:0.05,pity:20}, inkWraith:{item:'inkRing',rate:0.05,pity:20},
-  lord2:{item:'lordMantle',done:'ch20done',part:3},
+  lord2:{item:'lordMantle',done:'ch20done',part:3}, gnawer:{item:'sourceShard',done:'ch21done',part:3}, famineCore:{item:'sharedDawn',done:'ch22done',part:3},
+  paleHound:{item:'paleFang',rate:0.05,pity:20}, fadedGuard:{item:'fadedHelm',rate:0.05,pity:20}, famineMaw:{item:'mawRing',rate:0.05,pity:20},
+  emberWisp:{item:'hiEther',rate:0.1}, lightEater:{item:'hiPotion',rate:0.12}, famineBit:{item:'hiPotion',rate:0.12}, famineEye:{item:'hiEther',rate:0.1},
   roadKnight:{item:'knightCrest',rate:0.05,pity:20}, keepMage:{item:'keepOrb',rate:0.05,pity:20}, throneGolem:{item:'throneFist',rate:0.05,pity:20},
   crownHound:{item:'hiPotion',rate:0.12}, oathWisp:{item:'hiEther',rate:0.1}, royalShade:{item:'hiEther',rate:0.1},
   mothKin:{item:'hiPotion',rate:0.12}, mirrorWisp:{item:'hiEther',rate:0.1}, pageBat:{item:'hiPotion',rate:0.12}, quillShade:{item:'hiEther',rate:0.1},
@@ -345,7 +370,7 @@ areas:{
       {x:3,y:7,color:'#f0c27a',shade:true,name:'뜰의 상인',glyph:'◇',shop:['hiPotion','hiEther','revive','mornSword','mornStaff','mornBow','mornPlate','mornRobe','mornHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
     warps:[ {x:1,y:5,to:'kingsroad',tx:19,ty:5,label:'길'},
             {x:14,y:5,to:'lordkeep',tx:2,ty:1,label:'성문',event:'ev_trial',eventFlag:'ch19done'},
-            {x:7,y:1,to:'oathcourt',tx:7,ty:2,label:'근원',need:'ch21ready',block:'성 뒤 근원으로 가는 길은 다음 이야기에서 이어진다. (제21장은 준비 중입니다)'} ],
+            {x:7,y:1,to:'sourcepath',tx:2,ty:9,label:'근원',need:'ch20done',block:'성 뒤로 난 길은 군주만이 열 수 있다. 먼저 옥좌의 방으로 가자.'} ],
     onEnter:'ev_court_enter' },
 
   /* ---- 제20장 ---- 세 겹 고리: 바깥 복도 → 가운데 복도 → 옥좌의 방. 장치는 바깥에 둘, 가운데에 하나 */
@@ -357,6 +382,39 @@ areas:{
     npcs:[], warps:[ {x:1,y:1,to:'oathcourt',tx:13,ty:5,label:'뜰'} ],
     loot:{'5,5':{item:'powerSeed'}},
     eventTile:'ev_lord', eventDone:'ch20done', onEnter:'ev_keep_enter' },
+
+  /* ---- 제21장 ---- */
+  sourcepath:{ name:'처음 빛의 길', theme:'ash', bgm:'rift', hud:'3부 21장', pal:PAL.dusk,
+    src:[ "1111111111111111111111","1500000220000000000001","1011100220001110022001","1000000000001110022001",
+          "1002200011000000000101","1002200011000000000101","1000000000002200110001","1011000000002200110001",
+          "1011000700000000000051","1000000000030000000001","1111111111111111111111" ],
+    enc:{ pool:['paleHound','emberWisp','lightEater'], rate:0.2, pow:1.2, hpw:1.25 }, respawn:{x:2,y:9},
+    npcs:[], warps:[ {x:1,y:9,to:'oathcourt',tx:7,ty:2,label:'뜰'}, {x:20,y:5,to:'sourcecore',tx:2,ty:1,label:'근원'} ],
+    loot:{'1,1':{item:'wisdomSeed'},'20,8':{gold:3000,item:'hiEther'}}, onEnter:'ev_source_path' },
+
+  /* 세 겹: 바깥 복도 → 안쪽 복도 → 근원. 장치는 바깥 둘, 안쪽 하나 */
+  sourcecore:{ name:'빛의 근원', theme:'temple', bgm:'dungeon', hud:'3부 21장', pal:PAL.core,
+    src:[ "111111111111111111","100002200000000081","101111111111111101","101000008000000101",
+          "101011111111110101","100015000600090001","101011111111110101","101000022000000101",
+          "101111111111111101","180000002200070001","111111111111111111" ],
+    enc:{ pool:['lightEater','fadedGuard','emberWisp'], rate:0.22, pow:1.22, hpw:1.3 }, respawn:{x:2,y:1},
+    npcs:[ {x:5,y:3,color:LORD,name:'그림자 군주',when:'ch22done',lines:()=> storyFlags.p3Keeper==='turns' ? [
+          say('그림자 군주','올해는 내 차례다. 내년 이맘때, 문 앞에서 기다리마. 늦지 마라.',LORD) ] : [
+          say('그림자 군주','빛은 잘 흐르고 있다. 삼백 해 만에, 지킬 것이 있는 자리에 앉았구나.',LORD) ]} ],
+    warps:[ {x:1,y:1,to:'sourcepath',tx:19,ty:5,label:'길'},
+            {x:7,y:5,to:'dawnstair',tx:3,ty:1,label:'계단',when:'ch21done'} ],
+    loot:{'5,5':{item:'lifeSeed'}},
+    eventTile:'ev_gnaw', eventDone:'ch21done', onEnter:'ev_core_enter' },
+
+  /* ---- 제22장 ---- 장치 없이 내려가기만 하는 마지막 길. 들머리에 제단 */
+  dawnstair:{ name:'여명의 계단', theme:'temple', bgm:'dungeon', hud:'3부 22장', pal:PAL.stair,
+    src:[ "111111111111111111","103000220000070001","111111111111111101","150002200000220001",
+          "101111111111111111","100022000700000051","111111111111111101","100000002200000001",
+          "101111111111111111","100000060000000001","111111111111111111" ],
+    enc:{ pool:['famineBit','famineMaw','famineShade','famineEye'], rate:0.22, pow:1.25, hpw:1.3 }, respawn:{x:3,y:1},
+    npcs:[], warps:[ {x:1,y:1,to:'sourcecore',tx:8,ty:5,label:'근원'} ],
+    loot:{'1,3':{item:'powerSeed'},'16,5':{gold:3000,item:'guardSeed'}},
+    eventTile:'ev_famine', eventDone:'ch22done', onEnter:'ev_stair_enter' },
 },
 
 starts:{
@@ -719,6 +777,107 @@ events:{
       "— 제20장 「그림자 군주」 완료 —",
       "약속의 뜰 북쪽으로, 근원에 이르는 길이 열린다." ],
       ()=>{ storyFlags.ch20done=true; saveGame(); }); },
+
+  /* ================= 제21장 「빛의 근원」 ================= */
+  ev_source_path:()=>{ if(storyFlags.sourcePath) return; storyFlags.sourcePath=true;
+    showMsg([
+      "— 제21장 「빛의 근원」 —",
+      "성 뒤로 난 길. 걸을수록 발밑의 재가 옅어지고, 흙빛이 돌아온다.",
+      say('그림자 군주','삼백 해 전에는, 이 길 끝이 눈을 뜨지 못할 만큼 밝았다.',LORD),
+      say('코르','지금은 저녁 무렵 같은데.',C),
+      say('그림자 군주','그래서 서두른 것이다.',LORD) ], ()=>{ saveGame(); }); },
+
+  ev_core_enter:()=>{ if(storyFlags.coreEntered) return; storyFlags.coreEntered=true;
+    showMsg([
+      "빛의 근원 — 땅이 그릇처럼 패인 자리. 한가운데에서 빛이 솟는다. 모닥불만 한 크기로.",
+      say('미아','이게… 두 세상을 밝히던 빛이에요?',M),
+      say('카엘','둘레에 뭔가 붙어 있어. 빛을 갉아 먹고 있어. 장치(○) 셋을 눌러야 한가운데(▦)로 갈 수 있어.',K) ]); },
+
+  /* 보스 → (이김) → 세 번째 선택. 선택 전에 꺼져도 선택부터 이어진다 */
+  ev_gnaw:()=>{ if(storyFlags.ch21done) return; if(storyFlags.gnawDown){ runEvent('ev_gnaw_after'); return; }
+    showMsg([
+      "근원의 가장자리. 뿌리 같은 것이 빛에 이빨을 박고 있다. 갉을 때마다 근원이 움츠러든다.",
+      say('그림자 군주','저것이다. 내가 처음 보았을 때는 손가락만 했다.',LORD),
+      say('테리','크기는 상관없어. 떼어 낸다!',T) ],
+      ()=>{ startBattle(['gnawer','lightEater','lightEater'],true,{onWin:'ev_gnaw_after'}); }); },
+
+  ev_gnaw_after:()=>{ storyFlags.gnawDown=true; saveGame();
+    const done=()=>{ showMsg([
+        "그때 — 땅이 운다. 근원 너머, 빛이 닿은 적 없는 틈에서 무언가가 올라온다.",
+        say('그림자 군주','굶주림이다. 삼백 해 동안 고인 빛의 냄새를 맡고 모여든 것. 그릇이 열리려는 것을 아는 게다.',LORD),
+        say('카엘','저게 근원을 덮으면 열쇠를 돌릴 수 없어. 먼저 막아야 해!',K),
+        "— 제21장 「빛의 근원」 완료 —",
+        "근원 안쪽에, 아래로 내려가는 계단이 드러났다." ], ()=>{ storyFlags.ch21done=true; saveGame(); }); };
+    const lord=()=>{ storyFlags.p3Keeper='lord'; saveGame(); showMsg([
+        say('테리','당신이 맡아 줘. 삼백 해를 기다린 사람이니까. 이번엔 우리가 약속을 지킬 차례고.',T),
+        say('그림자 군주','…현자의 집은 약속을 깼고, 그 집의 아이와 벗들은 나에게 근원을 맡긴다. 묘한 일이다. 받겠다.',LORD) ], done); };
+    const turns=()=>{ storyFlags.p3Keeper='turns'; saveGame(); showMsg([
+        say('테리','혼자 지키게 두면 또 삼백 해 전처럼 돼. 해마다 번갈아 지키자. 올해는 당신, 내년엔 우리.',T),
+        say('그림자 군주','…서른 해마다 열겠다던 문은 한 번도 열리지 않았다. 해마다 오겠다는 말을, 믿어 보마. 올해는 내가 지킨다.',LORD) ], done); };
+    if(storyFlags.p3Keeper){ done(); return; }
+    askMsg([
+      "좀먹던 것이 떨어져 나간다. 그런데도 근원은 커지지 않는다.",
+      say('미아','…왜죠? 갉아 먹던 게 없어졌는데.',M),
+      say('카엘','(근원에 손을 댄다) …알겠어. 빛은 고여 있으면 줄어. 흘러야 다시 솟아. 샘처럼.',K),
+      say('카엘','삼백 해 동안 세 그릇에 가둬만 뒀으니 근원이 마른 거야. 저쪽으로 보내지도, 이쪽으로 돌려보내지도 않았으니까.',K),
+      say('그림자 군주','…그렇다면 내 셈도 틀렸구나. 전부 이쪽으로 돌려도, 고이면 똑같이 마른다.',LORD),
+      say('코르','그럼 답은 하나잖아. 양쪽으로 다 열어. 계속 오가게.',C),
+      say('카엘','그릇을 등대로 바꾸는 거야. 열쇠는 내가 돌릴 수 있어. 다만 흐름이 한쪽으로 쏠리지 않게, 근원 곁에서 누군가 지켜봐야 해. 계속.',K),
+      say('그림자 군주','…누가 남을 것이냐.',LORD) ],'군주에게 맡긴다','번갈아 지키자고 한다',lord,turns); },
+
+  /* ================= 제22장 「새벽을 나누다」 ================= */
+  ev_stair_enter:()=>{ if(storyFlags.stairEntered) return; storyFlags.stairEntered=true;
+    showMsg([
+      "— 제22장 「새벽을 나누다」 —",
+      "여명의 계단 — 근원 아래로 꺾여 내려가는 길. 들머리에 제단 ✦ 이 하나, 마지막으로 놓여 있다.",
+      say('테리','끝이야. 여기만 넘으면, 양쪽에 다 아침이 와.',T),
+      say('미아','다들… 여기까지 같이 와 줘서 고마워요.',M),
+      say('코르','그런 말은 이기고 나서 해.',C),
+      say('카엘','이기고 나서 하자. 꼭.',K) ], ()=>{ saveGame(); }); },
+
+  /* 두 번 이어 싸운다. 첫 싸움을 이긴 뒤 지거나 꺼지면 둘째 싸움부터 다시 */
+  ev_famine:()=>{ if(storyFlags.ch22done) return; if(storyFlags.famine2Down){ runEvent('ev_ending'); return; } if(storyFlags.famine1Down){ runEvent('ev_famine2'); return; }
+    showMsg([
+      "계단 끝. 어둠이 숨을 쉰다. 눈도 입도 없이, 다만 빛 쪽으로 기울어 있다.",
+      say('그림자 군주','(위에서 목소리가 내려온다) 저것은 미움이 아니다. 삼백 해 치의 배고픔이다. 이쪽도 저쪽도 아닌 곳에 고인.',LORD),
+      say('테리','그럼 베는 게 아니라 — 밀어내는 거야. 빛이 흐를 자리에서!',T) ],
+      ()=>{ startBattle(['famine','famineShade','famineShade'],true,{onWin:'ev_famine2'}); }); },
+
+  ev_famine2:()=>{ const first=!storyFlags.famine1Down; storyFlags.famine1Down=true; saveGame(); party.forEach(q=>{ if(q.alive){ q.hp=Math.min(q.maxhp,q.hp+Math.round(q.maxhp*0.5)); q.mp=Math.min(q.maxmp,q.mp+Math.round(q.maxmp*0.5)); } });
+    showMsg([
+      first ? "어둠이 갈라진다. 그 속에서 — 더 짙은 것이 눈을 뜬다." : "갈라진 어둠 속에서, 짙은 것이 아직 눈을 뜨고 있다.",
+      say('카엘','저게 알맹이야! 저걸 흩어야 그릇을 열 수 있어!',K),
+      "위에서 근원의 빛이 한 줄기 내려와 일행을 감싼다. (HP·MP 절반 회복)" ],
+      ()=>{ startBattle(['famineCore'],true,{onWin:'ev_ending'}); }); },
+
+  ev_ending:()=>{ storyFlags.famine2Down=true; saveGame(); playBGM('field');
+    const F=storyFlags;
+    showMsg([
+      "알맹이가 흩어진다. 어둠은 사라지지 않는다 — 다만, 더는 굶주리지 않는다. 빛이 흐를 자리를 비켜 줄 뿐이다.",
+      "근원으로 돌아온 카엘이 빛 위에 손바닥을 얹는다.",
+      say('카엘','삼백 해 늦었지만 — 엽니다. 양쪽으로.',K),
+      "멀리 저편에서, 세 개의 봉인이 처음으로 양쪽을 향해 열린다. 봉인은 더 이상 그릇이 아니다. 등대다.",
+      "빛이 이쪽에서 저쪽으로, 저쪽에서 이쪽으로 흐른다. 흐르기 시작하자 — 근원이 숨을 쉰다. 모닥불이 화톳불로, 화톳불이 새벽으로.",
+      F.p3Keeper==='turns' ? say('그림자 군주','가거라. 올해는 내가 지킨다. 내년 이맘때, 이 자리에서 보자.',LORD)
+                           : say('그림자 군주','가거라. 여기는 내가 지킨다. 삼백 해 만에, 지킬 것이 생겼으니.',LORD),
+      "— 돌아가는 길 —",
+      F.p3Child==='share' ? "잿등 마을. 린이 등대 꼭대기에서 손을 흔든다. 할렌의 얼굴에도, 마을 사람들의 얼굴에도 윤곽이 돌아와 있다."
+                          : "잿등 마을. 테리는 린 앞에 한쪽 무릎을 꿇고, 검을 바닥에 내려놓는다. 린은 한참 보다가 — 그 손에 재꽃 열매를 쥐여 준다.",
+      "이름 없는 쉼터. 가른의 등불 둘레에, 자기 이름을 되찾은 사람들이 서로를 부르고 있다.",
+      say('가른','코르. 다 끝났으니 5년 치 얘기를 해 주마. …길다. 앉아라.',GARN),
+      F.p3Truth==='tell' ? "등불 도시. 거울은 치워졌다. 대등은 이제 거울 없이도, 도시 끝까지 닿는다."
+                         : "등불 도시. 미아는 광장에서, 그동안 덮어 둔 것을 제 입으로 말한다. 대등이 커진 뒤라서, 사람들은 끝까지 들어 준다.",
+      say('로완','신전으로 돌아가거든 원장에게 전해라. 이제는 덮을 것이 없다고.',ROWAN),
+      "— 그리고, 균열 이편 —",
+      "아르그 마을. 해는 전보다 조금 옅다. 그 대신 밤이 되면, 저편 하늘에 등대 세 개가 별처럼 보인다.",
+      say('코르','좀 어두워졌네. 뭐, 눈은 금방 익어.',C),
+      say('미아','저쪽에서도 지금, 우리 쪽 불빛을 보고 있겠죠.',M),
+      say('카엘','서고에 한 줄 적어 두고 왔어. 「문은 열려 있다. 닫지 말 것.」',K),
+      say('테리','가자. 내일은 저쪽 아침을 보러.',T),
+      "— 모두의 픽셀모험 · 제3부 「균열 너머」 끝 —",
+      "세 봉인의 이야기는 여기까지입니다. 끝까지 함께해 주셔서 고맙습니다.",
+      "이어하기를 누르면 근원에서 계속됩니다 — 숨은 강적과 전리품, 도감이 남아 있습니다." ],
+      ()=>{ F.ch22done=true; F.part3Clear=true; loadArea('sourcecore',8,5); saveGame(); stopBGM(); bgm.started=false; state='title'; titleSel=1; }); },
 },
 
 
@@ -818,14 +977,14 @@ skills:{
 },
 
 learn:{
-  paladin:    [{lv:0,id:'ultBulwark'}, {lv:32,id:'judgeBlade'}],
-  swordsaint: [{lv:0,id:'ultThousand'},{lv:32,id:'voidCut'}],
-  archmage:   [{lv:0,id:'ultNova'},    {lv:32,id:'starfall'}],
-  nightsage:  [{lv:0,id:'ultEclipse'}, {lv:32,id:'soulRend'}],
-  saint:      [{lv:0,id:'ultMiracle'}, {lv:32,id:'lightLance'}],
-  arbiter:    [{lv:0,id:'ultJudgment'},{lv:32,id:'condemn'}],
-  deadshot:   [{lv:0,id:'ultOneShot'}, {lv:32,id:'pierceLine'}],
-  stormarcher:[{lv:0,id:'ultStorm'},   {lv:32,id:'galeShot'}],
+  paladin:    [{lv:0,id:'ultBulwark'}, {lv:31,id:'judgeBlade'}],
+  swordsaint: [{lv:0,id:'ultThousand'},{lv:31,id:'voidCut'}],
+  archmage:   [{lv:0,id:'ultNova'},    {lv:31,id:'starfall'}],
+  nightsage:  [{lv:0,id:'ultEclipse'}, {lv:31,id:'soulRend'}],
+  saint:      [{lv:0,id:'ultMiracle'}, {lv:31,id:'lightLance'}],
+  arbiter:    [{lv:0,id:'ultJudgment'},{lv:31,id:'condemn'}],
+  deadshot:   [{lv:0,id:'ultOneShot'}, {lv:31,id:'pierceLine'}],
+  stormarcher:[{lv:0,id:'ultStorm'},   {lv:31,id:'galeShot'}],
   garn:       [{lv:1,trait:'twice'},  {lv:1,id:'garnPierce'}, {lv:1,id:'garnMark'}],
   guardian:   [{lv:0,trait:'cover'},  {lv:0,id:'shieldBash'}, {lv:26,id:'aegis'},     {lv:29,id:'holyBlade'}],
   blademaster:[{lv:0,trait:'keen'},   {lv:0,id:'tripleSlash'},{lv:26,id:'crescent'},  {lv:29,id:'iai'}],
