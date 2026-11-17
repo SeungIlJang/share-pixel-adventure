@@ -37,7 +37,7 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
 </script>
 <script src="data/part1.js?v=d2a2df1c24"></script>
 <script src="data/part2.js?v=d6af128854"></script>
-<script src="data/part3.js?v=a51700a23b"></script>
+<script src="data/part3.js?v=7497bfa917"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -188,15 +188,26 @@ function has(p,t){ return !!(p&&p.traits&&p.traits.includes(t)); }
    CONTENT.jobs[id]={base(처음 직업), name, role, col, bonus(전직 즉시 오르는 능력치), grow(레벨당 성장)}. 직업 기술·특성은 CONTENT.learn[id] */
 const JOBS=CONTENT.jobs||{};
 function jobOf(p){ return (p&&p.job&&JOBS[p.job])||null; }
-function jobName(p){ const j=jobOf(p); return j?j.name:(p.title||p.cls); }
-function growOf(p){ const j=jobOf(p); return (j&&j.grow)||GROW[p.cls]||GROW['검사']; }
+/* 2차 전직: CONTENT.jobs2[id]={from(1차 직업 id), name, role, col, bonus, grow}. 1차 직업마다 하나씩 이어진다. p.job2 에 두고, 다른 갈래의 기술 하나(p.inherit)를 이어받는다 */
+const JOBS2=CONTENT.jobs2||{};
+function job2Of(p){ return (p&&p.job2&&JOBS2[p.job2])||null; }
+function job2For(p){ return (p&&p.job&&Object.keys(JOBS2).find(id=>JOBS2[id].from===p.job))||null; }
+function inheritChoices(p){ const j=jobOf(p); if(!j) return []; const o=Object.keys(JOBS).find(id=>id!==p.job&&JOBS[id].base===j.base); return o?(CONTENT.learn[o]||[]).filter(e=>e.id&&SKILLS[e.id]).map(e=>e.id):[]; }
+function advanceJob(p,inh){ const id=job2For(p), j=JOBS2[id]; if(!j||p.job2) return null; p.job2=id; p.job2Lv=p.lv; p.ult=0; for(const k in STAT_KEY) p[STAT_KEY[k]]+=(j.bonus&&j.bonus[k])||0; if(p.alive){ p.hp=p.maxhp; p.mp=p.maxmp; }
+  const got=learnSkills(p); if(inh&&SKILLS[inh]&&!p.skills.includes(inh)){ p.inherit=inh; p.skills.push(inh); fitLoadout(p); got.push(SKILLS[inh].name+'(이어받음)'); } return got; }
+/* 궁극기 게이지: 2차 전직한 사람만. 행동하면 +15, 맞으면 +8, 100이 되면 궁극기(ult)를 한 번 쓸 수 있다. 전투가 끝나도 남는다 */
+function ultGain(p,n){ if(p&&p.job2&&p.alive) p.ult=Math.min(100,(p.ult||0)+n); }
+function ultReady(p,s){ return !s.ult||(p.ult||0)>=100; }
+function jobName(p){ const j=job2Of(p)||jobOf(p); return j?j.name:(p.title||p.cls); }
+function growOf(p){ const j=job2Of(p)||jobOf(p); return (j&&j.grow)||GROW[p.cls]||GROW['검사']; }
 const STAT_KEY={hp:'maxhp',mp:'maxmp',atk:'atk',def:'def',mag:'mag',spd:'spd'};
-function learnList(p){ return (CONTENT.learn[p.learnKey||p.cls]||[]).concat(p.job?(CONTENT.learn[p.job]||[]):[]); }
+function learnList(p){ return (CONTENT.learn[p.learnKey||p.cls]||[]).concat(p.job?(CONTENT.learn[p.job]||[]):[]).concat(p.job2?(CONTENT.learn[p.job2]||[]):[]); }
 /* 전직: 이미 다른 직업이면 먼저 되돌린 뒤 바꾼다. 새로 배운 것의 이름 목록을 돌려준다(실패하면 null) */
-function changeJob(p,id){ const j=JOBS[id]; if(!j||j.base!==p.cls||p.job===id) return null; if(p.job) clearJob(p);
+function changeJob(p,id){ const j=JOBS[id]; if(!j||j.base!==p.cls||p.job===id||p.job2) return null; // 2차 전직 뒤에는 1차를 바꿀 수 없다
+  if(p.job) clearJob(p);
   p.job=id; p.jobLv=p.lv; for(const k in STAT_KEY) p[STAT_KEY[k]]+=(j.bonus&&j.bonus[k])||0; if(p.alive){ p.hp=p.maxhp; p.mp=p.maxmp; } return learnSkills(p); }
 /* 전직 되돌리기: 즉시 보너스와, 전직 뒤 레벨마다 더 받은 성장분을 빼고 직업 기술·특성을 지운다 */
-function clearJob(p){ const j=jobOf(p); if(!j){ p.job=null; return; } const base=GROW[p.cls]||GROW['검사'], L=Math.max(0,p.lv-(p.jobLv||p.lv)), ls=CONTENT.learn[p.job]||[];
+function clearJob(p){ if(p.job2) return; const j=jobOf(p); if(!j){ p.job=null; return; } const base=GROW[p.cls]||GROW['검사'], L=Math.max(0,p.lv-(p.jobLv||p.lv)), ls=CONTENT.learn[p.job]||[];
   for(const k in STAT_KEY) p[STAT_KEY[k]]-=((j.bonus&&j.bonus[k])||0)+(((j.grow||base)[k])-base[k])*L;
   p.skills=p.skills.filter(id=>!ls.some(e=>e.id===id)); p.traits=(p.traits||[]).filter(t=>!ls.some(e=>e.trait===t)); p.off=(p.off||[]).filter(id=>p.skills.includes(id));
   p.job=null; p.jobLv=null; p.hp=Math.max(p.alive?1:0,Math.min(p.hp,p.maxhp)); p.mp=Math.min(p.mp,p.maxmp); fitLoadout(p); }
@@ -892,9 +903,24 @@ function drawSkillPanel(p){ const j=jobOf(p), off=p.off||[];
 /* ---------- 전직 화면 ---------- 그 인물이 고를 수 있는 직업을 나란히 보여 준다. onPick 이 있으면 고른 뒤 그것을 부른다(이야기의 전직 장면용) */
 /* 이야기의 전직 장면: 그 인물의 두 직업을 보여 주고, 고르면 after(직업 id, 새로 배운 것 이름들)를 부른다. 고르기 전에는 닫을 수 없다 */
 let jobPick=null;
+function openJob2Pick(name,after){ const p=party.find(q=>q.name===name); if(!p||p.job2||!job2For(p)){ if(after) after(null,[]); return; } jobPick={p,after,tier:2,inh:null}; menuNote=''; state='jobpick'; }
+function drawJob2Panel(jp){ const p=jp.p, id=job2For(p), j=JOBS2[id], ls=CONTENT.learn[id]||[], ch=inheritChoices(p), y=26, h=200, w=230;
+  g.textAlign='left'; g.fillStyle=p.color; g.font='bold 13px sans-serif'; g.fillText(`2차 전직 — ${p.name} Lv${p.lv}`,14,19); g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText('지금: '+jobName(p),170,19);
+  let x=8; g.fillStyle='rgba(34,44,70,.96)'; g.fillRect(x,y,w,h); g.strokeStyle=j.col; g.lineWidth=2; g.strokeRect(x+0.5,y+0.5,w-1,h-1); g.lineWidth=1;
+  g.fillStyle=j.col; g.font='bold 13px sans-serif'; g.fillText(j.name,x+8,y+17); g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.fillText(j.role,x+8,y+31);
+  g.fillStyle='#9fe8c4'; g.font='9px sans-serif'; g.fillText('전직 즉시  '+Object.keys(j.bonus||{}).map(k=>k.toUpperCase()+'+'+j.bonus[k]).join(' '),x+8,y+44);
+  let yy=y+60; ls.forEach(e=>{ const d=e.trait?TRAITS[e.trait]:SKILLS[e.id]; if(!d) return;
+    g.fillStyle=d.ult?'#fff3b8':e.trait?'#ffd54a':'#e8eef7'; g.font='10px sans-serif'; g.fillText((d.ult?'궁극기 ':e.trait?'특성 ':'')+d.name+(e.trait||d.ult?'':'  MP '+d.mp),x+8,yy);
+    g.fillStyle='#6b7590'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(e.lv?'Lv'+e.lv:'바로',x+w-8,yy); g.textAlign='left'; g.fillStyle='#8a93ad'; g.fillText(e.trait?d.desc:skillDesc(d),x+8,yy+11); yy+=27; });
+  g.fillStyle='#8a93ad'; g.font='9px sans-serif'; wrap('궁극기는 MP 대신 게이지(★)로 쓴다. 싸우는 동안 차오르고, 가득 차면 한 번 쓸 수 있다.',x+8,y+h-34,w-16,11);
+  x=242; g.fillStyle='rgba(18,22,34,.94)'; g.fillRect(x,y,w,h); g.strokeStyle='#4a5670'; g.strokeRect(x+0.5,y+0.5,w-1,h-1);
+  g.fillStyle='#ffd54a'; g.font='bold 11px sans-serif'; g.fillText('가지 않은 길의 기술 하나를 이어받는다',x+8,y+16);
+  ch.forEach((sid,i)=>{ const d=SKILLS[sid], by=y+24+i*46, sel=jp.inh===sid; btn(x+8,by,w-16,40,'',()=>{ jp.inh=sid; sfx('sel'); },{bg:sel?'#2a4a3a':'rgba(14,18,28,.96)'});
+    g.fillStyle=sel?'#9fe8c4':'#e8eef7'; g.font='11px sans-serif'; g.fillText((sel?'▶ ':'')+d.name+'  MP '+d.mp,x+16,by+15); g.fillStyle='#8a93ad'; g.font='9px sans-serif'; g.fillText(skillDesc(d),x+16,by+30); });
+  btn(x+8,y+h-26,w-16,20,jp.inh?'이 길로 나아간다':'이어받을 기술을 먼저 고르자',()=>{ if(!jp.inh) return; const got=advanceJob(p,jp.inh); if(got){ sfx('win'); jobPick=null; menuNote=''; state='field'; if(jp.after) jp.after(id,got); } },{bg:jp.inh?'#2a4a3a':'rgba(27,34,54,.9)',fg:jp.inh?'#9fe8c4':'#8a93ad',font:'11px sans-serif'}); }
 function openJobPick(name,after){ const p=party.find(q=>q.name===name); if(!p||!jobChoices(p).length){ if(after) after(null,[]); return; } jobPick={p,after}; menuNote=''; state='jobpick'; }
 function drawJobPick(){ drawField(); hotspots=[]; g.fillStyle='rgba(6,8,16,.9)'; g.fillRect(0,0,W,H); hz(0,0,W,H,()=>{}); // 아래 화면의 버튼은 막는다
-  const jp=jobPick; if(!jp){ state='field'; return; } drawJobPanel(jp.p,(id,got)=>{ jobPick=null; menuNote=''; state='field'; if(jp.after) jp.after(id,got); });
+  const jp=jobPick; if(!jp){ state='field'; return; } if(jp.tier===2){ drawJob2Panel(jp); return; } drawJobPanel(jp.p,(id,got)=>{ jobPick=null; menuNote=''; state='field'; if(jp.after) jp.after(id,got); });
   g.fillStyle='#9fe8c4'; g.font='11px sans-serif'; g.textAlign='center'; g.fillText('한 번 고르면 이 길로 간다 — 천천히 읽고 고르자',W/2,H-10); g.textAlign='left'; }
 const JOBTEST=/[?&]jobtest/.test(location.search); // 시험용: 주소에 ?jobtest 를 붙이면 메뉴에서 자유롭게 전직해 볼 수 있다
 function jobChoices(p){ return p.guest?[]:Object.keys(JOBS).filter(id=>JOBS[id].base===p.cls); } // 임시 동료는 전직하지 않는다
@@ -1195,6 +1221,7 @@ function chooseCommand(i){ if(!inputOK()) return; const b=battle,p=party[b.input
   else if(c==='스킬'){ const n=battleSkills(p).length; n?(b.menu='skill',b.sub=(p.ai&&p.ai.skill!=null&&p.ai.skill<n)?p.ai.skill:0):flashMsg('스킬 없음'); }
   else if(c==='아이템'){ battleItems().length>0?(b.menu='item',b.sub=0):flashMsg('아이템 없음'); } }
 function chooseSkill(i){ if(!inputOK()) return; const b=battle,p=party[b.inputIdx]; b.sub=i; const id=battleSkills(p)[i],s=SKILLS[id]; if(!s) return;
+  if(!ultReady(p,s)){ flashMsg('궁극기 — 게이지가 가득 차야 쓸 수 있다'); return; }
   if(p.mp<mpCost(p,s)){ flashMsg('MP 부족'); return; } sfx('sel'); if(p){ p.ai=p.ai||{}; p.ai.cmd=1; p.ai.skill=i; } b.pending={type:'skill',skill:id};
   if(s.target==='allEnemies'||s.target==='allAllies'||s.target==='self'){ pushA({actor:b.inputIdx,...b.pending,target:s.target==='self'?b.inputIdx:-1}); nextInput(); }
   else if(s.target==='ally'){ b.menu='targetAlly'; b.targetIdx=firstAlly(); }
@@ -1215,7 +1242,7 @@ function autoAction(idx){ const p=party[idx], ai=p.ai||{};
   let cmd = ai.cmd!=null ? ai.cmd : ((p.cls==='검사'||p.cls==='궁수')?0:1);
   const bsk=battleSkills(p);
   if(CMDS[cmd]==='스킬' && bsk.length){ const si=(ai.skill!=null&&ai.skill<bsk.length)?ai.skill:0; const id=bsk[si], s=SKILLS[id];
-    if(s && p.mp>=mpCost(p,s)){
+    if(s && p.mp>=mpCost(p,s) && ultReady(p,s)){
       if(s.kind==='buff'){ if(!(s.target==='self'?p[s.buff]>0:livingParty().every(q=>q[s.buff]>0))) return {actor:idx,type:'skill',skill:id,target:s.target==='self'?idx:-1}; } // 이미 걸려 있으면 평타
       else if(s.kind==='debuff'){ if(!aliveEnemies().every(e=>e[[].concat(s.debuff)[0]]>0)) return {actor:idx,type:'skill',skill:id,target:-1}; }
       else if(s.kind==='revive'){ const d=firstDead(); if(d>=0) return {actor:idx,type:'skill',skill:id,target:d}; }
@@ -1254,7 +1281,7 @@ function modE(p,t,d,el,phys,s){ const em=elemOf(t); s=s||{};
 /* 아군이 받는 피해 보정 */
 function modP(p,d,e,aoe){ if(p.veil>0) d*=0.7; if(p.weakT>0) d*=1.3; if(p.taunt>0) d*=0.8; if(e&&e.sapT>0) d*=0.75; if(aoe&&gear(p,'aoeGuard')) d*=0.8; return Math.max(1,Math.round(d)); }
 /* 아군 HP를 깎는 곳은 여기 하나: 불굴(전투당 1회 HP 1로 버팀)을 처리하고 쓰러졌는지 돌려준다 */
-function hitP(p,d){ p.hp-=d; if(p.hp>0) return false;
+function hitP(p,d){ p.hp-=d; if(p.hp>0){ ultGain(p,8); return false; }
   if((has(p,'endure')||gear(p,'endure'))&&!p.endured){ p.endured=true; p.hp=1; const q=partyPos(party.indexOf(p)); pop(q.x,q.y-16,'불굴!','#ffd54a',hitLag); return false; }
   p.hp=0; p.alive=false; return true; }
 /* 적이 한 명을 고를 때: 도발 중인 아군이 있으면 75% 확률로 그쪽을 친다 */
@@ -1331,14 +1358,14 @@ function stepResolve(){ const b=battle; hitLag=0;
   { const u=a.enemy!=null?b.enemies[a.enemy]:party[a.actor]; if(u&&u.alive&&u.stun){ u.stun=0; u.stunUsed=false; b.log.push(`${u.name} — 기절해서 움직이지 못한다!`); b.auto=28; return; } }
   if(a.type==='guard'){ const p=party[a.actor]; if(p.alive){ p.guard=true; b.log.push(`${p.name} 방어 태세!`); } }
   else if(a.type==='flee'){ if(!b.isBoss&&Math.random()<0.6){ b.log.push('도망쳤다!'); b.result='flee'; b.phase='done'; return; } else b.log.push('도망칠 수 없었다!'); }
-  else if(a.type==='attack'){ const p=party[a.actor]; if(!p.alive){ b.auto=1; return; } p.actAnim=12; let t=b.enemies[a.target]; if(!t||!t.alive) t=b.enemies[firstEnemy()]; if(!t){b.auto=1;return;}
+  else if(a.type==='attack'){ const p=party[a.actor]; if(!p.alive){ b.auto=1; return; } p.actAnim=12; ultGain(p,15); let t=b.enemies[a.target]; if(!t||!t.alive) t=b.enemies[firstEnemy()]; if(!t){b.auto=1;return;}
     hitTag=''; const el=atkEl(p,wkind(p.cls)==='bow'?'arrow':null), nh=has(p,'twice')&&Math.random()<0.3?2:1; let d=0; for(let h=0;h<nh;h++) d+=modE(p,t,dmgPhys(atkOf(p),1.0,edef(p,t)),el,true);
     t.hp-=d; t.flash=12; atkFx(p,null,[t]); elSpark(t,el); popE(t,'-'+d); b.log.push(`${p.name}의 공격! ${t.name} ${d}${nh>1?' (연사)':''}${hitTag?' ('+hitTag+')':''}`); tagPop(t); if(t.hp>0&&gear(p,'venomEdge')){ t.poison=(t.poison||0)+2; b.log.push(`${t.name} 중독!`); } leech(p,d); if(t.hp<=0){t.alive=false; e_die(t); sfx('down'); b.log.push(`${t.name} 쓰러짐!`); onKill(p);} }
-  else if(a.type==='skill'){ const p=party[a.actor]; if(!p.alive){b.auto=1;return;} p.actAnim=12; const s=SKILLS[a.skill]; p.mp=Math.max(0,p.mp-mpCost(p,s));
-    const healAmt=t=>Math.round(magOf(p)*s.power*(has(p,'firstAid')&&t.hp<=t.maxhp*0.3?1.5:1)*(gear(p,'healUp')?1.25:1)*(has(p,'grace')?1.15:1)), purge=s.cleanse||has(p,'grace'), clean=t=>{ t.poison=0; t.weakT=0; t.stun=0; t.stunUsed=false; };
+  else if(a.type==='skill'){ const p=party[a.actor]; if(!p.alive){b.auto=1;return;} p.actAnim=12; const s=SKILLS[a.skill]; if(!ultReady(p,s)){ b.log.push(`${p.name} — 아직 궁극기를 쓸 수 없다`); b.auto=20; return; } p.mp=Math.max(0,p.mp-mpCost(p,s)); if(s.ult) p.ult=0; else ultGain(p,15);
+    const healAmt=t=>s.pct?Math.round(t.maxhp*s.pct):Math.round(magOf(p)*s.power*(has(p,'firstAid')&&t.hp<=t.maxhp*0.3?1.5:1)*(gear(p,'healUp')?1.25:1)*(has(p,'grace')?1.15:1)), purge=s.cleanse||has(p,'grace'), clean=t=>{ t.poison=0; t.weakT=0; t.stun=0; t.stunUsed=false; };
     if(s.kind==='heal'){ let t=party[a.target]; if(!t||!t.alive) t=party[firstAlly()]; const h=healAmt(t); t.hp=Math.min(t.maxhp,t.hp+h); popP(party.indexOf(t),'+'+h); allyFx(t,s.fx); p.actKind='cast'; sfx('heal');
       if(purge) clean(t); b.log.push(`${p.name}${s.msg} ${t.name} HP+${h}${purge?' · 상태이상 해제':''}`); }
-    else if(s.kind==='healAll'){ const h=Math.round(magOf(p)*s.power); livingParty().forEach(t=>{ const x=healAmt(t); t.hp=Math.min(t.maxhp,t.hp+x); popP(party.indexOf(t),'+'+x); allyFx(t,s.fx); if(s.veil) t.veil=s.veil; if(purge) clean(t);}); p.actKind='cast'; sfx('heal'); b.log.push(`${p.name}${s.msg} 전원 HP+${h}${s.veil?' +장막':''}`); }
+    else if(s.kind==='healAll'){ const h=s.pct?Math.round(p.maxhp*s.pct):Math.round(magOf(p)*s.power); if(s.raise) party.forEach(t=>{ if(!t.alive){ t.alive=true; t.stun=0; t.hp=1; } }); livingParty().forEach(t=>{ const x=healAmt(t); t.hp=Math.min(t.maxhp,t.hp+x); popP(party.indexOf(t),'+'+x); allyFx(t,s.fx); if(s.veil) t.veil=s.veil; if(purge) clean(t);}); p.actKind='cast'; sfx('heal'); b.log.push(`${p.name}${s.msg} 전원 HP+${h}${s.veil?' +장막':''}`); }
     else if(s.kind==='buff'){ (s.target==='self'?[p]:livingParty()).forEach(t=>{ t[s.buff]=s.turns; allyFx(t,'veil'); }); p.actKind='cast'; sfx('orb'); b.log.push(`${p.name}${s.msg} ${s.note}`); }
     else if(s.kind==='debuff'){ aliveEnemies().forEach(t=>{ [].concat(s.debuff).forEach(k=>{ t[k]=s.turns; }); const e=enemyPos(b.enemies.indexOf(t)); spawnFx(e.x,e.y,'drops','#9a6ad8',{max:20}); spawnFx(e.x,e.y,'burst','#6a4aa8',{max:16}); }); p.actKind='cast'; sfx('dark'); b.log.push(`${p.name}${s.msg} ${s.note}`); }
     else if(s.kind==='revive'){ let t=party[a.target]; if(t&&!t.alive){ t.alive=true; t.stun=0; t.hp=Math.round(t.maxhp*s.power); allyFx(t,'revive'); p.actKind='cast'; sfx('orb'); b.log.push(`${p.name}${s.msg} ${t.name} 소생!`); } else b.log.push('대상이 없다'); }
@@ -1467,6 +1494,7 @@ function drawBattle(){ const b=battle;
       g.font='9px sans-serif'; tags.forEach((t,k)=>{ g.fillStyle=t[1]; g.fillText(t[0],cx+33,cy-10+k*10); }); }
     bar(cx-30,iy+3,60,4,p.hp/p.maxhp,(p.alive&&p.hp/p.maxhp<0.25&&gtime%24<12)?'#ff5a5a':'#4a7');
     bar(cx-30,iy+9,60,3,p.mp/p.maxmp,'#48c');
+    if(p.job2) bar(cx-30,iy+13,60,2,(p.ult||0)/100,((p.ult||0)>=100&&gtime%20<10)?'#fff3b8':'#e0a030'); // 궁극기 게이지
     g.textAlign='left';
     if(tgtMode) hz(cx-28,cy-half-4,56,TILE*SC+30,()=>{ if(b.menu==='targetDead'&&p.alive) return; if(b.menu==='targetAlly'&&!p.alive) return; confirmTarget(i); }); });
   g.restore(); // 1134의 shake save 복구 — 누락 시 흔들림 translate가 프레임마다 누적되어 화면이 점점 밀림
@@ -1511,9 +1539,9 @@ function drawBattleUI(){ const b=battle;
   else if(b.menu==='skill'||b.menu==='item'){ const isSk=b.menu==='skill', list=isSk?battleSkills(p):battleItems(), G=menuGrid(list.length);
     if(G.rows>1){ g.fillStyle='rgba(6,8,16,.92)'; g.fillRect(0,G.y0-5,W,H-G.y0+5); }
     if(!list.length){ g.fillStyle='#6b7590'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('아이템 없음',W/2,by+20); g.textAlign='left'; }
-    list.forEach((id,i)=>{ const d=isSk?SKILLS[id]:itemDef(id), x=8+(i%G.cols)*(G.w+6), y=G.y0+Math.floor(i/G.cols)*(G.h+4), sel=i===b.sub, cost=isSk?mpCost(p,d):0, lack=isSk&&p.mp<cost;
+    list.forEach((id,i)=>{ const d=isSk?SKILLS[id]:itemDef(id), x=8+(i%G.cols)*(G.w+6), y=G.y0+Math.floor(i/G.cols)*(G.h+4), sel=i===b.sub, cost=isSk?mpCost(p,d):0, lack=isSk&&(p.mp<cost||!ultReady(p,d));
       btn(x,y,G.w,G.h,'',()=>isSk?chooseSkill(i):chooseItem(i),{bg:sel?(isSk?'#2a2342':'#23314f'):'rgba(14,18,28,.96)'});
-      g.textAlign='center'; g.fillStyle=sel?(isSk?'#c79bff':'#9fe8c4'):(lack?'#6b7590':'#aeb8d0'); g.font='12px sans-serif'; g.fillText((sel?'▶':'')+d.name+' '+(isSk?cost:'x'+inventory[id]),x+G.w/2,y+13);
+      g.textAlign='center'; g.fillStyle=sel?(isSk?'#c79bff':'#9fe8c4'):(lack?'#6b7590':'#aeb8d0'); g.font='12px sans-serif'; g.fillText((sel?'▶':'')+d.name+' '+(isSk?(d.ult?'★'+(p.ult||0)+'%':cost):'x'+inventory[id]),x+G.w/2,y+13);
       g.fillStyle=lack?'#4d566b':'#8a93ad'; g.font='9px sans-serif'; g.fillText(isSk?skillDesc(d):effStr(d),x+G.w/2,y+G.h-5); g.textAlign='left'; }); }
   else if(b.menu==='target'){ const alive=b.enemies.map((e,idx)=>({e,idx})).filter(o=>o.e.alive);
     g.fillStyle='#f0c27a'; g.font='11px sans-serif'; g.textAlign='left'; g.fillText('적 선택  ·  탭해서 이동, 다시 탭 = 공격',10,by-4); g.textAlign='left';

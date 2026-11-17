@@ -1,5 +1,5 @@
 /* 모두의 픽셀모험 — 제3부 「균열 너머」 데이터 (제작 중)
-   지금 들어 있는 것: 제15~18장, 1차 전직 직업 8개와 그 기술·특성, 임시 동료 가른. 19장부터는 아직 없다. */
+   지금 들어 있는 것: 제15~20장, 1차·2차 전직 직업 16개와 그 기술·특성, 임시 동료 가른. 21장부터는 아직 없다. */
 (function(){
 "use strict";
 /* ---- 화자 색 ---- */
@@ -24,6 +24,9 @@ const PAL={
   cinder:{ bg:'#0a0808', floor:'#302a28', wall:'#1c1614', grass:'#44383a', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(255,170,120,.07)', rock:'#3e3432', rock2:'#322a28', tuft:'#7a5a50' },
   glow: { bg:'#080706', floor:'#2e2a24', wall:'#18140e', grass:'#3e3828', altar:'#2a3a66', boss:'#5a3a1a', chest:'#3a2e1a', detail:'rgba(255,200,120,.09)', rock:'#3a3428', rock2:'#2e2a20' },
   book: { bg:'#07070b', floor:'#2a2834', wall:'#17151f', grass:'#383450', altar:'#2a3a66', boss:'#3a2a5a', chest:'#3a2e1a', detail:'rgba(200,184,255,.08)', rock:'#35324a', rock2:'#2a283a' },
+  road: { bg:'#08070a', floor:'#2e2a32', wall:'#1a161e', grass:'#3c3448', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(192,112,138,.08)', rock:'#3a3440', rock2:'#2e2a34', tuft:'#6a5a78' },
+  court:{ bg:'#09080b', floor:'#34303a', wall:'#1e1a24', grass:'#3a3a48', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(192,112,138,.08)', roof:'#4a4054', roof2:'#3c3446' },
+  keep: { bg:'#050406', floor:'#241f2a', wall:'#120e16', grass:'#32283c', altar:'#2a3a66', boss:'#5a1a34', chest:'#3a2e1a', detail:'rgba(192,112,138,.09)', rock:'#30283a', rock2:'#261f2e' },
   tower:{ bg:'#06060a', floor:'#262630', wall:'#14141c', grass:'#34344a', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(255,190,120,.07)', rock:'#34343e', rock2:'#2a2a34' },
 };
 
@@ -38,7 +41,10 @@ goals:{3:[
   ['cityEntered','쉼터 동쪽으로 나가 등불 도시를 찾자'],
   ['ch17done','등불 도시 남쪽 ▣ 대등탑의 나방 떼를 몰아내자'],
   ['ch18done','등불 도시 북쪽 ▣ 선조들의 서고 — 동쪽 끝 기록실로 가자'],
-  ['ch19done','제19장은 준비 중입니다 — 그동안 숨은 강적(強)과 전리품을 찾아보자'],
+  ['courtEntered','등불 도시 동쪽 성문으로 나가 군주의 성을 향하자'],
+  ['ch19done','약속의 뜰 동쪽 성문에서 네 사도의 시험을 받자'],
+  ['ch20done','군주의 성 한가운데 — 옥좌의 방으로 가자'],
+  ['ch21done','제21장은 준비 중입니다 — 그동안 숨은 강적(強)과 전리품을 찾아보자'],
 ]},
 
 enemies:{
@@ -70,6 +76,15 @@ enemies:{
   dustGolem: {weak:'ice',  name:'먼지 거인',    ...reg(18,{hp:1.5,atk:1.1,spd:8}),color:'#8a8478',look:'golem',palx:{g:'#8a8478',G:'#5c584e',l:'#c0baa8',e:'#c8b8ff'}},
   quillShade:{weak:'holy', name:'깃펜 그림자',  ...reg(18,{hp:1.0,spd:14}),     color:'#2c2a44',look:'shade',palx:{g:'#3c3a5c',G:'#222038',e:'#c8b8ff'},aiMagic:0.35},
   oathEcho:  {atkFx:'dark',weak:'bolt',moves:['emagic','ecurse','echarge','eblast','eatk'],enrage:0.35,name:'첫 관리인의 서약',...bos(18), hp:10500,atk:120,mag:102, color:'#5a4a9a',look:'archivist',big:2,palx:{g:'#5a4a9a',G:'#3a2e6a',l:'#c8b8ff',e:'#fff3b8'}},
+  /* 19~20장 — 군주의 성을 지키는 것들 */
+  roadKnight:{weak:'bolt', name:'길목의 기사',  ...reg(19,{hp:1.2,def:1.2}),    color:'#5a4a6a',look:'raider',palx:{b:'#5a4a6a',B:'#3c3048',e:'#ff8aa0'}},
+  crownHound:{weak:'ice',  name:'왕의 사냥개',  ...reg(19,{hp:.9,spd:16}),      color:'#4a3a4a',look:'wolf',palx:{f:'#4a3a4a',F:'#2e222e',l:'#8a7a8a',e:'#ff8aa0'}},
+  oathWisp:  {weak:'holy', name:'약속의 불티',  ...reg(19,{hp:.8,mag:1.15}),    color:'#a07088',look:'wraith',palx:{g:'#a07088',G:'#6a4658',l:'#e0b8c8',e:'#ffffff'},aiMagic:0.55},
+  keepKnight:{weak:'bolt',resist:'arrow',name:'성의 갑주',...reg(20,{hp:1.35,def:1.3,spd:9}),color:'#4a405a',look:'sentinel',palx:{g:'#4a405a',G:'#2e2838',l:'#8a80a0',e:'#ff4466'}},
+  keepMage:  {weak:'holy', name:'성의 술사',    ...reg(20,{hp:.85,mag:1.18}),   color:'#6a3a5a',look:'wraith',palx:{g:'#6a3a5a',G:'#42243a',l:'#c080a8',e:'#ff4466'},aiMagic:0.6},
+  throneGolem:{weak:'ice', name:'옥좌의 석상',  ...reg(20,{hp:1.5,atk:1.1,spd:8}),color:'#5a5060',look:'golem',palx:{g:'#5a5060',G:'#3a3440',l:'#9a90a4',e:'#ff4466'}},
+  royalShade:{weak:'holy', name:'왕의 그림자',  ...reg(20,{hp:1.0,spd:15}),     color:'#2a2030',look:'shade',palx:{g:'#3a2a44',G:'#20162a',e:'#ff4466'},aiMagic:0.35},
+  lord2:     {atkFx:'dark',weak:'holy',moves:['eatk','ecurse','eflurry','echarge','eblast','esmash'],enrage:0.4,name:'그림자 군주',...bos(20,{spd:14}), hp:22000,atk:160,mag:140, color:'#3a2040',look:'gatekeeper',big:2,palx:{g:'#3a2a4a',G:'#221830',e:'#ff4466'}},
 },
 
 members:{
@@ -78,6 +93,18 @@ members:{
 },
 
 equip:{
+  /* 9단계(샛별) — 약속의 뜰 */
+  mornSword: {name:'샛별검',        slot:'weapon',cls:['검사'],atk:52,price:3400},
+  mornStaff: {name:'샛별 지팡이',   slot:'weapon',cls:['주술사','치유사'],mag:52,price:3400},
+  mornBow:   {name:'샛별궁',        slot:'weapon',cls:['궁수'],atk:52,price:3400},
+  mornPlate: {name:'샛별 갑주',     slot:'armor',def:34,price:3000},
+  mornRobe:  {name:'샛별 로브',     slot:'armor',def:22,mag:13,price:2800},
+  mornHelm:  {name:'샛별 투구',     slot:'head',def:17,price:1800},
+  /* 19~20장 전리품 */
+  knightCrest:{name:'기사의 문장',  slot:'ring', atk:9,def:4,fx:'guardCounter',rare:1,price:1600},
+  keepOrb:   {name:'성의 보주',     slot:'ring', mag:10,fx:'mpRegen',rare:1,price:1600},
+  throneFist:{name:'석상의 주먹',   slot:'hands',atk:6,def:8,fx:'thorns',rare:1,price:1600},
+  lordMantle:{name:'군주의 망토',   slot:'armor',def:30,mag:10,atk:6,fx:'endure',uniq:1,price:0},
   /* 8단계(등불) — 등불 도시 */
   lampSword: {name:'등불검',        slot:'weapon',cls:['검사'],atk:46,price:2400},
   lampStaff: {name:'등불 지팡이',   slot:'weapon',cls:['주술사','치유사'],mag:46,price:2400},
@@ -120,6 +147,9 @@ drops:{
   griefHowl:{item:'hiEther',rate:0.1}, cliffBat:{item:'hiPotion',rate:0.12},
   mothQueen:{item:'queenWing',done:'ch17done',part:3}, oathEcho:{item:'oathSeal',done:'ch18done',part:3},
   cinderWolf:{item:'cinderClaw',rate:0.05,pity:20}, waxGuard:{item:'waxShield',rate:0.05,pity:20}, oathGuard:{item:'oathHelm',rate:0.05,pity:20}, inkWraith:{item:'inkRing',rate:0.05,pity:20},
+  lord2:{item:'lordMantle',done:'ch20done',part:3},
+  roadKnight:{item:'knightCrest',rate:0.05,pity:20}, keepMage:{item:'keepOrb',rate:0.05,pity:20}, throneGolem:{item:'throneFist',rate:0.05,pity:20},
+  crownHound:{item:'hiPotion',rate:0.12}, oathWisp:{item:'hiEther',rate:0.1}, royalShade:{item:'hiEther',rate:0.1},
   mothKin:{item:'hiPotion',rate:0.12}, mirrorWisp:{item:'hiEther',rate:0.1}, pageBat:{item:'hiPotion',rate:0.12}, quillShade:{item:'hiEther',rate:0.1},
 },
 
@@ -249,6 +279,7 @@ areas:{
           say('아이','들판에서 온 애가 그러는데, 거기선 얼굴이 흐려진대. 거짓말이지? 그치?',RIN) ]},
       {x:3,y:7,color:'#f0c27a',name:'등불 상인',glyph:'◇',shop:['hiPotion','hiEther','revive','lampSword','lampStaff','lampBow','lampPlate','lampRobe','lampHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
     warps:[ {x:1,y:5,to:'cinderpath',tx:19,ty:5,label:'길'},
+            {x:16,y:5,to:'kingsroad',tx:2,ty:5,label:'성',need:'ch18done',block:'동쪽 성문은 닫혀 있다. 먼저 북쪽 서고의 일을 끝내자.'},
             {x:9,y:9,to:'lamptower',tx:2,ty:1,label:'대등탑'},
             {x:9,y:1,to:'archivehall',tx:2,ty:4,label:'서고',need:'ch17done',block:'북쪽 서고의 문은 닫혀 있다. 먼저 대등탑의 일을 끝내자.'} ],
     onEnter:'ev_city_enter' },
@@ -283,6 +314,49 @@ areas:{
     npcs:[], warps:[ {x:1,y:1,to:'archivehall',tx:17,ty:4,label:'서고'} ],
     loot:{'8,5':{item:'guardSeed'},'14,8':{gold:2500,item:'powerSeed'}},
     eventTile:'ev_oath', eventDone:'ch18done', onEnter:'ev_vault_enter' },
+
+  /* ---- 제19장 ---- */
+  kingsroad:{ name:'왕의 길', theme:'ash', bgm:'rift', hud:'3부 19장', pal:PAL.road,
+    src:[ "1111111111111111111111","1000220000000011000051","1000220011000011002201","1011000011000000002201",
+          "1011000000002200000001","1000000000002200110001","1000110000000000110001","1050110022000110000001",
+          "1000000022000110022001","1000007000000000022001","1111111111111111111111" ],
+    enc:{ pool:['roadKnight','crownHound','oathWisp'], rate:0.2, pow:1.0, hpw:1.1 }, respawn:{x:2,y:5},
+    npcs:[], warps:[ {x:1,y:5,to:'lampcity',tx:15,ty:5,label:'도시'}, {x:20,y:5,to:'oathcourt',tx:2,ty:5,label:'뜰'} ],
+    loot:{'20,1':{item:'lifeSeed'},'2,7':{gold:2500,item:'hiEther'}}, onEnter:'ev_road19' },
+
+  oathcourt:{ name:'약속의 뜰', theme:'town', bgm:'town', hud:'3부 19장', pal:PAL.court,
+    src:[ "1111111111111111","1000000000000001","1000000000000001","1001000000001001",
+          "1000000300000001","1000000000000001","1001000000001001","1000000000000001",
+          "1000000000000001","1111111111111111","1111111111111111" ],
+    enc:null, respawn:{x:3,y:5},
+    npcs:[
+      {x:11,y:2,color:GARN,name:'가른',lines:()=> storyFlags.ch19done ? [
+          say('가른','코르에게 준 건 내 활의 전부다. 이제 저 녀석이 나보다 멀리 본다.',GARN) ] : [
+          say('가른','팔은 돌아왔다. 그러니 봐주지 않는다. 채비가 끝나면 성문으로 와라.',GARN) ]},
+      {x:12,y:4,color:ROWAN,name:'로완',lines:()=> storyFlags.ch19done ? [
+          say('로완','군주께서도 덮고 계신 것이 하나 있다. 근원에 가면 알게 될 것이다.',ROWAN) ] : [
+          say('로완','시험은 넷이 한꺼번에 한다. 사정은 봐주지 않는다.',ROWAN) ]},
+      {x:12,y:7,color:'#6aa0d8',name:'조수의 사도',lines:()=> storyFlags.ch19done ? [
+          say('조수의 사도','밀물이 있으면 썰물이 있어. 빛도 그래야 했던 거야. 한쪽에 고이면 썩어.',LORD) ] : [
+          say('조수의 사도','죽이려는 건 아니야. 군주 앞에 설 만한지 보려는 거지.',LORD) ]},
+      {x:11,y:8,color:'#d8b860',name:'왕관의 사도',lines:()=> storyFlags.ch19done ? [
+          say('왕관의 사도','모두를 구하겠다는 왕은 어리석다고 배웠다. 어리석은 쪽이 옳았으면, 하고 지금은 바란다.',LORD) ] : [
+          say('왕관의 사도','왕은 모두를 구할 수 없다. 너희는 다르다는 것을, 힘으로 보여 다오.',LORD) ]},
+      {x:3,y:7,color:'#f0c27a',shade:true,name:'뜰의 상인',glyph:'◇',shop:['hiPotion','hiEther','revive','mornSword','mornStaff','mornBow','mornPlate','mornRobe','mornHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
+    warps:[ {x:1,y:5,to:'kingsroad',tx:19,ty:5,label:'길'},
+            {x:14,y:5,to:'lordkeep',tx:2,ty:1,label:'성문',event:'ev_trial',eventFlag:'ch19done'},
+            {x:7,y:1,to:'oathcourt',tx:7,ty:2,label:'근원',need:'ch21ready',block:'성 뒤 근원으로 가는 길은 다음 이야기에서 이어진다. (제21장은 준비 중입니다)'} ],
+    onEnter:'ev_court_enter' },
+
+  /* ---- 제20장 ---- 세 겹 고리: 바깥 복도 → 가운데 복도 → 옥좌의 방. 장치는 바깥에 둘, 가운데에 하나 */
+  lordkeep:{ name:'군주의 성', theme:'temple', bgm:'dungeon', hud:'3부 20장', pal:PAL.keep,
+    src:[ "11111111111111111111","10000220000000700081","10111111111111111101","10100000220000000101",
+          "10101111111111110101","10001500000600090101","10101111111111110101","10100000002200008101",
+          "10111111111111111101","18000002200007000001","11111111111111111111" ],
+    enc:{ pool:['keepKnight','keepMage','throneGolem','royalShade'], rate:0.22, pow:1.0, hpw:1.1 }, respawn:{x:2,y:1},
+    npcs:[], warps:[ {x:1,y:1,to:'oathcourt',tx:13,ty:5,label:'뜰'} ],
+    loot:{'5,5':{item:'powerSeed'}},
+    eventTile:'ev_lord', eventDone:'ch20done', onEnter:'ev_keep_enter' },
 },
 
 starts:{
@@ -563,6 +637,88 @@ events:{
           "— 제18장 「선조들의 서고」 완료 —",
           "군주의 성으로 가는 길은 다음 이야기에서 이어진다." ].filter(Boolean),
           ()=>{ storyFlags.ch18done=true; saveGame(); }); }); }); },
+
+  /* ================= 제19장 「돌아온 네 사도」 ================= */
+  ev_road19:()=>{ if(storyFlags.road19) return; storyFlags.road19=true;
+    showMsg([
+      "— 제19장 「돌아온 네 사도」 —",
+      "검은 성으로 이어진 돌길. 길가의 기둥마다 꺼진 등이 걸려 있다.",
+      say('테리','저 성 앞에 넷이 서 있었지. 사도들이야.',T),
+      say('코르','형도 있겠네. 팔은 나았으려나.',C) ], ()=>{ saveGame(); }); },
+
+  ev_court_enter:()=>{ if(storyFlags.courtEntered) return; storyFlags.courtEntered=true;
+    showMsg([
+      "약속의 뜰 — 삼백 해 전, 왕과 현자가 약속을 맺은 자리. 돌바닥에 세 개의 그릇 문양이 새겨져 있다.",
+      "성문 앞에 네 사람이 서 있다. 조수의 사도, 왕관의 사도, 로완, 그리고 가른.",
+      say('가른','왔구나, 코르. 팔은 돌아왔다. 덕분에.',GARN),
+      say('왕관의 사도','군주께서는 안에 계신다. 허나 그냥은 못 지나간다. 내가 묻겠다 — 너희는 모두를 구하겠다는 것이냐.',LORD),
+      say('테리','그럴 생각이야.',T),
+      say('왕관의 사도','나는 못 했다. 그러니 보여 다오. 말이 아니라 힘으로.',LORD),
+      say('조수의 사도','죽이려는 건 아니야. 군주 앞에 설 만한지 보는 거지. 채비가 되면 동쪽 성문으로 와.',LORD),
+      "제단 ✦ 과 상인 ◇ 에서 채비를 하자." ], ()=>{ saveGame(); }); },
+
+  /* 시험 → (이김) → 네 사람이 차례로 2차 전직. 도중에 꺼져도 아직 전직하지 않은 사람부터 이어진다 */
+  ev_trial:()=>{ if(storyFlags.ch19done) return; if(storyFlags.trialDown){ runEvent('ev_trial_after'); return; }
+    showMsg([
+      "네 사도가 성문 앞에 늘어선다.",
+      say('로완','넷이 한꺼번에 간다. 사정은 봐주지 않는다.',ROWAN),
+      say('가른','코르. 5년 치 얘기는 화살로 듣겠다.',GARN) ],
+      ()=>{ startBattle(['tidecaller','garn','frostApostle','crownApostle'],true,{scale:{pow:0.9,hpw:0.9},onWin:'ev_trial_after'}); }); },
+
+  ev_trial_after:()=>{ const first=!storyFlags.trialDown; storyFlags.trialDown=true; saveGame();
+    const give=[
+      ['테리',()=>say('왕관의 사도','검 든 아이야. 모두를 지려는 자의 무게를, 지는 법을 가르치마.',LORD)],
+      ['카엘',()=>say('조수의 사도','봉인 집안의 아이. 빛은 밀물과 썰물처럼 오가야 해. 그걸 다루는 법을 줄게.',LORD)],
+      ['미아',()=>storyFlags.p3Truth==='tell' ? say('로완','덮지 않은 사제여. 네 빛은 이제 나보다 멀리 간다. 내 몫을 보탠다.',ROWAN)
+                                            : say('로완','무게를 대신 든 사제여. 네가 얼지 않도록, 내 몫의 빛을 보탠다.',ROWAN)],
+      ['코르',()=>say('가른','빌린 활값이다. 이자까지 쳐서 갚는다.',GARN)] ];
+    const next=i=>{ if(i>=give.length){ showMsg([
+          say('왕관의 사도','가라. 군주께서는 옥좌의 방에 계신다. 우리가 드리지 못한 답을, 너희가 드려라.',LORD),
+          "— 제19장 「돌아온 네 사도」 완료 —",
+          "성문이 열렸다. 궁극기는 전투 중 ★ 게이지가 가득 차면 스킬에서 쓸 수 있다." ], ()=>{ storyFlags.ch19done=true; saveGame(); }); return; }
+      const [name,line]=give[i], q=party.find(x=>x.name===name);
+      if(!q||q.job2||!job2For(q)){ next(i+1); return; }
+      showMsg([ line() ], ()=>{ openJob2Pick(name,(id,got)=>{ saveGame();
+        showMsg([ id ? name+(name==='카엘'?'은':'는')+' 「'+jobName(q)+'」(으)로 나아갔다!  '+(got||[]).join(' · ') : '…' ], ()=>next(i+1)); }); }); };
+    if(first) showMsg([
+      "네 사도가 무기를 내린다.",
+      say('왕관의 사도','…졌다. 깨끗이. 왕이 못 한 것을, 너희는 하려 하는구나.',LORD),
+      say('조수의 사도','하지만 군주는 우리 넷보다 훨씬 강해. 지금 그대로는 안 돼. 그러니까 — 줄게. 우리가 군주께 받은 것.',LORD),
+      "네 사도가 저마다 한 사람 앞에 선다." ], ()=>next(0));
+    else next(0); },
+
+  /* ================= 제20장 「그림자 군주」 ================= */
+  ev_keep_enter:()=>{ if(storyFlags.keepEntered) return; storyFlags.keepEntered=true;
+    showMsg([
+      "— 제20장 「그림자 군주」 —",
+      "군주의 성 — 복도가 세 겹으로 옥좌를 둘러싸고 있다. 벽에는 등이 하나도 없다.",
+      say('미아','성 안이 마을보다 어두워요. …자기 몫의 빛도 쓰지 않는 거예요, 이 사람.',M),
+      say('카엘','장치(○)가 셋. 바깥 복도에 둘, 가운데 복도에 하나. 다 눌러야 옥좌의 방(▦)이 열려.',K) ], ()=>{ saveGame(); }); },
+
+  ev_lord:()=>{ if(storyFlags.ch20done) return; if(storyFlags.lordDown){ runEvent('ev_lord_after'); return; }
+    showMsg([
+      "옥좌의 방. 군주는 옥좌에 앉아 있지 않다. 그 옆 바닥에 지도처럼 늘어놓은, 꺼진 등불 수백 개를 내려다보고 있다.",
+      say('그림자 군주','왔구나. 보았느냐. 너희가 무엇을 가두었는지.',LORD),
+      say('테리','봤어. 마을도, 골짜기도, 도시도. 그리고 서고도.',T),
+      say('카엘','약속을 깬 건 내 집안이야. 그러니 내가 열게. 세 그릇을.',K),
+      say('그림자 군주','삼백 해 늦었다, 현자의 아이야. 이제는 나눠 쓸 만큼 남지 않았다. 나는 남은 빛을 전부 이쪽으로 돌린다.',LORD),
+      say('미아','그러면 저희 쪽이—',M),
+      say('그림자 군주','어두워지겠지. 너희 선조가 우리에게 한 그대로. 막고 싶다면, 이번에는 막아 보아라.',LORD) ],
+      ()=>{ startBattle(['lord2'],true,{onWin:'ev_lord_after'}); }); },
+
+  ev_lord_after:()=>{ storyFlags.lordDown=true; saveGame();
+    showMsg([
+      "군주가 한쪽 무릎을 꿇는다. 그 몸에서 빛이 새어 나온다 — 사도들에게 나눠 주고 남은, 얼마 안 되는 빛이.",
+      say('그림자 군주','…강해졌구나. 석 달 전에는 내 그림자조차 버거워하더니.',LORD),
+      say('테리','당신을 베러 온 게 아니야. 같이 가자고 온 거야. 근원으로.',T),
+      say('그림자 군주','근원을 보면 그 말이 나오지 않을 것이다. 나는 보았다. 그릇을 열든 닫든 — 근원 자체가 꺼져 가고 있다.',LORD),
+      say('그림자 군주','그래서 셈을 했다. 둘 다 살리지 못한다면 내 백성을. …너희 선조와 똑같은 셈이지. 삼백 해를 원망하고서, 내가 한 것이 그것이었다.',LORD),
+      say('카엘','그 셈이 맞는지 틀렸는지는, 가서 보고 정하자. 우리 선조는 보지도 않고 닫았어.',K),
+      say('그림자 군주','…좋다. 길을 열어 주마. 근원은 성 뒤, 빛이 처음 솟은 자리에 있다.',LORD),
+      "그림자 군주가 길동무가 되었다. (전투에는 나서지 않는다)",
+      "— 제20장 「그림자 군주」 완료 —",
+      "약속의 뜰 북쪽으로, 근원에 이르는 길이 열린다." ],
+      ()=>{ storyFlags.ch20done=true; saveGame(); }); },
 },
 
 
@@ -580,6 +736,20 @@ jobs:{
   ranger:     {base:'궁수',  name:'유격수',     col:'#8fdc6e', role:'빠르게 여러 번 쏘고 적을 묶는다',   bonus:{spd:8,atk:9},        grow:{hp:7,mp:2,atk:2,def:1,mag:1,spd:4}},
 },
 
+/* ================= 2차 전직 =================
+   from = 이어지는 1차 직업. 1차 직업마다 하나씩이라 고를 것은 「가지 않은 길의 기술 하나」뿐이다.
+   learn[id] 의 첫 기술은 궁극기(ult): MP 대신 게이지로 쓴다 */
+jobs2:{
+  paladin:    {from:'guardian',   name:'성기사',       col:'#fff3b8', role:'쓰러지지 않는 벽 — 모두를 지고 선다',   bonus:{hp:60,def:10,atk:6},  grow:{hp:12,mp:2,atk:2,def:3,mag:1,spd:1}},
+  swordsaint: {from:'blademaster',name:'검성',         col:'#ffb08a', role:'한 호흡에 다섯 번 벤다',               bonus:{atk:18,spd:6},        grow:{hp:8,mp:3,atk:4,def:1,mag:1,spd:2}},
+  archmage:   {from:'archsage',   name:'대마도사',     col:'#bfe0ff', role:'세 원소를 한꺼번에 부린다',             bonus:{mag:16,mp:30},        grow:{hp:6,mp:6,atk:1,def:1,mag:4,spd:1}},
+  nightsage:  {from:'shadowmage', name:'밤의 현자',    col:'#d0b0ff', role:'어둠을 알고, 어둠으로 살린다',           bonus:{mag:14,hp:40},        grow:{hp:9,mp:4,atk:1,def:2,mag:4,spd:1}},
+  saint:      {from:'highpriest', name:'성자',         col:'#c8ffe4', role:'쓰러진 모두를 다시 일으킨다',           bonus:{mp:35,mag:8,def:5},   grow:{hp:8,mp:6,atk:1,def:2,mag:3,spd:1}},
+  arbiter:    {from:'judge',      name:'빛의 집행자',  col:'#ffffff', role:'심판의 빛으로 전장을 덮는다',           bonus:{mag:16,spd:4},        grow:{hp:6,mp:5,atk:1,def:1,mag:4,spd:2}},
+  deadshot:   {from:'sniper',     name:'마탄의 사수',  col:'#ffd890', role:'빗나가지 않는 한 발',                   bonus:{atk:20},              grow:{hp:6,mp:3,atk:4,def:1,mag:1,spd:2}},
+  stormarcher:{from:'ranger',     name:'폭풍 사수',    col:'#b0f090', role:'화살로 폭풍을 부른다',                 bonus:{spd:10,atk:12},       grow:{hp:7,mp:3,atk:3,def:1,mag:1,spd:4}},
+},
+
 traits:{
   cover:  {name:'수호',     desc:'적의 단일 공격을 30% 확률로 대신 끌어온다'},
   keen:   {name:'예리함',   desc:'치명타 확률 +15%, 치명타 피해가 1.5배 대신 1.9배'},
@@ -592,6 +762,23 @@ traits:{
 },
 
 skills:{
+  /* ---- 2차 전직: 궁극기(ult — 게이지로 쓴다) 와 Lv32 기술 ---- */
+  ultBulwark: {name:'불굴의 성벽',   fx:'veil',ult:1,mp:0,kind:'healAll',pct:0.6,veil:4,target:'allAllies',msg:'의 불굴의 성벽!',desc:'전원 HP 60% 회복 +장막'},
+  judgeBlade: {name:'단죄의 검',     fx:'crush',el:'holy',mp:16,kind:'phys',power:4.4,stun:0.5,target:'enemy',msg:'의 단죄의 검!',desc:'단일 빛 ×4.4 +기절 50%'},
+  ultThousand:{name:'천 갈래 베기',  fx:'double',ult:1,mp:0,kind:'phys',power:1.9,hits:5,sure:1,target:'enemy',msg:'의 천 갈래 베기!',desc:'단일 ×1.9 5회 확정 치명'},
+  voidCut:    {name:'허공참',        fx:'wide',mp:18,kind:'phys',power:2.9,pen:0.5,target:'allEnemies',msg:'의 허공참!',desc:'전체 ×2.9 방어 절반 무시'},
+  ultNova:    {name:'삼원소 대폭발', fx:'firestorm',el:'tri',ult:1,mp:0,kind:'magic',power:6.0,target:'allEnemies',msg:'의 삼원소 대폭발!',desc:'전체 ×6 약점 자동'},
+  starfall:   {name:'별 내림',       fx:'judgment',el:'tri',mp:22,kind:'magic',power:6.4,target:'enemy',msg:'의 별 내림!',desc:'단일 ×6.4 약점 자동'},
+  ultEclipse: {name:'일식',          fx:'ice',el:'dark',ult:1,mp:0,kind:'magic',power:4.6,leech:0.4,weaken:3,target:'allEnemies',msg:'의 일식!',desc:'전체 어둠 ×4.6 +흡수·약화'},
+  soulRend:   {name:'혼 가르기',     fx:'staff',el:'dark',mp:20,kind:'magic',power:6.2,leech:0.3,target:'enemy',msg:'의 혼 가르기!',desc:'단일 어둠 ×6.2 +HP 흡수'},
+  ultMiracle: {name:'기적',          fx:'revive',ult:1,mp:0,kind:'healAll',pct:1.0,raise:1,cleanse:1,target:'allAllies',msg:'의 기적!',desc:'쓰러진 동료까지 전원 완전 회복'},
+  lightLance: {name:'빛의 창',       fx:'judgment',el:'holy',mp:10,kind:'magic',power:3.8,target:'enemy',msg:'의 빛의 창!',desc:'단일 빛 ×3.8'},
+  ultJudgment:{name:'최후의 심판',   fx:'bolt',el:'holy',ult:1,mp:0,kind:'magic',power:5.0,stun:0.5,mark:4,target:'allEnemies',msg:'의 최후의 심판!',desc:'전체 빛 ×5 +기절·표식'},
+  condemn:    {name:'단죄의 빛기둥', fx:'judgment',el:'holy',mp:16,kind:'magic',power:5.4,target:'enemy',msg:'의 빛기둥!',desc:'단일 빛 ×5.4'},
+  ultOneShot: {name:'필중의 일격',   fx:'pierce',el:'arrow',ult:1,mp:0,kind:'phys',power:7.5,pen:1.0,sure:1,target:'enemy',msg:'의 필중의 일격!',desc:'단일 ×7.5 방어 무시·확정 치명'},
+  pierceLine: {name:'일렬 관통',     fx:'pierce',el:'arrow',mp:16,kind:'phys',power:2.8,pen:0.5,target:'allEnemies',msg:'의 일렬 관통!',desc:'전체 ×2.8 방어 절반 무시'},
+  ultStorm:   {name:'화살 폭풍',     fx:'rain',el:'arrow',ult:1,mp:0,kind:'phys',power:1.7,hits:3,poison:3,target:'allEnemies',msg:'의 화살 폭풍!',desc:'전체 ×1.7 3회 +독'},
+  galeShot:   {name:'질풍 연사',     fx:'rain',el:'arrow',mp:14,kind:'phys',power:1.6,hits:5,target:'enemy',msg:'의 질풍 연사!',desc:'단일 ×1.6 5회'},
   /* 가른(임시 동료) */
   garnVolley:{name:'사도의 연사',  fx:'rain',  el:'arrow',mp:7, kind:'phys',power:1.3,hits:3,target:'enemy',msg:'의 연사!',desc:'단일 ×1.3 3회'},
   garnPierce:{name:'꿰뚫는 화살',  fx:'pierce',el:'arrow',mp:9, kind:'phys',power:3.2,pen:0.5,target:'enemy',msg:'의 꿰뚫는 화살!',desc:'단일 ×3.2 방어 절반 무시'},
@@ -631,6 +818,14 @@ skills:{
 },
 
 learn:{
+  paladin:    [{lv:0,id:'ultBulwark'}, {lv:32,id:'judgeBlade'}],
+  swordsaint: [{lv:0,id:'ultThousand'},{lv:32,id:'voidCut'}],
+  archmage:   [{lv:0,id:'ultNova'},    {lv:32,id:'starfall'}],
+  nightsage:  [{lv:0,id:'ultEclipse'}, {lv:32,id:'soulRend'}],
+  saint:      [{lv:0,id:'ultMiracle'}, {lv:32,id:'lightLance'}],
+  arbiter:    [{lv:0,id:'ultJudgment'},{lv:32,id:'condemn'}],
+  deadshot:   [{lv:0,id:'ultOneShot'}, {lv:32,id:'pierceLine'}],
+  stormarcher:[{lv:0,id:'ultStorm'},   {lv:32,id:'galeShot'}],
   garn:       [{lv:1,trait:'twice'},  {lv:1,id:'garnPierce'}, {lv:1,id:'garnMark'}],
   guardian:   [{lv:0,trait:'cover'},  {lv:0,id:'shieldBash'}, {lv:26,id:'aegis'},     {lv:29,id:'holyBlade'}],
   blademaster:[{lv:0,trait:'keen'},   {lv:0,id:'tripleSlash'},{lv:26,id:'crescent'},  {lv:29,id:'iai'}],
