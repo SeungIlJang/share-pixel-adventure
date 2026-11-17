@@ -37,10 +37,10 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
   else { for(var id in c[k]) if(id in CONTENT[k]) CONTENT.clash.push(k+'.'+id+' (제'+n+'부가 덮어씀)'); Object.assign(CONTENT[k],c[k]); } } // 부끼리 이름이 겹치면 뒤의 부가 앞의 것을 덮어쓴다 — 겹침은 CONTENT.clash 에 남긴다
   if(CONTENT.clash.length&&window.console) console.warn('콘텐츠 이름 겹침: '+CONTENT.clash.join(', ')); }
 </script>
-<script src="data/part1.js?v=1dde74aacf"></script>
-<script src="data/part2.js?v=8bd110e442"></script>
+<script src="data/part1.js?v=22db5a6361"></script>
+<script src="data/part2.js?v=71ec656b03"></script>
 <script src="data/part3.js?v=bc7f810cc0"></script>
-<script src="data/art.js?v=7afa0a2ed8"></script>
+<script src="data/art.js?v=6c49cb2799"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -802,9 +802,9 @@ function tileImg(set,key){ const k=set+'.'+key; if(k in tileCache) return tileCa
 function drawTile(sx,sy,x,y,t,hh){ const set=cur.tiles, v=hh<3?'1':'2', fl=tileImg(set,'floor'+v); if(!fl) return false; g.drawImage(fl,sx,sy);
   if(t==='1'){ const w=tileImg(set,'wall'+v); if(w) g.drawImage(w,sx,sy); }
   else if(t==='2'){ const e=tileImg(set,'enc'); if(e) g.drawImage(e,sx,sy); }
-  const ob=t==='3'?'altar':t==='5'?'chest':t==='7'?'trap':t==='9'?'gate':t==='8'?(storyFlags['sw_'+cur.id+'_'+x+','+y]?'switchOn':'switchOff')
+  const ob=t==='3'?'altar':t==='4'?'seal':t==='5'?'chest':t==='7'?'trap':t==='9'?'gate':t==='8'?(storyFlags['sw_'+cur.id+'_'+x+','+y]?'switchOn':'switchOff')
     :(t==='6'&&cur.eventTile&&!(cur.eventDone?storyFlags[cur.eventDone]:storyFlags['et_'+cur.id]))?'boss':null;
-  if(ob){ const o=tileImg('obj',ob); if(o){ const bob=ob==='altar'||ob==='boss'?Math.round(Math.sin(gtime/12)*1.2):0; g.drawImage(o,sx,sy+bob); } } return true; }
+  if(ob){ const o=tileImg('obj',ob); if(o){ const bob=ob==='altar'||ob==='boss'||ob==='seal'?Math.round(Math.sin(gtime/12)*1.2):0; g.drawImage(o,sx,sy+bob); } } return true; }
 function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H);
   camOX=clamp(player.px-W/2+TILE/2,0,Math.max(0,MAPW*TILE-W)); camOY=clamp(player.py-H/2+TILE/2,0,Math.max(0,MAPH*TILE-H));
   for(let y=0;y<MAPH;y++)for(let x=0;x<MAPW;x++){ const sx=x*TILE-camOX, sy=y*TILE-camOY, t=MAP[y][x];

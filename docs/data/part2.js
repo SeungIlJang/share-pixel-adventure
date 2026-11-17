@@ -321,7 +321,7 @@ enemies:{
 
 /* ================= 지역 ================= */
 areas:{
-  arg2:{ name:'아르겐 마을', theme:'town', bgm:'town', hud:'2부 7장', pal:PAL.town,
+  arg2:{ name:'아르겐 마을', theme:'town', tiles:'village', bgm:'town', hud:'2부 7장', pal:PAL.town,
     src:[ "1111111111111111","1000000000000001","1011100100111101","1000000000000001",
           "1000000000000001","1011000100011001","1000000000003001","1000000000000001",
           "1000000000000001","1111111001111111","1111111111111111" ],
@@ -339,7 +339,7 @@ areas:{
       {x:3,y:7,color:'#f0c27a',name:'상인',glyph:'◇',shop:['potion','ether','revive','mithrilSword','sageStaff','stormBow','plateArmor','chainMail','ironHelm','mageHat','gauntlet','windBoots','powerRing','guardRing','sageRing','swiftRing']} ],
     warps:[ {x:14,y:4,to:'oldroad',tx:2,ty:5,label:'대로'}, {x:8,y:9,to:'forest',tx:8,ty:2,label:'옛 숲'} ] },
 
-  oldroad:{ name:'옛 대로', theme:'forest', bgm:'field', hud:'2부 7장', pal:PAL.forest,
+  oldroad:{ name:'옛 대로', theme:'forest', tiles:'forest', bgm:'field', hud:'2부 7장', pal:PAL.forest,
     src:[ "111111111111111111111111","100002200000500002200001","102202200110000002200001","102200000110022000000001",
           "100000000000022000011001","100001100000000000000601","100001100220007000011001","102200000220000000220001",
           "102200700000011000220001","100000000000011000000001","111111111111111111111111" ],
@@ -349,7 +349,7 @@ areas:{
     loot:{'12,1':{gold:300,item:'hiPotion'}},
     eventTile:'ev_wedge', eventDone:'ch7done', onEnter:'ev_oldroad_enter' },
 
-  salena:{ name:'살레나 항', theme:'town', bgm:'town', hud:'2부 8장', pal:PAL.harbor,
+  salena:{ name:'살레나 항', theme:'town', tiles:'harbor', bgm:'town', hud:'2부 8장', pal:PAL.harbor,
     src:[ "1111111111111111","1000000000000001","1011100110011101","1000000000000001",
           "1000000000030001","1000000000000001","1011001100110001","1000000000000001",
           "1000000000000001","1111111101111111","1111111111111111" ],
@@ -367,7 +367,7 @@ areas:{
             {x:14,y:5,to:'dunes',tx:2,ty:5,label:'사막',need:'ch8done',block:'쐐기가 뿜는 어둠이 동쪽 성문까지 덮고 있다. 먼저 부두 창고의 쐐기를 뽑아야 한다.'} ],
     onEnter:'ev_salena_enter' },
 
-  docks:{ name:'부두 창고', theme:'temple', bgm:'dungeon', hud:'2부 8장', pal:PAL.docks,
+  docks:{ name:'부두 창고', theme:'temple', tiles:'dock', bgm:'dungeon', hud:'2부 8장', pal:PAL.docks,
     src:[ "1111111111111111","1000002200000051","1011102200111101","1000000000000001",
           "1022011811022001","1022000000022081","1111111191111111","1000700000070001",
           "1022000000002201","1500000060000001","1111111111111111" ],
@@ -376,7 +376,7 @@ areas:{
     loot:{'14,1':{item:'starCirclet'},'1,9':{gold:500,item:'hiEther'}},
     eventTile:'ev_tide', eventDone:'ch8done', onEnter:'ev_docks_enter' },
 
-  dunes:{ name:'모래 바다', theme:'ash', bgm:'field', hud:'2부 9장', pal:PAL.dunes,
+  dunes:{ name:'모래 바다', theme:'ash', tiles:'desert', bgm:'field', hud:'2부 9장', pal:PAL.dunes,
     src:[ "111111111111111111111111","100000000000000002200001","102201100001100002200001","102201100001100000000501",
           "100000000220000011000001","100000000220007011000001","101100000000000000002201","101100220001100000002201",
           "100000220001100220000001","100000000000000220000001","111111111111111111111111" ],
@@ -387,7 +387,7 @@ areas:{
     loot:{'21,3':{item:'stormBoots'}},
     onEnter:'ev_dunes_enter' },
 
-  archive:{ name:'모래의 기록고', theme:'temple', bgm:'dungeon', hud:'2부 9장', pal:PAL.archive,
+  archive:{ name:'모래의 기록고', theme:'temple', tiles:'sandvault', bgm:'dungeon', hud:'2부 9장', pal:PAL.archive,
     src:[ "1111111111111111","1000000100000051","1022080100220001","1022000100220001",
           "1000000000000001","1011100700111081","1111191111111111","1000000000000001",
           "1022007007002201","1500000060000001","1111111111111111" ],
@@ -400,7 +400,7 @@ areas:{
     loot:{'14,1':{item:'archRing'},'1,9':{gold:600,item:'hiPotion'}},
     eventTile:'ev_archivist', eventDone:'ch9done', onEnter:'ev_archive_enter' },
 
-  canyon:{ name:'붉은 협곡', theme:'ash', bgm:'field', hud:'2부 10장', pal:PAL.canyon,
+  canyon:{ name:'붉은 협곡', theme:'ash', tiles:'canyon', bgm:'field', hud:'2부 10장', pal:PAL.canyon,
     src:[ "111111111111111111111111","100022000008100000220001","100022000110100000220001","100000000110100700000001",
           "100000000000100001100001","100000000000900001100601","100000220000100000000001","107000220000100220000001",
           "180000000110100220005001","100030000110100000000001","111111111111111111111111" ],
@@ -410,7 +410,7 @@ areas:{
     loot:{'20,8':{item:'heroRing'}},
     eventTile:'ev_garn', eventDone:'ch10done', onEnter:'ev_canyon_enter' },
 
-  snowpass:{ name:'설산 고갯길', theme:'ash', bgm:'field', hud:'2부 11장', pal:PAL.snow,
+  snowpass:{ name:'설산 고갯길', theme:'ash', tiles:'snow', bgm:'field', hud:'2부 11장', pal:PAL.snow,
     src:[ "111111111111111111111111","100000220000000022000001","101100220011000022001101","101100000011007000001101",
           "100000000000000000000001","100022000110002200000001","100022000110002200110001","107000000000000000110051",
           "100001100022000000000001","100001100022000000000001","111111111111111111111111" ],
@@ -420,7 +420,7 @@ areas:{
     loot:{'22,7':{item:'aegisRing'}},
     onEnter:'ev_snow_enter' },
 
-  abbey:{ name:'설산 수도원', theme:'town', bgm:'town', hud:'2부 11장', pal:PAL.abbey,
+  abbey:{ name:'설산 수도원', theme:'town', tiles:'abbey', bgm:'town', hud:'2부 11장', pal:PAL.abbey,
     src:[ "1111111111111111","1000000000000001","1011100000011101","1000000300000001",
           "1000000000000001","1000000000000001","1011001001001101","1000000000000001",
           "1000000000000001","1111111101111111","1111111111111111" ],
@@ -436,7 +436,7 @@ areas:{
             {x:14,y:5,to:'capital',tx:2,ty:5,label:'왕도',need:'ch11done',block:'눈보라가 왕도로 가는 길을 막고 있다. 지하 빙고의 쐐기를 먼저 뽑아야 한다.'} ],
     onEnter:'ev_abbey_enter' },
 
-  crypt:{ name:'수도원 지하 빙고', theme:'temple', bgm:'dungeon', hud:'2부 11장', pal:PAL.crypt,
+  crypt:{ name:'수도원 지하 빙고', theme:'temple', tiles:'crypt', bgm:'dungeon', hud:'2부 11장', pal:PAL.crypt,
     src:[ "1111111111111111","1000022000022001","1011022011022081","1000000011000001",
           "1807000000007001","1000011001100051","1111111911111111","1000000000000001",
           "1022070000702201","1500000060000001","1111111111111111" ],
@@ -445,7 +445,7 @@ areas:{
     loot:{'14,5':{item:'starRobe'},'1,9':{gold:800,item:'hiEther'}},
     eventTile:'ev_frost', eventDone:'ch11done', onEnter:'ev_crypt_enter' },
 
-  capital:{ name:'왕도 아르센', theme:'town', bgm:'town', hud:'2부 12장', pal:PAL.capital,
+  capital:{ name:'왕도 아르센', theme:'town', tiles:'capital', bgm:'town', hud:'2부 12장', pal:PAL.capital,
     src:[ "1111111111111111","1000000000000001","1011101001011101","1000000000000001",
           "1000000000030001","1000000000000001","1011011001101101","1000000000000001",
           "1000000000000001","1111111111111111","1111111111111111" ],
@@ -462,7 +462,7 @@ areas:{
             {x:14,y:5,to:'sealgrove',tx:2,ty:5,label:'숲',need:'ch12done',block:'성문이 굳게 닫혀 있다. 왕궁 지하의 일을 먼저 매듭지어야 한다.'} ],
     onEnter:'ev_capital_enter' },
 
-  palace:{ name:'왕궁 지하 회랑', theme:'temple', bgm:'dungeon', hud:'2부 12장', pal:PAL.palace,
+  palace:{ name:'왕궁 지하 회랑', theme:'temple', tiles:'palace', bgm:'dungeon', hud:'2부 12장', pal:PAL.palace,
     src:[ "1111111111111111","1000000022000051","1011011022011001","1080000000000001",
           "1000111001110001","1022100000012201","1022100700012281","1111111191111111",
           "1000000000000001","1500000060000001","1111111111111111" ],
@@ -471,7 +471,7 @@ areas:{
     loot:{'14,1':{item:'zephyrRing'},'1,9':{gold:1000,item:'hiPotion'}},
     eventTile:'ev_crown', eventDone:'ch12done', onEnter:'ev_palace_enter' },
 
-  sealgrove:{ name:'봉인의 숲', theme:'forest', bgm:'rift', hud:'2부 13장', pal:PAL.sealgrove,
+  sealgrove:{ name:'봉인의 숲', theme:'forest', tiles:'sealgrove', bgm:'rift', hud:'2부 13장', pal:PAL.sealgrove,
     src:[ "111111111111111111111111","100220000000022000000001","100220011000022001100001","100000011000000001100001",
           "100000000002200000000001","100000000002200000000601","100002200000000110000001","100002200110000110022001",
           "150000000110000000022001","100030000000000000000001","111111111111111111111111" ],
@@ -481,7 +481,7 @@ areas:{
     loot:{'1,8':{gold:900,item:'hiEther'}},
     eventTile:'ev_lord', eventDone:'ch13done', onEnter:'ev_seal_enter' },
 
-  riftgate:{ name:'균열의 문', theme:'rift', bgm:'rift', hud:'2부 14장', pal:PAL.rift,
+  riftgate:{ name:'균열의 문', theme:'rift', tiles:'rift', bgm:'rift', hud:'2부 14장', pal:PAL.rift,
     src:[ "1111111111111111","1000022000022001","1011022011022001","1080000011000081",
           "1000070000700001","1022011801102201","1111111191111111","1000000300000001",
           "1022007007002201","1500000060000051","1111111111111111" ],
