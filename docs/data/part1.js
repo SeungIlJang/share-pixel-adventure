@@ -215,6 +215,27 @@ areas:{
     loot:{'14,7':{item:'divineBow'},'1,9':{item:'guardianRobe'}},
     eventTile:'ev_abyss_maw', eventDone:'abyssDone', onEnter:'ev_abyss_enter' },
 },
+/* 보스 고유 장비 — 상점에서 팔지 않고, 팔 수도 없다(uniq). 효과는 GEAR_FX */
+equip:{
+  dawnShard:  {name:'여명의 조각',   slot:'ring', def:1,fx:'regen',uniq:1,price:0},
+  rootGloves: {name:'가시뿌리 장갑', slot:'hands',atk:2,def:1,fx:'venomEdge',uniq:1,price:0},
+  abyssHood:  {name:'심연의 두건',   slot:'head', def:2,mag:3,fx:'mpRegen',uniq:1,price:0},
+  crystalFang:{name:'수정 송곳니',   slot:'ring', atk:3,fx:'critUp',uniq:1,price:0},
+  wardenPlate:{name:'파수꾼의 흉갑', slot:'armor',def:9,fx:'thorns',uniq:1,price:0},
+  galeBoots:  {name:'돌풍의 장화',   slot:'feet', spd:6,fx:'first',uniq:1,price:0},
+  golemCore:  {name:'석상의 심장',   slot:'ring', def:5,fx:'endure',uniq:1,price:0},
+  heraldMask: {name:'전조의 가면',   slot:'head', def:4,mag:4,fx:'curseWard',uniq:1,price:0},
+  voidFang:   {name:'아귀의 이빨',   slot:'hands',atk:4,def:2,fx:'drain',uniq:1,price:0},
+  dawnCrest:  {name:'여명의 문장',   slot:'ring', atk:3,def:3,mag:3,spd:3,fx:'expUp',uniq:1,price:0},
+},
+/* 전리품 표: 적 id → 장비. done = 그 보스를 이미 잡았음을 뜻하는 진행 플래그(옛 기록 소급 지급에 쓴다) */
+drops:{
+  seal1:{item:'dawnShard',done:'sealDone_forest',part:1}, rootguard:{item:'rootGloves',done:'key_forest',part:1},
+  seal2:{item:'abyssHood',done:'sealDone_cave',part:1},   crystalmaw:{item:'crystalFang',done:'key_cave',part:1},
+  warden:{item:'wardenPlate',done:'ch3done',part:1},      galelord:{item:'galeBoots',done:'ridgeDone',part:1},
+  golem:{item:'golemCore',done:'ch4done',part:1},         herald:{item:'heraldMask',done:'ch5done',part:1},
+  voidmaw:{item:'voidFang',done:'abyssDone',part:1},      seal3:{item:'dawnCrest',done:'part1Clear',part:1},
+},
 /* 레벨업 습득(1부 구간). id=기술, trait=특성. 2~3레벨마다 하나씩 — 부마다 이어 붙는다(definePart) */
 learn:{
   '검사':  [{lv:3,id:'cleave'},{lv:5,trait:'counter'},{lv:7,id:'taunt'},{lv:10,id:'warcry'},{lv:12,trait:'endure'}],

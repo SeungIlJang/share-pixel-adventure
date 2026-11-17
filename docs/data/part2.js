@@ -110,6 +110,20 @@ equip:{
   hunterGloves:{name:'사냥꾼 장갑',   slot:'hands',atk:3,def:3,fx:'critUp',price:480},
   vanguardBoots:{name:'선봉 부츠',    slot:'feet',spd:5,def:2,fx:'first',price:480},
   reaperRing:  {name:'수확의 반지',   slot:'ring',atk:4,fx:'lifeSteal',price:560},
+  /* 보스 고유 장비(2부) — 상점에서 팔지 않고, 팔 수도 없다(uniq) */
+  wedgeHelm:   {name:'파수대장의 투구',slot:'head', def:9,fx:'stunWard',uniq:1,price:0},
+  tidePearl:   {name:'조수의 진주',   slot:'ring', mag:6,fx:'mpSave',uniq:1,price:0},
+  archiveLens: {name:'기록관의 렌즈', slot:'head', def:4,mag:7,fx:'weakUp',uniq:1,price:0},
+  garnBracer:  {name:'가른의 활깍지', slot:'hands',atk:5,def:2,fx:'pierce',uniq:1,price:0},
+  rowanRosary: {name:'로완의 묵주',   slot:'ring', mag:5,def:3,fx:'healUp',uniq:1,price:0},
+  fallenCrown: {name:'떨어진 왕관',   slot:'head', def:10,mag:5,fx:'goldUp',uniq:1,price:0},
+  shadowCloak: {name:'그림자 외투',   slot:'armor',def:18,spd:4,fx:'evade',uniq:1,price:0},
+},
+drops:{
+  wedgeguard:{item:'wedgeHelm',done:'ch7done',part:2},   tidecaller:{item:'tidePearl',done:'ch8done',part:2},
+  archivist:{item:'archiveLens',done:'ch9done',part:2},  garn:{item:'garnBracer',done:'ch10done',part:2},
+  frostApostle:{item:'rowanRosary',done:'ch11done',part:2}, crownApostle:{item:'fallenCrown',done:'ch12done',part:2},
+  gatekeeper:{item:'shadowCloak',done:'ch14done',part:2},
 },
 
 /* ================= 2부 고유 적 그림 ================= */
