@@ -1,9 +1,9 @@
 /* 모두의 픽셀모험 — 제3부 「균열 너머」 데이터 (제작 중)
-   지금 들어 있는 것: 제15~16장, 1차 전직 직업 8개와 그 기술·특성, 임시 동료 가른. 17장부터는 아직 없다. */
+   지금 들어 있는 것: 제15~18장, 1차 전직 직업 8개와 그 기술·특성, 임시 동료 가른. 19장부터는 아직 없다. */
 (function(){
 "use strict";
 /* ---- 화자 색 ---- */
-const T='#7cc4ff', K='#c79bff', M='#9fe8c4', C='#f0c27a', LORD='#c0708a', GARN='#d8b070', NPC='#d9cdb5', FOLK='#b8b0d8', RIN='#ffd9a0';
+const T='#7cc4ff', K='#c79bff', M='#9fe8c4', C='#f0c27a', LORD='#c0708a', GARN='#d8b070', NPC='#d9cdb5', FOLK='#b8b0d8', RIN='#ffd9a0', ROWAN='#9ad0e8', OATH='#c8b8ff';
 const say=(n,t,c)=>({n,t,c});
 /* ---- 적 능력치: 2부와 같은 곡선을 이어 쓴다(장이 오를수록 일정 비율로 강해진다). 보스의 hp/atk/mag 는 시뮬레이션으로 맞춘 값을 직접 적는다 ---- */
 const pw=(b,k)=>Math.pow(b,k);
@@ -20,6 +20,10 @@ const PAL={
   vale: { bg:'#07080c', floor:'#282c36', wall:'#161a24', grass:'#343c50', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(180,200,240,.07)', rock:'#343a48', rock2:'#2a303c', tuft:'#5a6a8a' },
   rest: { bg:'#090808', floor:'#302c2a', wall:'#1c1816', grass:'#3a3a48', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(255,190,130,.07)', roof:'#5a5048', roof2:'#4a423c' },
   deep: { bg:'#050508', floor:'#22242e', wall:'#101218', grass:'#2e3246', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(160,170,220,.07)', rock:'#2e303c', rock2:'#262832' },
+  city: { bg:'#0c0a08', floor:'#3a342c', wall:'#221c16', grass:'#3a3a48', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(255,210,150,.10)', roof:'#7a6248', roof2:'#6a543c' },
+  cinder:{ bg:'#0a0808', floor:'#302a28', wall:'#1c1614', grass:'#44383a', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(255,170,120,.07)', rock:'#3e3432', rock2:'#322a28', tuft:'#7a5a50' },
+  glow: { bg:'#080706', floor:'#2e2a24', wall:'#18140e', grass:'#3e3828', altar:'#2a3a66', boss:'#5a3a1a', chest:'#3a2e1a', detail:'rgba(255,200,120,.09)', rock:'#3a3428', rock2:'#2e2a20' },
+  book: { bg:'#07070b', floor:'#2a2834', wall:'#17151f', grass:'#383450', altar:'#2a3a66', boss:'#3a2a5a', chest:'#3a2e1a', detail:'rgba(200,184,255,.08)', rock:'#35324a', rock2:'#2a283a' },
   tower:{ bg:'#06060a', floor:'#262630', wall:'#14141c', grass:'#34344a', altar:'#2a3a66', boss:'#4a2a3a', chest:'#3a2e1a', detail:'rgba(255,190,120,.07)', rock:'#34343e', rock2:'#2a2a34' },
 };
 
@@ -31,7 +35,10 @@ goals:{3:[
   ['ch15done','잿등 마을 남쪽 ▣ 꺼진 등대의 「돌아오지 못한 자」를 만나자'],
   ['garnJoined','잿등 마을 동쪽 골짜기로 가자'],
   ['ch16done','쉼터 남쪽 ▣ 골짜기 밑바닥의 「잊힌 무리」를 막자'],
-  ['ch17done','제17장은 준비 중입니다 — 그동안 숨은 강적(強)과 전리품을 찾아보자'],
+  ['cityEntered','쉼터 동쪽으로 나가 등불 도시를 찾자'],
+  ['ch17done','등불 도시 남쪽 ▣ 대등탑의 나방 떼를 몰아내자'],
+  ['ch18done','등불 도시 북쪽 ▣ 선조들의 서고 — 동쪽 끝 기록실로 가자'],
+  ['ch19done','제19장은 준비 중입니다 — 그동안 숨은 강적(強)과 전리품을 찾아보자'],
 ]},
 
 enemies:{
@@ -49,6 +56,20 @@ enemies:{
   valeBrute: {weak:'fire', name:'엉긴 덩이',    ...reg(16,{hp:1.45,atk:1.1,spd:8}),color:'#3a3450',look:'brute',palx:{b:'#3a3450',B:'#241f36',l:'#6a6490',e:'#cfd8ff'}},
   lampEater: {weak:'ice',  name:'등불 먹는 것', ...reg(16,{hp:.95,spd:13}),     color:'#6a5a4a',look:'creeper',palx:{g:'#6a5a4a',G:'#463a2e',l:'#b09a7a',e:'#ffb060'}},
   throng:    {atkFx:'dark',weak:'holy',moves:['eatk','ecurse','eflurry','edrain','eaoe'],enrage:0.35,name:'잊힌 무리',...bos(16), hp:11000,atk:118,mag:102, color:'#2a2840',look:'brute',big:2,palx:{b:'#34324e',B:'#1c1a2c',l:'#5a5880',e:'#cfd8ff'}},
+  /* 17장 — 불을 탐하는 것들 */
+  cinderWolf:{weak:'ice',  name:'불티 늑대',    ...reg(17,{hp:.9,spd:15}),      color:'#7a4a3a',look:'wolf',palx:{f:'#7a4a3a',F:'#4e2e24',l:'#c08a6a',e:'#ffd060'}},
+  mirrorWisp:{weak:'holy', name:'거울빛 도깨비',...reg(17,{hp:.8,mag:1.15}),    color:'#b0a888',look:'wraith',palx:{g:'#b0a888',G:'#7a745c',l:'#f0e8c8',e:'#ffffff'},aiMagic:0.55},
+  mothKin:   {weak:'arrow',name:'등불 나방 떼', ...reg(17,{hp:.75,spd:18}),     color:'#c09a5a',look:'bat',palx:{b:'#c09a5a',B:'#86683a',l:'#f6dca6'}},
+  waxGuard:  {weak:'fire',resist:'arrow',name:'밀랍 파수',...reg(17,{hp:1.4,def:1.3,spd:9}),color:'#a89878',look:'sentinel',palx:{g:'#a89878',G:'#746850',l:'#e0d4b0',e:'#ffb060'}},
+  sootCreep: {weak:'ice',  name:'그을음 덩굴',  ...reg(17,{hp:1.0,spd:12}),     color:'#3a3430',look:'creeper',palx:{g:'#4a423c',G:'#2c2622',l:'#7a6e62',e:'#ffb060'}},
+  mothQueen: {atkFx:'dark',weak:'arrow',moves:['eatk','evenom','eflurry','efocus','eaoe'],enrage:0.35,name:'대등의 여왕나방',...bos(17,{spd:14}), hp:13000,atk:126,mag:110, color:'#c09a5a',look:'bat',big:2,palx:{b:'#d0a860',B:'#8a6a3a',l:'#fff0c0'}},
+  /* 18장 — 기록이 깨어난 것들 */
+  inkWraith: {weak:'holy', name:'먹물 망령',    ...reg(18,{hp:.85,mag:1.15}),   color:'#3a3860',look:'wraith',palx:{g:'#3a3860',G:'#24223e',l:'#8a86c0',e:'#c8b8ff'},aiMagic:0.55},
+  pageBat:   {weak:'fire', name:'책장 박쥐',    ...reg(18,{hp:.75,spd:19}),     color:'#b8b098',look:'bat',palx:{b:'#b8b098',B:'#807a66',l:'#f0ead0'}},
+  oathGuard: {weak:'bolt',resist:'arrow',name:'서약의 갑주',...reg(18,{hp:1.4,def:1.3,spd:9}),color:'#5a5488',look:'sentinel',palx:{g:'#5a5488',G:'#3a3660',l:'#a8a0d8',e:'#c8b8ff'}},
+  dustGolem: {weak:'ice',  name:'먼지 거인',    ...reg(18,{hp:1.5,atk:1.1,spd:8}),color:'#8a8478',look:'golem',palx:{g:'#8a8478',G:'#5c584e',l:'#c0baa8',e:'#c8b8ff'}},
+  quillShade:{weak:'holy', name:'깃펜 그림자',  ...reg(18,{hp:1.0,spd:14}),     color:'#2c2a44',look:'shade',palx:{g:'#3c3a5c',G:'#222038',e:'#c8b8ff'},aiMagic:0.35},
+  oathEcho:  {atkFx:'dark',weak:'bolt',moves:['emagic','ecurse','echarge','eblast','eatk'],enrage:0.35,name:'첫 관리인의 서약',...bos(18), hp:10500,atk:120,mag:102, color:'#5a4a9a',look:'archivist',big:2,palx:{g:'#5a4a9a',G:'#3a2e6a',l:'#c8b8ff',e:'#fff3b8'}},
 },
 
 members:{
@@ -57,6 +78,20 @@ members:{
 },
 
 equip:{
+  /* 8단계(등불) — 등불 도시 */
+  lampSword: {name:'등불검',        slot:'weapon',cls:['검사'],atk:46,price:2400},
+  lampStaff: {name:'등불 지팡이',   slot:'weapon',cls:['주술사','치유사'],mag:46,price:2400},
+  lampBow:   {name:'등불궁',        slot:'weapon',cls:['궁수'],atk:46,price:2400},
+  lampPlate: {name:'등불 갑주',     slot:'armor',def:30,price:2200},
+  lampRobe:  {name:'등불 로브',     slot:'armor',def:19,mag:11,price:2000},
+  lampHelm:  {name:'등불 투구',     slot:'head',def:15,price:1300},
+  /* 17~18장 전리품 */
+  cinderClaw:{name:'불티 발톱',     slot:'ring', atk:8,fx:'venomEdge',rare:1,price:1200},
+  waxShield: {name:'밀랍 손방패',   slot:'hands',def:8,fx:'stunWard',rare:1,price:1200},
+  oathHelm:  {name:'서약의 투구',   slot:'head', def:17,fx:'poisonWard',rare:1,price:1400},
+  inkRing:   {name:'먹물 반지',     slot:'ring', mag:8,fx:'weakUp',rare:1,price:1400},
+  queenWing: {name:'여왕나방의 날개',slot:'feet', spd:6,def:3,fx:'evade',uniq:1,price:0},
+  oathSeal:  {name:'첫 서약의 인장',slot:'ring', mag:8,def:3,fx:'mpSave',uniq:1,price:0},
   /* 16장 전리품 */
   facelessMask:{name:'얼굴 없는 가면', slot:'head',def:15,fx:'evade',rare:1,price:1100},
   clumpCore:   {name:'엉긴 덩이의 심', slot:'ring',def:6,fx:'thorns',rare:1,price:1000},
@@ -83,6 +118,9 @@ drops:{
   throng:{item:'nameLamp',done:'ch16done',part:3},
   faceless:{item:'facelessMask',rate:0.05,pity:20}, valeBrute:{item:'clumpCore',rate:0.05,pity:20}, lampEater:{item:'eaterFang',rate:0.05,pity:20},
   griefHowl:{item:'hiEther',rate:0.1}, cliffBat:{item:'hiPotion',rate:0.12},
+  mothQueen:{item:'queenWing',done:'ch17done',part:3}, oathEcho:{item:'oathSeal',done:'ch18done',part:3},
+  cinderWolf:{item:'cinderClaw',rate:0.05,pity:20}, waxGuard:{item:'waxShield',rate:0.05,pity:20}, oathGuard:{item:'oathHelm',rate:0.05,pity:20}, inkWraith:{item:'inkRing',rate:0.05,pity:20},
+  mothKin:{item:'hiPotion',rate:0.12}, mirrorWisp:{item:'hiEther',rate:0.1}, pageBat:{item:'hiPotion',rate:0.12}, quillShade:{item:'hiEther',rate:0.1},
 },
 
 areas:{
@@ -166,7 +204,7 @@ areas:{
       {x:12,y:7,color:'#f0c27a',shade:true,name:'빛 줍는 이',glyph:'◇',shop:['hiPotion','hiEther','revive','ashSword','ashStaff','ashBow','ashPlate','ashRobe','ashHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
     warps:[ {x:1,y:5,to:'valeroad',tx:19,ty:5,label:'골짜기'},
             {x:8,y:9,to:'valedeep',tx:2,ty:1,label:'밑바닥'},
-            {x:14,y:5,to:'hollowrest',tx:13,ty:5,label:'등불 도시',need:'ch17ready',block:'등불 도시로 가는 길은 다음 이야기에서 이어진다. (제17장은 준비 중입니다)'} ],
+            {x:14,y:5,to:'cinderpath',tx:2,ty:5,label:'등불 도시',need:'ch16done',block:'가른이 고개를 젓는다. 「밑바닥 일이 먼저다.」'} ],
     onEnter:'ev_rest_enter' },
 
   /* 갈지자 벼랑길: 층마다 끝에서 끝까지 걸어야 다음 층으로 내려간다. 장치는 두 층의 막다른 끝 */
@@ -178,6 +216,73 @@ areas:{
     npcs:[], warps:[ {x:1,y:1,to:'hollowrest',tx:8,ty:8,label:'쉼터'} ],
     loot:{'13,3':{item:'guardSeed'},'1,7':{gold:1800,item:'hiPotion'},'1,9':{item:'lifeSeed'}},
     eventTile:'ev_throng', eventDone:'ch16done', onEnter:'ev_deep_enter' },
+
+  /* ---- 제17장 ---- */
+  cinderpath:{ name:'불티 날리는 길', theme:'ash', bgm:'rift', hud:'3부 17장', pal:PAL.cinder,
+    src:[ "1111111111111111111111","1500002200000000220001","1011002200110000220001","1011000000110011000001",
+          "1000000110000011000101","1000000110000000000101","1002200000001100000001","1002200011001100220001",
+          "1000000011000000220701","1000070000000050000001","1111111111111111111111" ],
+    enc:{ pool:['cinderWolf','mirrorWisp','mothKin'], rate:0.2, pow:1.05, hpw:1.12 }, respawn:{x:2,y:5},
+    npcs:[], warps:[ {x:1,y:5,to:'hollowrest',tx:13,ty:5,label:'쉼터'}, {x:20,y:5,to:'lampcity',tx:2,ty:5,label:'도시'} ],
+    loot:{'1,1':{item:'powerSeed'},'14,9':{gold:1500,item:'hiEther'}} },
+
+  lampcity:{ name:'등불 도시', theme:'town', bgm:'town', hud:'3부 17장', pal:PAL.city,
+    src:[ "111111111111111111","100000000000000001","101110011001110101","100000000000000001",
+          "100000003000000001","100000000000000001","101100110011001101","100000000000000001",
+          "100000000000000001","111111111011111111","111111111111111111" ],
+    enc:null, respawn:{x:3,y:5},
+    npcs:[
+      {x:5,y:3,color:ROWAN,name:'로완',lines:()=> storyFlags.ch17done ? ( storyFlags.p3Truth==='tell' ? [
+          say('로완','사람들이 제 집 등불을 줄여 탑에 보탠다. 어두워졌지만, 아무도 속고 있지 않다.',ROWAN),
+          say('로완','미아에게 전해 다오. 신전이 나를 쫓아낸 날보다, 오늘이 더 오래 기억날 거라고.',ROWAN) ] : [
+          say('로완','도시는 평온하다. 거울빛 아래서. …그 평온의 값은 미아와 내가 나눠 들고 있다.',ROWAN),
+          say('로완','근원을 되찾으면, 그때는 덮을 것이 없어지겠지. 서둘러 다오.',ROWAN) ] ) : [
+          say('로완','대등탑은 남쪽이다. 나방이 남은 불을 갉아 먹고 있다.',ROWAN),
+          say('로완','내 얼음으로는 불까지 꺼뜨린다. 너희의 손이 필요하다.',ROWAN) ]},
+      {x:12,y:3,color:'#c8a070',name:'도시 사람',lines:()=> storyFlags.p3Truth==='tell' ? [
+          say('도시 사람','불이 그렇게 작은 줄 몰랐어. 무섭지. 그래도 모르고 웃던 어제보다는 나아.',FOLK) ] : [
+          say('도시 사람','대등 덕에 우린 얼굴을 지니고 살아. 들판 사람들은 안됐지만… 탑의 불이 꺼질 리는 없잖아?',FOLK) ]},
+      {x:14,y:7,color:'#b8a0d0',name:'등불 의원',lines:()=> storyFlags.p3Truth==='tell' ? [
+          say('등불 의원','…의회는 반대했소. 하지만 흩어진 건 몇 집뿐이었소. 우리가 사람들을 얕봤던 게지.',FOLK) ] : [
+          say('등불 의원','알리지 않는 것도 다스리는 일이오. 불이 작다는 걸 알면, 오늘 밤 이 도시는 비오.',FOLK) ]},
+      {x:10,y:7,color:'#ffd9a0',name:'아이',lines:[
+          say('아이','들판에서 온 애가 그러는데, 거기선 얼굴이 흐려진대. 거짓말이지? 그치?',RIN) ]},
+      {x:3,y:7,color:'#f0c27a',name:'등불 상인',glyph:'◇',shop:['hiPotion','hiEther','revive','lampSword','lampStaff','lampBow','lampPlate','lampRobe','lampHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
+    warps:[ {x:1,y:5,to:'cinderpath',tx:19,ty:5,label:'길'},
+            {x:9,y:9,to:'lamptower',tx:2,ty:1,label:'대등탑'},
+            {x:9,y:1,to:'archivehall',tx:2,ty:4,label:'서고',need:'ch17done',block:'북쪽 서고의 문은 닫혀 있다. 먼저 대등탑의 일을 끝내자.'} ],
+    onEnter:'ev_city_enter' },
+
+  /* 빗살 구조: 위쪽 복도에서 가지 셋이 아래로 뻗고, 가지 끝마다 장치. 동쪽 끝 문 너머가 불씨 그릇 */
+  lamptower:{ name:'대등탑', theme:'temple', bgm:'dungeon', hud:'3부 17장', pal:PAL.glow,
+    src:[ "111111111111111111","100002200000220001","110111101111011101","110111101111011191",
+          "112111101111211101","110111171111011101","180001500100081101","111111101111111101",
+          "111110008111111101","111111111150060001","111111111111111111" ],
+    enc:{ pool:['mothKin','waxGuard','sootCreep'], rate:0.22, pow:1.1, hpw:1.15 }, respawn:{x:2,y:1},
+    npcs:[], warps:[ {x:1,y:1,to:'lampcity',tx:9,ty:8,label:'도시'} ],
+    loot:{'6,6':{item:'lampRobe'},'10,9':{gold:2000,item:'lifeSeed'}},
+    eventTile:'ev_queen', eventDone:'ch17done', onEnter:'ev_tower_enter' },
+
+  /* ---- 제18장 ---- */
+  archivehall:{ name:'선조들의 서고', theme:'temple', bgm:'dungeon', hud:'3부 18장', pal:PAL.book,
+    src:[ "11111111111111111111","10000002200000000051","10110110110110110101","10110110110110110101",
+          "10000000000220000001","10110110110110110101","10110110110110110101","10022000000000002201",
+          "10110110110110110101","15000000000000000001","11111111111111111111" ],
+    enc:{ pool:['inkWraith','pageBat','quillShade'], rate:0.2, pow:1.0, hpw:1.1 }, respawn:{x:2,y:4},
+    npcs:[], warps:[ {x:1,y:4,to:'lampcity',tx:9,ty:2,label:'도시'},
+            {x:18,y:4,to:'archivevault',tx:2,ty:1,label:'기록실',event:'ev_arch_lore',eventFlag:'archLore'} ],
+    loot:{'18,1':{item:'wisdomSeed'},'1,9':{gold:2000,item:'hiEther'}},
+    onEnter:'ev_arch_enter' },
+
+  /* 세 겹 복도: 가운데 복도는 가시투성이. 장치는 첫 복도 동쪽 끝과 셋째 복도 서쪽 끝 */
+  archivevault:{ name:'봉인 기록실', theme:'temple', bgm:'dungeon', hud:'3부 18장', pal:PAL.book,
+    src:[ "111111111111111111","100000022000000081","101111111111111111","100707070002200001",
+          "111111111111111101","180000005000220001","111111111911111111","111100000000000111",
+          "111100000600005111","111111111111111111","111111111111111111" ],
+    enc:{ pool:['oathGuard','dustGolem','inkWraith'], rate:0.22, pow:1.0, hpw:1.0 }, respawn:{x:2,y:1},
+    npcs:[], warps:[ {x:1,y:1,to:'archivehall',tx:17,ty:4,label:'서고'} ],
+    loot:{'8,5':{item:'guardSeed'},'14,8':{gold:2500,item:'powerSeed'}},
+    eventTile:'ev_oath', eventDone:'ch18done', onEnter:'ev_vault_enter' },
 },
 
 starts:{
@@ -342,6 +447,122 @@ events:{
           "— 제16장 「모습을 잃은 자들」 완료 —",
           "밑바닥의 그림자들이 쉼터로 올라와 불 곁에 앉았다. 등불 도시로 가는 길은 다음 이야기에서 이어진다." ].filter(Boolean),
           ()=>{ storyFlags.ch16done=true; saveGame(); }); }); }); },
+
+  /* ================= 제17장 「등불 도시」 ================= */
+  ev_city_enter:()=>{ if(storyFlags.cityEntered) return; storyFlags.cityEntered=true;
+    showMsg([
+      "— 제17장 「등불 도시」 —",
+      "언덕을 넘자 눈이 부시다. 도시 한가운데 탑 꼭대기에, 저편에 와서 처음 보는 큰 불 — 「대등」이 타고 있다.",
+      "거리의 사람들은 그림자가 아니다. 얼굴이 있고, 웃고, 값을 흥정한다.",
+      say('코르','…여긴 멀쩡하네. 빛이 모자란 땅 맞아?',C),
+      say('로완','멀쩡해 보이도록 하고 있는 거다.',ROWAN),
+      "사제복의 사내 — 얼음 묘지에서 눈처럼 흩어졌던, 서리의 사도다.",
+      say('미아','…로완 님. 살아 계셨군요.',M),
+      say('로완','군주께서 빛을 나눠 다시 세워 주셨다. 사도는 넷 다 그렇다. …미아, 덮지 말라고 했지. 그 말을 한 내가, 지금 이 도시에서 덮고 있다.',ROWAN),
+      say('로완','대등은 거의 꺼졌다. 의회는 거울을 둘러 밝아 보이게만 하고 있지. 알려지면 사람들은 불을 찾아 들판으로 흩어질 테고 — 흩어지면 얼굴을 잃는다.',ROWAN),
+      say('로완','게다가 탑 안에 나방 떼가 들었다. 남은 불마저 갉아 먹고 있어. 내 얼음으로는 불까지 꺼뜨릴 판이다. 부탁한다.',ROWAN),
+      "도시 남쪽 ▣ 이 대등탑이다. 상인 ◇ 과 제단 ✦ 도 있다." ], ()=>{ saveGame(); }); },
+
+  ev_tower_enter:()=>{ if(storyFlags.towerEntered) return; storyFlags.towerEntered=true;
+    showMsg([
+      "대등탑 — 벽마다 거울이 붙어 있다. 그 한가운데를 올려다보면, 불은 촛불만 하다.",
+      say('미아','…이렇게 작았다니. 밖에서 본 건 전부 거울빛이었어요.',M),
+      say('카엘','장치(○)가 셋. 가지처럼 뻗은 막다른 길 끝마다 하나씩이야. 다 눌러야 동쪽 문(▦)이 열려.',K) ]); },
+
+  /* 보스 → (이김) → 두 번째 선택 → 미아의 전직. 어느 단계에서 꺼져도 그 단계부터 이어진다 */
+  ev_queen:()=>{ if(storyFlags.ch17done) return; if(storyFlags.queenDown){ runEvent('ev_queen_after'); return; }
+    showMsg([
+      "불씨 그릇. 사람 키만 한 불꽃이어야 할 자리에, 촛불만 한 불이 떨고 있다.",
+      "그 위에 — 날개를 펼친 거대한 나방이, 불을 품듯 덮고 앉아 있다.",
+      say('미아','저것도 빛이 고팠던 거겠죠. 하지만 저 불은, 도시 사람 모두의 얼굴이에요.',M) ],
+      ()=>{ startBattle(['mothQueen','mothKin','mothKin'],true,{onWin:'ev_queen_after'}); }); },
+
+  ev_queen_after:()=>{ storyFlags.queenDown=true; saveGame();
+    const pick=()=>{ openJobPick('미아',(id,got)=>{
+        const line = id==='highpriest' ? say('미아','아는 사람도 모르는 사람도, 제 앞에서는 쓰러지지 않게 할 거예요. 그게 제가 서는 자리예요.',M)
+                   : id==='judge' ? say('미아','빛은 고치기만 하는 게 아니었어요. 드러내는 것이기도 해요. 저는 둘 다 하겠어요.',M)
+                   : say('미아','…가요.',M);
+        showMsg([ line,
+          id ? '미아는 「'+jobName(party.find(q=>q.name==='미아'))+'」(으)로 전직했다!  '+(got||[]).join(' · ') : '',
+          say('로완','도시 북쪽에, 봉인을 세운 이들의 서고가 있다. 카엘 — 그 문에 새겨진 것은 네 가문의 문장이다.',ROWAN),
+          say('카엘','(…알아. 언젠가 와야 했던 곳이야.)',K),
+          "— 제17장 「등불 도시」 완료 —",
+          "도시 북쪽 ▣ 서고로 가는 문이 열렸다." ].filter(Boolean),
+          ()=>{ storyFlags.ch17done=true; saveGame(); }); }); };
+    if(storyFlags.p3Truth){ pick(); return; }
+    const tell=()=>{ storyFlags.p3Truth='tell'; inventory.wisdomSeed=(inventory.wisdomSeed||0)+2; saveGame(); showMsg([
+        "미아가 탑의 종을 친다. 광장에 모인 사람들에게, 불이 얼마나 작아졌는지를 있는 그대로 말한다.",
+        "웅성임. 울음. 몇몇은 성문 쪽으로 달린다. 그때 — 한 아이가 제 집 등불을 들고 탑으로 걸어온다.",
+        "하나, 둘. 집집의 등불이 탑으로 모인다. 대등이 조금, 아주 조금 커진다.",
+        say('미아','덮어서 지키는 평화는, 불이 꺼지는 날 한꺼번에 무너져요. 알고서 같이 버티는 쪽이 더 오래 가요.',M),
+        say('로완','…내가 신전에서 하려다 못 한 일을, 네가 여기서 해냈구나.',ROWAN),
+        "사람들이 모아 준 「지혜의 열매」 2개를 받았다." ], pick); };
+    const hide=()=>{ storyFlags.p3Truth='hide'; gold+=3000; saveGame(); showMsg([
+        "미아는 종 줄에서 손을 뗀다. 광장의 사람들은 오늘도 거울빛 아래서 웃고 있다.",
+        say('미아','지금 알리면 오늘 밤에 흩어질 거예요. 근원을 되찾을 때까지만… 제가 대신 알고 있을게요.',M),
+        say('로완','그 무게는 내가 안다. 오래 들고 있으면 사람이 언다. 너는 얼지 마라.',ROWAN),
+        say('미아','(…원장님도, 이런 마음이셨을까.)',M),
+        "의회가 사례로 ◆3000 을 건넸다." ], pick); };
+    askMsg([
+      "여왕나방이 재가 되어 흩어진다. 불씨는 남았다. 여전히, 촛불만 하다.",
+      say('로완','…막았군. 하지만 보았을 거다. 이것이 이 도시의 전부다.',ROWAN),
+      say('로완','나는 신전에서 진실을 말하다 쫓겨났고, 여기서는 진실을 덮어 사람을 살리고 있다. 어느 쪽이 옳았는지, 이제는 나도 모르겠다.',ROWAN),
+      say('로완','미아. 너라면 어찌하겠느냐.',ROWAN) ],'도시에 알린다','덮어 둔다',tell,hide); },
+
+  /* ================= 제18장 「선조들의 서고」 ================= */
+  ev_arch_enter:()=>{ if(storyFlags.archEntered) return; storyFlags.archEntered=true;
+    showMsg([
+      "— 제18장 「선조들의 서고」 —",
+      "문 위에 새겨진 문장 — 카엘의 지팡이 머리에 달린 것과 같은, 별과 고리.",
+      say('카엘','우리 가문의 서고야. 봉인을 「관리」해 온 집안의. …이쪽 땅에 있을 줄은 몰랐지만.',K),
+      say('테리','이쪽에? 봉인은 우리 쪽에 있잖아.',T),
+      say('카엘','그러니까. 왜 열쇠 쥔 집의 서고가, 자물쇠 반대편에 있을까.',K),
+      "기록실은 동쪽 끝이다." ], ()=>{ saveGame(); }); },
+
+  ev_arch_lore:()=>{ if(storyFlags.archLore) return; storyFlags.archLore=true;
+    showMsg([
+      "서가 끝의 석판. 카엘이 먼지를 쓸고 읽는다.",
+      say('카엘','「근원이 기울어 두 땅을 다 밝히지 못하게 된 해에, 저편의 왕과 이편의 현자가 약속하였다.」',K),
+      say('카엘','「빛을 세 그릇에 모아 한 땅씩 번갈아 밝힌다. 그릇은 왕이 빚고, 열쇠는 현자의 집이 맡는다. 서른 해마다 문을 연다.」',K),
+      say('코르','번갈아? 그럼 봉인은 가두는 게 아니라… 돌려 가며 쓰는 그릇이었다는 거야?',C),
+      say('카엘','그 「왕」이 그림자 군주야. 봉인을 처음 세운 건 자기라고 했지. 그리고 「현자의 집」이 — 내 가문.',K),
+      say('미아','서른 해마다 연다면서요. 그런데 저편은…',M),
+      say('카엘','한 번도 안 열었어. 기록이 여기서 끊겨. 첫 차례가 왔을 때, 우리 집안은 문을 열지 않은 거야.',K),
+      "안쪽 기록실에서, 종이 넘어가는 소리가 난다." ], ()=>{ saveGame(); }); },
+
+  ev_vault_enter:()=>{ if(storyFlags.vaultEntered) return; storyFlags.vaultEntered=true;
+    showMsg([
+      "봉인 기록실 — 복도가 세 겹이다. 책장마다 같은 문장이 삼백 번쯤 되풀이되어 있다. 「서른 해만 더.」",
+      say('카엘','장치(○)는 둘. 가운데 복도는 가시투성이야 — 서두르지 말고 밟아.',K) ]); },
+
+  ev_oath:()=>{ if(storyFlags.ch18done) return; if(storyFlags.oathDown){ runEvent('ev_oath_after'); return; }
+    showMsg([
+      "기록실 한가운데. 책장에서 흘러나온 글자들이 사람의 모양으로 뭉친다. 별과 고리의 문장을 가슴에 달고.",
+      say('첫 관리인의 서약','열쇠를 쥔 자여. 문을 열러 왔느냐, 닫으러 왔느냐.',OATH),
+      say('카엘','…첫 관리인. 내 선조가 남긴 서약이야.',K),
+      say('첫 관리인의 서약','우리는 열지 않았다. 열면 이편의 아이들이 어두워진다. 서른 해만, 서른 해만 더 — 그렇게 삼백 해를 미뤘다.',OATH),
+      say('카엘','그 빚을 저편 사람들이 얼굴로 갚았어. 비켜. 당신이 못 연 문, 내가 열 거야.',K) ],
+      ()=>{ startBattle(['oathEcho','quillShade','quillShade'],true,{onWin:'ev_oath_after'}); }); },
+
+  ev_oath_after:()=>{ storyFlags.oathDown=true; saveGame();
+    showMsg([
+      "글자들이 흩어져 책장으로 돌아간다. 마지막 한 줄이 카엘의 손바닥에 내려앉는다.",
+      "「열쇠는 현자의 피에 있다. 그릇은 열쇠 쥔 자의 뜻으로만 열리고, 닫힌다.」",
+      say('카엘','…그래서 석 달 전에 봉인이 다시 섰던 거야. 내가 거기 있었으니까. 내가 닫은 거야, 또 한 번.',K),
+      say('테리','몰랐잖아.',T),
+      say('카엘','절반은 알았어. 저편에 사람이 있다는 것도. 모른 척한 값이 삼백 해 치 쌓였는데, 「몰랐다」로는 못 갚아.',K),
+      say('카엘','갚는 방법은, 내가 고른다.',K) ],
+      ()=>{ openJobPick('카엘',(id,got)=>{
+        const line = id==='archsage' ? say('카엘','전부 알아야겠어. 숨긴 것도, 숨겨진 것도. 다시는 「몰랐다」고 말하지 않게.',K)
+                   : id==='shadowmage' ? say('카엘','저편의 어둠을 내 몸으로 배우겠어. 삼백 해 동안 그들이 견딘 걸, 나도 알아야 하니까.',K)
+                   : say('카엘','…가자.',K);
+        showMsg([ line,
+          id ? '카엘은 「'+jobName(party.find(q=>q.name==='카엘'))+'」(으)로 전직했다!  '+(got||[]).join(' · ') : '',
+          say('코르','이걸로 넷 다 정했네. 뭘 위해 싸울지.',C),
+          "서고 밖, 동쪽 하늘 아래 검은 성이 보인다. 군주의 성이다. 그 앞뜰에 — 네 개의 그림자가 서 있다.",
+          "— 제18장 「선조들의 서고」 완료 —",
+          "군주의 성으로 가는 길은 다음 이야기에서 이어진다." ].filter(Boolean),
+          ()=>{ storyFlags.ch18done=true; saveGame(); }); }); }); },
 },
 
 
