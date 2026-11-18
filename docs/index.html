@@ -923,7 +923,7 @@ function drawItemConfirm(){ const id=itemConfirm, it=ITEMS[id], p=party[menuSel]
   g.fillStyle=col; g.font='11px sans-serif'; g.fillText(st,W/2,by+62); g.textAlign='left';
   btn(bx+18,by+bh-34,118,24,'예',()=>{ if(!ok){ sfx('sel'); return; } itemConfirm=null; useItemField(id,p); if(invCount()===0) menuMode='party'; },{bg:ok?'#2a4a3a':'#3a2a2a',fg:ok?'#9fe8c4':'#8a6a6a',font:'13px sans-serif'});
   btn(bx+bw-136,by+bh-34,118,24,'아니오',close,{font:'13px sans-serif'}); }
-function drawMenu(){ drawField(); g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0,W,H);
+function drawMenu(){ drawField(); hotspots=[]; /* 가려진 들판 화면의 버튼(소리·메뉴)은 눌리지 않게 */ g.fillStyle='rgba(6,8,16,.88)'; g.fillRect(0,0,W,H);
   if(menuMode==='equip'){ drawEquipPanel(party[menuSel]); return; }
   if(menuMode==='skills'){ drawSkillPanel(party[menuSel]); return; }
   if(menuMode==='book'){ drawBook(); return; }
@@ -1201,7 +1201,7 @@ function updateShop(){
     if(consume('up')) shopSel=(shopSel+n-1)%n;
     if(consume('down')) shopSel=(shopSel+1)%n;
     if(consume('confirm')) shopConfirm=list[shopSel]; } } // 바로 처리하지 않고 확인창 열기
-function drawShop(){ drawField(); g.fillStyle='rgba(6,8,16,.9)'; g.fillRect(0,0,W,H);
+function drawShop(){ drawField(); hotspots=[]; /* 가려진 들판 화면의 버튼(소리·메뉴)은 눌리지 않게 */ g.fillStyle='rgba(6,8,16,.9)'; g.fillRect(0,0,W,H);
   g.fillStyle='#f0c27a'; g.font='bold 13px sans-serif'; g.fillText('◇ '+((cur&&cur.name)||'상인'),16,20);
   g.fillStyle='#cdd6ea'; g.font='12px sans-serif'; g.textAlign='right'; g.fillText('보유 ◆ '+gold,W-14,19); g.textAlign='left';
   // 사기 / 팔기 탭
