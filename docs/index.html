@@ -37,7 +37,7 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
   else { for(var id in c[k]) if(id in CONTENT[k]) CONTENT.clash.push(k+'.'+id+' (제'+n+'부가 덮어씀)'); Object.assign(CONTENT[k],c[k]); } } // 부끼리 이름이 겹치면 뒤의 부가 앞의 것을 덮어쓴다 — 겹침은 CONTENT.clash 에 남긴다
   if(CONTENT.clash.length&&window.console) console.warn('콘텐츠 이름 겹침: '+CONTENT.clash.join(', ')); }
 </script>
-<script src="data/part1.js?v=92e42e7b3f"></script>
+<script src="data/part1.js?v=f539e90516"></script>
 <script src="data/part2.js?v=4a2bfb1f42"></script>
 <script src="data/part3.js?v=6307a071b6"></script>
 <script src="data/art.js?v=b3e304c77b"></script>
@@ -402,7 +402,7 @@ function loadArea(id,tx,ty,dir){ cur=AREAS[id]; if(!cur) return; cur.id=id;
   if(cur.bgm&&bgm.started) playBGM(cur.bgm);
   if(cur.onEnter) runEvent(cur.onEnter); }
 /* 마을 사람의 그림: 모습을 잃은 사람(shade)은 그림자 그림, look 이 적혀 있으면 그 인물의 그림. 없으면 기본 모양 */
-function npcArt(n){ const N=ART.npcPx||{}, H=ART.heroPx||{}; if(typeof n.shade==='function'?n.shade():n.shade) return N[n.child?'shadeChild':'shadeFolk']||null; return n.look?(N[n.look]||H[n.look]||null):null; }
+function npcArt(n){ const N=ART.npcPx||{}, H=ART.heroPx||{}; if(typeof n.shade==='function'?n.shade():n.shade) return N[n.child?'shadeChild':'shadeFolk']||null; return n.look?(N[n.look]||H[n.look]||HEROPX[n.look]||null):null; }
 function npcOn(n){ return !n.when||(typeof n.when==='function'?!!n.when():!!storyFlags[n.when]); } // when: 그 조건일 때만 서 있는 사람
 function npcAt(x,y){ return (cur&&cur.npcs)?cur.npcs.find(n=>n.x===x&&n.y===y&&npcOn(n)):null; }
 function warpOn(w){ return !w.when||!!storyFlags[w.when]; } // when: 그 플래그가 선 뒤에만 생기는 길
