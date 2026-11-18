@@ -41,22 +41,22 @@ definePart(2, {
 /* 2부를 끝낸 기록이라면 서 있어야 하는 진행 플래그(「3부부터 시작」 기록 보정용) */
 clearFlags:{2:['abbeyEntered', 'archiveEntered', 'canyonEntered', 'capitalEntered', 'ch10done', 'ch11done', 'ch12done', 'ch13done', 'ch14done', 'ch7done', 'ch8done', 'ch9done', 'cryptEntered', 'docksEntered', 'dunesEntered', 'gateEntered', 'oldroadEntered', 'p2Started', 'palaceEntered', 'salenaEntered', 'sealEntered', 'snowEntered']},
 quests:{
-  q3:{area:'arg2',x:12,y:3,name:'방앗간 주인',color:'#c8b088',title:'수림의 늙은 뿌리',flag:'elite_grove',goal:'속삭이는 수림의 숨은 강적(強)을 쓰러뜨리자',
+  q3:{area:'arg2',x:12,y:3,name:'방앗간 주인',look:'miller',color:'#c8b088',title:'수림의 늙은 뿌리',flag:'elite_grove',goal:'속삭이는 수림의 숨은 강적(強)을 쓰러뜨리자',
     ask:['남쪽 숲 깊은 데서 땅이 운다네. 속삭이는 수림의 늙은 뿌리가 다시 꿈틀거리는 게야.','물레방아 물길이 그 뿌리 밑을 지나거든. 자네들이라면 잠재울 수 있겠나?'],
     doing:'물길이 아직 탁해. 뿌리가 살아 있는 게지.',
     thanks:['물이 맑아졌어! 삼십 년 방아를 돌렸지만 이렇게 잘 도는 건 처음이야. 받아 두게.'],
     after:'방아가 잘 돌아. 밀가루는 넉넉하니 걱정 말게.',reward:{gold:500,items:{powerSeed:1}}},
-  q4:{area:'salena',x:8,y:3,name:'늙은 어부',color:'#8ab8c8',title:'그물을 찢는 것',kill:{tideSlime:6},
+  q4:{area:'salena',x:8,y:3,name:'늙은 어부',look:'oldFisher',color:'#8ab8c8',title:'그물을 찢는 것',kill:{tideSlime:6},
     ask:['등대 불이 약해진 뒤로 부두에 물컹한 것들이 올라와 그물을 다 찢어 놔.','창고 쪽에 갈 일 있으면, 보이는 대로 좀 치워 주게.'],
     doing:'오늘도 그물 두 장이 못 쓰게 됐어. 아직 남았나 봐.',
     thanks:['그물이 멀쩡해! 이제 배를 낼 수 있겠어. 뱃사람은 빚을 안 져. 받게.'],
     after:'고기가 잘 잡혀. 다음에 오면 한 마리 구워 주지.',reward:{gold:500,items:{hiPotion:3}}},
-  q5:{area:'abbey',x:12,y:3,name:'수련 사제',color:'#d8e0f0',title:'고갯길의 망령',kill:{iceWraith:6},
+  q5:{area:'abbey',x:12,y:3,name:'수련 사제',look:'novice',color:'#d8e0f0',title:'고갯길의 망령',kill:{iceWraith:6},
     ask:['설산 고갯길에 얼음 망령이 떠돌아요. 순례자들이 수도원까지 오지 못하고 돌아가요.','원장님은 기도하라고만 하세요. …저는 누가 좀 쫓아 줬으면 해요.'],
     doing:'어젯밤에도 고개에서 푸른 불이 보였어요.',
     thanks:['순례자가 올라왔어요! 석 달 만이에요. 이건 제가 아껴 둔 거예요. 받아 주세요.'],
     after:'미아 선배가 계셨던 방, 제가 쓸고 있어요. 언제든 돌아오세요.',reward:{items:{hiEther:2,wisdomSeed:1}}},
-  q6:{area:'capital',x:9,y:3,name:'늙은 근위병',color:'#c8b070',title:'회랑의 옛 왕',flag:'elite_palace',goal:'왕궁 지하 회랑의 숨은 강적(強)을 쓰러뜨리자',
+  q6:{area:'capital',x:9,y:3,name:'늙은 근위병',look:'oldGuard',color:'#c8b070',title:'회랑의 옛 왕',flag:'elite_palace',goal:'왕궁 지하 회랑의 숨은 강적(強)을 쓰러뜨리자',
     ask:['지하 회랑 깊은 데서 밤마다 갑주 끄는 소리가 나오. 초대 왕의 망령이라고들 하지.','근위대는 들어갔다가 셋이 돌아오지 못했소. 염치없지만, 부탁하오.'],
     doing:'어젯밤에도 소리가 났소. 아직 계신 게요.',
     thanks:['소리가 멎었소. 이제 편히 쉬시겠지. 근위대의 이름으로 드리는 것이오.'],
@@ -327,16 +327,16 @@ areas:{
           "1000000000000001","1111111001111111","1111111111111111" ],
     enc:null, respawn:{x:3,y:3},
     npcs:[
-      {x:10,y:8,color:'#9ab0c4',name:'이정표',lines:[
+      {x:10,y:8,color:'#9ab0c4',name:'이정표',look:'signpost',lines:[
         "이정표: 남쪽 ▣ — 옛 봉인의 땅. 숲과 동굴, 고원을 지나 균열까지 이어진다.",
         "이정표: 지나온 곳곳에 아직 강한 기운(強)이 서려 있다고 한다. 준비가 되면 찾아가 보라." ]},
-      {x:5,y:3,color:'#b7a98f',name:'촌장',lines:[
+      {x:5,y:3,color:'#b7a98f',name:'촌장',look:'chief',lines:[
         say('촌장','여명이 돌아온 뒤로 밭에 싹이 다시 났다네. 모두 자네들 덕이야.',NPC),
         say('촌장','헌데 동쪽 항구 살레나에서 온 상인이 이상한 말을 하더군. 그쪽 하늘이 다시 어두워진다고.',NPC) ]},
-      {x:10,y:4,color:'#d9a0a0',name:'살레나 상인',lines:[
+      {x:10,y:4,color:'#d9a0a0',name:'살레나 상인',look:'salenaTrader',lines:[
         say('살레나 상인','항구 한복판에 검은 쐐기가 박혔어요. 그 뒤로 등대 불빛까지 빨려 들어가요.',NPC),
         say('살레나 상인','옛 대로(동쪽 ▣)를 따라가면 살레나예요. 길에 마물이 늘었으니 조심하세요.',NPC) ]},
-      {x:3,y:7,color:'#f0c27a',name:'상인',glyph:'◇',shop:['potion','ether','revive','mithrilSword','sageStaff','stormBow','plateArmor','chainMail','ironHelm','mageHat','gauntlet','windBoots','powerRing','guardRing','sageRing','swiftRing']} ],
+      {x:3,y:7,color:'#f0c27a',name:'상인',look:'merchant',glyph:'◇',shop:['potion','ether','revive','mithrilSword','sageStaff','stormBow','plateArmor','chainMail','ironHelm','mageHat','gauntlet','windBoots','powerRing','guardRing','sageRing','swiftRing']} ],
     warps:[ {x:14,y:4,to:'oldroad',tx:2,ty:5,label:'대로'}, {x:8,y:9,to:'forest',tx:8,ty:2,label:'옛 숲'} ] },
 
   oldroad:{ name:'옛 대로', theme:'forest', tiles:'forest', bgm:'field', hud:'2부 7장', pal:PAL.forest,
@@ -355,13 +355,13 @@ areas:{
           "1000000000000001","1111111101111111","1111111111111111" ],
     enc:null, respawn:{x:3,y:5},
     npcs:[
-      {x:6,y:3,color:'#8ab0d0',name:'항만 관리',lines:[
+      {x:6,y:3,color:'#8ab0d0',name:'항만 관리',look:'harborOfficer',lines:[
         say('항만 관리','쐐기는 부두 창고(남쪽 ▣) 깊숙이 박혀 있소. 그 주변엔 물에서 올라온 것들이 득실거려.',NPC),
         say('항만 관리','쐐기를 지키는 자가 스스로를 "조수의 사도"라 부르더이다.',NPC) ]},
-      {x:12,y:7,color:'#d9cdb5',name:'늙은 선원',lines:[
+      {x:12,y:7,color:'#d9cdb5',name:'늙은 선원',look:'oldSailor',lines:[
         say('늙은 선원','먼바다에 나가면 말이야, 밤에 수평선 너머로 다른 색 빛이 보일 때가 있어.',NPC),
         say('늙은 선원','젊을 땐 다들 헛것이라 했지. 난 아직도 그게 뭔지 궁금하다네.',NPC) ]},
-      {x:3,y:7,color:'#f0c27a',name:'무구상',glyph:'◇',shop:['potion','hiPotion','ether','hiEther','revive','runeSword','starStaff','galeBow','runeMail','runeHelm','runeGauntlet','thunderBlade','emberBow','focusStaff','steadyHelm','riposteGauntlet']} ],
+      {x:3,y:7,color:'#f0c27a',name:'무구상',look:'armsDealer',glyph:'◇',shop:['potion','hiPotion','ether','hiEther','revive','runeSword','starStaff','galeBow','runeMail','runeHelm','runeGauntlet','thunderBlade','emberBow','focusStaff','steadyHelm','riposteGauntlet']} ],
     warps:[ {x:1,y:5,to:'oldroad',tx:21,ty:4,label:'대로'},
             {x:8,y:9,to:'docks',tx:2,ty:1,label:'부두'},
             {x:14,y:5,to:'dunes',tx:2,ty:5,label:'사막',need:'ch8done',block:'쐐기가 뿜는 어둠이 동쪽 성문까지 덮고 있다. 먼저 부두 창고의 쐐기를 뽑아야 한다.'} ],
@@ -393,7 +393,7 @@ areas:{
           "1022007007002201","1500000060000001","1111111111111111" ],
     enc:{ pool:['scarab','dustShade','archGuard'], rate:0.24, pow:1.08, hpw:1.25 }, respawn:{x:2,y:1},
     npcs:[
-      {x:13,y:7,color:'#c8b070',name:'기록판',lines:[
+      {x:13,y:7,color:'#c8b070',name:'기록판',look:'recordSlab',lines:[
         "기록판: 『하늘 바다에서 떨어진 빛은 하나가 아니었다.』",
         "기록판: 『우리는 그중 하나를 찾았고, 여명이라 불렀다.』" ]} ],
     warps:[ {x:1,y:1,to:'dunes',tx:11,ty:1,label:'사막'} ],
@@ -426,11 +426,11 @@ areas:{
           "1000000000000001","1111111101111111","1111111111111111" ],
     enc:null, respawn:{x:3,y:5},
     npcs:[
-      {x:10,y:3,color:'#e0e4f0',name:'수도원장 엘다',lines:[
+      {x:10,y:3,color:'#e0e4f0',name:'수도원장 엘다',look:'abbess',lines:[
         say('엘다','미아… 네가 올 줄 알았다. 그리고 무엇을 물을지도.',NPC),
         say('엘다','그래. 나는 알고 있었다. 봉인이 빛을 가두는 그릇이라는 것을. 신전은 대대로 그것을 감춰 왔지.',NPC),
         say('엘다','지하 빙고(남쪽 ▣)에 쐐기가 박혔다. 그걸 뽑고 돌아오거라. 그때 전부 말해 주마.',NPC) ]},
-      {x:3,y:7,color:'#f0c27a',name:'수도사',glyph:'◇',shop:['hiPotion','hiEther','revive','starRobe','starCirclet','stormBoots','mercyRobe','clearCirclet','lifeSeed','guardSeed']} ],
+      {x:3,y:7,color:'#f0c27a',name:'수도사',look:'monk',glyph:'◇',shop:['hiPotion','hiEther','revive','starRobe','starCirclet','stormBoots','mercyRobe','clearCirclet','lifeSeed','guardSeed']} ],
     warps:[ {x:1,y:5,to:'snowpass',tx:21,ty:5,label:'설산'},
             {x:8,y:9,to:'crypt',tx:2,ty:1,label:'빙고'},
             {x:14,y:5,to:'capital',tx:2,ty:5,label:'왕도',need:'ch11done',block:'눈보라가 왕도로 가는 길을 막고 있다. 지하 빙고의 쐐기를 먼저 뽑아야 한다.'} ],
@@ -451,12 +451,12 @@ areas:{
           "1000000000000001","1111111111111111","1111111111111111" ],
     enc:null, respawn:{x:3,y:5},
     npcs:[
-      {x:6,y:3,color:'#c0a868',name:'근위대장',lines:[
+      {x:6,y:3,color:'#c0a868',name:'근위대장',look:'guardCaptain',lines:[
         say('근위대장','폐하께서는 쐐기를 받아들이셨다. 쐐기가 있는 한 그림자가 왕도를 건드리지 않는다는 약조였지.',NPC),
         say('근위대장','허나 왕궁 지하(북쪽 ▣)로 내려간 병사들이 돌아오지 않는다. …부탁이다. 확인해 다오.',NPC) ]},
-      {x:12,y:7,color:'#d9cdb5',name:'시민',lines:[
+      {x:12,y:7,color:'#d9cdb5',name:'시민',look:'citizen',lines:[
         say('시민','밤이 길어졌어요. 그래도 여긴 마물이 안 들어오니까… 다들 모른 척하는 거죠.',NPC) ]},
-      {x:3,y:7,color:'#f0c27a',name:'왕실 무구상',glyph:'◇',shop:['hiPotion','hiEther','revive','dawnSword','dawnStaff','dawnBow','dawnPlate','heroRing','aegisRing','archRing','zephyrRing','frostEdge','stormString','seekerStaff','bulwarkPlate','hunterGloves','vanguardBoots','reaperRing','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
+      {x:3,y:7,color:'#f0c27a',name:'왕실 무구상',look:'royalDealer',glyph:'◇',shop:['hiPotion','hiEther','revive','dawnSword','dawnStaff','dawnBow','dawnPlate','heroRing','aegisRing','archRing','zephyrRing','frostEdge','stormString','seekerStaff','bulwarkPlate','hunterGloves','vanguardBoots','reaperRing','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
     warps:[ {x:1,y:5,to:'abbey',tx:13,ty:5,label:'수도원'},
             {x:8,y:1,to:'palace',tx:2,ty:1,label:'왕궁'},
             {x:14,y:5,to:'sealgrove',tx:2,ty:5,label:'숲',need:'ch12done',block:'성문이 굳게 닫혀 있다. 왕궁 지하의 일을 먼저 매듭지어야 한다.'} ],

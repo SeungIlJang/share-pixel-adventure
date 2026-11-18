@@ -6,12 +6,12 @@
 definePart(1, {
 /* 마을 부탁(1부) */
 quests:{
-  q1:{area:'village',x:12,y:3,name:'빵집 아주머니',color:'#e0b890',title:'밀밭의 늑대',kill:{wolf:5},
+  q1:{area:'village',x:12,y:3,name:'빵집 아주머니',look:'baker',color:'#e0b890',title:'밀밭의 늑대',kill:{wolf:5},
     ask:['여명이 스러진 뒤로 숲 늑대가 밀밭까지 내려와요. 이러다간 겨울 빵을 못 구워요.','숲에 가는 길이라면, 좀 쫓아 줄래요?'],
     doing:'늑대가 아직 어슬렁거려요. 조심해요.',
     thanks:['밭이 조용해졌어요! 고마워요. 갓 구운 건 아니지만, 이거라도 챙겨 가요.'],
     after:'올겨울 빵은 걱정 없겠어요. 돌아오면 따뜻한 걸로 구워 줄게요.',reward:{gold:60,items:{potion:3}}},
-  q2:{area:'merchant',x:6,y:3,name:'짐꾼',color:'#c8a878',title:'능선의 짐수레',kill:{raider:6},
+  q2:{area:'merchant',x:6,y:3,name:'짐꾼',look:'porter',color:'#c8a878',title:'능선의 짐수레',kill:{raider:6},
     ask:['능선을 넘다가 약탈자한테 짐수레를 통째로 털렸어. 주인 양반한테 뭐라고 하나…','놈들 수를 좀 줄여 주면, 다음 짐은 무사히 넘길 수 있을 거야.'],
     doing:'아직 능선 쪽에서 놈들 휘파람 소리가 나.',
     thanks:['길이 뚫렸어! 이번 짐은 무사히 넘어왔다고. 품삯에서 떼어 주는 거야, 받아.'],
@@ -160,9 +160,9 @@ areas:{
         {n:'카엘',t:'테리, 준비됐어? 마을 남쪽 길(아래)로 나가면 아르겐 숲이야.',c:'#c79bff'},
         {n:'카엘',t:'풀숲(균열 지대)에선 마물이 나와. 제단 ✦ 에서 쉬고 저장해.',c:'#c79bff'},
         {n:'카엘',t:'상인 ◇ 에게서 장비를 사 두면 든든할 거야.',c:'#c79bff'} ]},
-      {x:10,y:4,color:'#b7a98f',name:'주민',lines:[
+      {x:10,y:4,color:'#b7a98f',name:'주민',look:'villager',lines:[
         {n:'주민',t:'마을이 그림자에게 당했어… 부디 봉인을 되살려줘.',c:'#d9cdb5'} ]},
-      {x:3,y:7,color:'#f0c27a',name:'상인',glyph:'◇',shop:true} ],
+      {x:3,y:7,color:'#f0c27a',name:'상인',look:'merchant',glyph:'◇',shop:true} ],
     warps:[ {x:8,y:9,to:'forest',tx:8,ty:2,label:'숲'} ],
     onEnter:'ev_village_intro' },
   forest:{ name:'아르겐 숲', theme:'forest', tiles:'forest', bgm:'field',
@@ -172,7 +172,7 @@ areas:{
           "1000000000222001","1000000000000401","1111111111111111" ],
     enc:{ pool:['wolf','slime','bat'], rate:0.22 }, respawn:{x:6,y:8},
     npcs:[
-      {x:8,y:4,color:'#9ab0c4',name:'이정표',lines:[
+      {x:8,y:4,color:'#9ab0c4',name:'이정표',look:'signpost',lines:[
         "이정표: 숲 깊은 곳(남동쪽)에 봉인 封 이 잠들어 있다.",
         "이정표: 봉인석은 뿌리 결계에 감싸여 있다 — 서쪽 ▣ 속삭이는 수림에서 결계를 끊어라.",
         "이정표: 봉인 앞에 서면 수호물이 깨어난다 — 레벨과 장비를 갖추고 가라." ]} ],
@@ -206,8 +206,8 @@ areas:{
           "1000000000000001","1111111001111111","1111111111111111" ],
     enc:null, respawn:{x:3,y:3},
     npcs:[
-      {x:3,y:7,color:'#f0c27a',name:'상인',glyph:'◇',shop:['potion','ether','revive','steelSword','mithrilSword','crystalStaff','sageStaff','longBow','stormBow','ironHelm','mageHat','chainMail','plateArmor','gauntlet','windBoots','powerRing','guardRing','sageRing','swiftRing','flameSword','frostBow','antidoteRing']}, /* 최상급(기사검·용옥·신궁·수호 로브)은 신전·균열·심부 보물상자 */
-      {x:10,y:3,color:'#b7a98f',name:'마을 장로',lines:[
+      {x:3,y:7,color:'#f0c27a',name:'상인',look:'merchant',glyph:'◇',shop:['potion','ether','revive','steelSword','mithrilSword','crystalStaff','sageStaff','longBow','stormBow','ironHelm','mageHat','chainMail','plateArmor','gauntlet','windBoots','powerRing','guardRing','sageRing','swiftRing','flameSword','frostBow','antidoteRing']}, /* 최상급(기사검·용옥·신궁·수호 로브)은 신전·균열·심부 보물상자 */
+      {x:10,y:3,color:'#b7a98f',name:'마을 장로',look:'elder',lines:[
         {n:'장로',t:'여명이 옅어진 뒤로 바람조차 잿빛이오. 봉인을 되살려 주시게.',c:'#d9cdb5'},
         {n:'장로',t:'북쪽 잊혀진 신전에 봉인의 비밀이 잠들어 있다 하오.',c:'#d9cdb5'} ]} ],
     warps:[ {x:8,y:9,to:'ridge',tx:13,ty:9,label:'능선'},
@@ -220,10 +220,10 @@ areas:{
           "1000007007000001","1000000060000001","1111111111111111" ],
     enc:{ pool:['wraith','shade','sentinel'], rate:0.22, pow:2.31, hpw:2.0 }, respawn:{x:14,y:5},
     npcs:[
-      {x:3,y:3,color:'#9ab0c4',name:'비문',lines:[
+      {x:3,y:3,color:'#9ab0c4',name:'비문',look:'stele',lines:[
         "비문: 『세 봉인은 여명의 빛을 가두어 균열을 봉하였노라.』",
         "비문: 『허나 빛은 영원하지 않으니, 때가 되면 수호자가 봉인을 다시 세우리라.』" ]},
-      {x:13,y:7,color:'#9ab0c4',name:'비문',lines:[
+      {x:13,y:7,color:'#9ab0c4',name:'비문',look:'stele',lines:[
         "비문: 『여명의 근원은 봉인 너머 — 균열의 심장에 잠들어 있다.』" ]} ],
     warps:[ {x:8,y:1,to:'merchant',tx:14,ty:2,label:'마을'},
             {x:14,y:8,to:'rift',tx:8,ty:3,label:'균열',event:'ev_temple_guardian',eventFlag:'ch4done'} ],

@@ -37,10 +37,10 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
   else { for(var id in c[k]) if(id in CONTENT[k]) CONTENT.clash.push(k+'.'+id+' (제'+n+'부가 덮어씀)'); Object.assign(CONTENT[k],c[k]); } } // 부끼리 이름이 겹치면 뒤의 부가 앞의 것을 덮어쓴다 — 겹침은 CONTENT.clash 에 남긴다
   if(CONTENT.clash.length&&window.console) console.warn('콘텐츠 이름 겹침: '+CONTENT.clash.join(', ')); }
 </script>
-<script src="data/part1.js?v=22db5a6361"></script>
-<script src="data/part2.js?v=71ec656b03"></script>
+<script src="data/part1.js?v=92e42e7b3f"></script>
+<script src="data/part2.js?v=4a2bfb1f42"></script>
 <script src="data/part3.js?v=dc08483073"></script>
-<script src="data/art.js?v=2a87285cef"></script>
+<script src="data/art.js?v=c08104cb77"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -370,7 +370,7 @@ for(const a in (CONTENT.elites||{})) if(AREAS[a]) AREAS[a].elite=CONTENT.elites[
      ask:[…], doing:'…', thanks:[…], after:'…', reward:{gold, items:{id:n}}}. 대사는 모두 부탁한 사람의 말이다.
    진행: qa_id(맡음) · qb_id(맡은 순간의 처치 수) · qd_id(끝냄). 마릿수는 맡은 뒤에 쓰러뜨린 것만 센다 */
 const QUESTS=CONTENT.quests||{};
-for(const id in QUESTS){ const q=QUESTS[id], A=AREAS[q.area]; if(A){ A.npcs=A.npcs||[]; A.npcs.push({x:q.x,y:q.y,color:q.color||'#d9cdb5',name:q.name,shade:q.shade,quest:id}); } }
+for(const id in QUESTS){ const q=QUESTS[id], A=AREAS[q.area]; if(A){ A.npcs=A.npcs||[]; A.npcs.push({x:q.x,y:q.y,color:q.color||'#d9cdb5',name:q.name,look:q.look,shade:q.shade,quest:id}); } }
 function questProg(id){ const q=QUESTS[id], b=storyFlags['qb_'+id]||{}; return Object.keys(q.kill||{}).map(e=>[e,Math.max(0,Math.min(q.kill[e],(storyFlags['k_'+e]||0)-(b[e]||0))),q.kill[e]]); }
 function questMet(id){ const q=QUESTS[id]; return q.flag?!!storyFlags[q.flag]:questProg(id).every(p=>p[1]>=p[2]); }
 function questState(id){ return storyFlags['qd_'+id]?'done':!storyFlags['qa_'+id]?'new':questMet(id)?'ready':'doing'; }
