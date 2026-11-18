@@ -46,7 +46,7 @@ quests:{
     doing:'오늘은 이름이 두 개 돌아왔어. 아직 빈 줄이 많아.',
     thanks:['여덟 줄을 채웠어. 「도윤」, 「새벽이」… 읽어 주니까, 저쪽에서 둘이 고개를 들었어. 이건 고맙다는 뜻이야.'],
     after:'공책이 두꺼워졌어. 언젠가 다 읽어 줄 날이 오겠지.',reward:{items:{wisdomSeed:1,guardSeed:1}}},
-  q9:{area:'lampcity',x:7,y:3,name:'거울 닦는 이',color:'#d0c0a0',title:'거울에 앉는 나방',kill:{mothKin:8},
+  q9:{area:'lampcity',x:7,y:3,name:'거울 닦는 이',look:'mirrorKeeper',color:'#d0c0a0',title:'거울에 앉는 나방',kill:{mothKin:8},
     ask:['나방 떼가 거울마다 앉아서 닦아도 닦아도 뿌옇습니다. 탑 안에서 계속 나와요.','의회는 쉬쉬하지만, 닦는 사람은 압니다. 좀 줄여 주시겠습니까.'],
     doing:'오늘도 거울 셋을 다시 닦았습니다. 아직 많아요.',
     thanks:['거울이 맑습니다. …맑아지니까 알겠네요. 불이 얼마나 작은지. 그래도 고맙습니다. 받으세요.'],
@@ -402,15 +402,15 @@ areas:{
           say('로완','근원을 되찾으면, 그때는 덮을 것이 없어지겠지. 서둘러 다오.',ROWAN) ] ) : [
           say('로완','대등탑은 남쪽이다. 나방이 남은 불을 갉아 먹고 있다.',ROWAN),
           say('로완','내 얼음으로는 불까지 꺼뜨린다. 너희의 손이 필요하다.',ROWAN) ]},
-      {x:12,y:3,color:'#c8a070',name:'도시 사람',lines:()=> storyFlags.p3Truth==='tell' ? [
+      {x:12,y:3,color:'#c8a070',name:'도시 사람',look:'cityFolk',lines:()=> storyFlags.p3Truth==='tell' ? [
           say('도시 사람','불이 그렇게 작은 줄 몰랐어. 무섭지. 그래도 모르고 웃던 어제보다는 나아.',FOLK) ] : [
           say('도시 사람','대등 덕에 우린 얼굴을 지니고 살아. 들판 사람들은 안됐지만… 탑의 불이 꺼질 리는 없잖아?',FOLK) ]},
-      {x:14,y:7,color:'#b8a0d0',name:'등불 의원',lines:()=> storyFlags.p3Truth==='tell' ? [
+      {x:14,y:7,color:'#b8a0d0',name:'등불 의원',look:'councilor',lines:()=> storyFlags.p3Truth==='tell' ? [
           say('등불 의원','…의회는 반대했소. 하지만 흩어진 건 몇 집뿐이었소. 우리가 사람들을 얕봤던 게지.',FOLK) ] : [
           say('등불 의원','알리지 않는 것도 다스리는 일이오. 불이 작다는 걸 알면, 오늘 밤 이 도시는 비오.',FOLK) ]},
-      {x:10,y:7,color:'#ffd9a0',name:'아이',lines:[
+      {x:10,y:7,color:'#ffd9a0',name:'아이',look:'cityChild',lines:[
           say('아이','들판에서 온 애가 그러는데, 거기선 얼굴이 흐려진대. 거짓말이지? 그치?',RIN) ]},
-      {x:3,y:7,color:'#f0c27a',name:'등불 상인',glyph:'◇',shop:['hiPotion','hiEther','revive','lampSword','lampStaff','lampBow','lampPlate','lampRobe','lampHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
+      {x:3,y:7,color:'#f0c27a',name:'등불 상인',look:'lampSeller',glyph:'◇',shop:['hiPotion','hiEther','revive','lampSword','lampStaff','lampBow','lampPlate','lampRobe','lampHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
     warps:[ {x:1,y:5,to:'cinderpath',tx:19,ty:5,label:'길'},
             {x:16,y:5,to:'kingsroad',tx:2,ty:5,label:'성',need:'ch18done',block:'동쪽 성문은 닫혀 있다. 먼저 북쪽 서고의 일을 끝내자.'},
             {x:9,y:9,to:'lamptower',tx:2,ty:1,label:'대등탑'},
