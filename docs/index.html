@@ -1089,11 +1089,11 @@ function drawFeatToast(){ if(!featToast.length) return; if(featToastT<=0){ featT
   g.globalAlpha=Math.max(0,a); g.font='bold 11px sans-serif'; const w=Math.min(W-16,g.measureText(t).width+24), x=(W-w)/2; g.fillStyle='rgba(20,16,6,.94)'; g.fillRect(x,22,w,20); g.strokeStyle='#ffd54a'; g.strokeRect(x+0.5,22.5,w-1,19);
   g.fillStyle='#ffd54a'; g.textAlign='center'; g.fillText(t,W/2,36); g.textAlign='left'; g.globalAlpha=1; if(--featToastT<=0) featToast.shift(); }
 function drawFeats(){ g.textAlign='left'; g.fillStyle='#ffd54a'; g.font='bold 13px sans-serif'; g.fillText('달성 기록  '+featCount(),14,19);
-  g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText('달성하면 보상이 바로 가방에 들어온다',150,19);
+  g.fillStyle='#b8c2d8'; g.font='10px sans-serif'; g.fillText('달성하면 보상이 바로 가방에 들어온다',150,19);
   FEATS.forEach((f,i)=>{ const col=i<8?0:1, x=8+col*236, y=28+(i-col*8)*26, w=228, done=!!storyFlags['feat_'+f.id], c=Math.min(f.max,f.cur());
     g.fillStyle=done?'rgba(40,36,14,.94)':'rgba(18,22,34,.94)'; g.fillRect(x,y,w,23);
     g.fillStyle=done?'#ffd54a':'#e8eef7'; g.font='bold 11px sans-serif'; g.fillText((done?'✔ ':'')+f.name,x+6,y+10);
-    g.fillStyle=done?'#b8a860':'#8a93ad'; g.font='9px sans-serif'; g.fillText(f.desc+'  →  '+featReward(f.reward||{}),x+6,y+20);
+    g.fillStyle=done?'#e0d08a':'#cdd6ea'; g.font='10px sans-serif'; g.fillText(f.desc+'  →  '+featReward(f.reward||{}),x+6,y+20,w-12); // 설명은 또렷한 밝은 색으로, 길면 칸 너비에 맞춰 좁힌다
     g.textAlign='right'; g.fillStyle=done?'#ffd54a':'#9fe8c4'; g.font='10px sans-serif'; g.fillText(f.max>1?c+'/'+f.max:(done?'완료':'—'),x+w-6,y+10); g.textAlign='left'; });
   btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
 function drawBook(){ const ids=BOOK_IDS, PER=24, pages=Math.max(1,Math.ceil(ids.length/PER)); bookPage=Math.max(0,Math.min(pages-1,bookPage));
