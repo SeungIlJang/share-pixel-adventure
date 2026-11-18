@@ -36,12 +36,12 @@ const PAL={
 definePart(3,{
 
 quests:{
-  q7:{area:'lamptown',x:13,y:3,name:'등불 깁는 이',color:'#9a94b4',shade:true,title:'심지가 될 불티',kill:{ashWisp:6},
+  q7:{area:'lamptown',x:13,y:3,name:'등불 깁는 이',shadeLook:'shadeMender',color:'#9a94b4',shade:true,title:'심지가 될 불티',kill:{ashWisp:6},
     ask:['등 심지가 다 닳았소. 들판의 불티를 흩으면 재 속에 불씨가 남는데, 그걸로 심지를 꼬지.','우리는 들판에 오래 못 있소. 대신 좀 흩어 주겠소?'],
     doing:'불씨가 아직 모자라오. 등 둘은 오늘 밤을 못 넘길 게요.',
     thanks:['이만하면 집집마다 심지를 갈겠소. 들판에서 주운 것이오. 우리한텐 쓸모없지만, 당신들에겐 다르겠지.'],
     after:'새 심지는 오래 타오. 저편 사람 손을 빌릴 줄은 몰랐소.',reward:{gold:1000,items:{lifeSeed:1}}},
-  q8:{area:'hollowrest',x:3,y:3,name:'이름을 적는 이',color:'#8a88a4',shade:true,title:'돌아올 이름들',kill:{faceless:8},
+  q8:{area:'hollowrest',x:3,y:3,name:'이름을 적는 이',shadeLook:'shadeScribe',color:'#8a88a4',shade:true,title:'돌아올 이름들',kill:{faceless:8},
     ask:['나는 여기 사람들의 이름을 적어 두는 일을 해. 잊기 전에. 잊어도 다시 읽어 줄 수 있게.','골짜기의 얼굴 없는 자들은, 흩어 놓으면 가끔 이름 하나를 흘리고 가. 그걸 주워 오고 싶어.'],
     doing:'오늘은 이름이 두 개 돌아왔어. 아직 빈 줄이 많아.',
     thanks:['여덟 줄을 채웠어. 「도윤」, 「새벽이」… 읽어 주니까, 저쪽에서 둘이 고개를 들었어. 이건 고맙다는 뜻이야.'],
@@ -51,7 +51,7 @@ quests:{
     doing:'오늘도 거울 셋을 다시 닦았습니다. 아직 많아요.',
     thanks:['거울이 맑습니다. …맑아지니까 알겠네요. 불이 얼마나 작은지. 그래도 고맙습니다. 받으세요.'],
     after:'거울은 제가 닦겠습니다. 불은 — 당신들에게 부탁합니다.',reward:{gold:2000,items:{powerSeed:1}}},
-  q10:{area:'oathcourt',x:3,y:4,name:'뜰지기',color:'#8a8098',shade:true,title:'약속을 깬 기사',flag:'elite_kingsroad',goal:'왕의 길의 숨은 강적(強)을 쓰러뜨리자',
+  q10:{area:'oathcourt',x:3,y:4,name:'뜰지기',shadeLook:'shadeWarden',color:'#8a8098',shade:true,title:'약속을 깬 기사',flag:'elite_kingsroad',goal:'왕의 길의 숨은 강적(強)을 쓰러뜨리자',
     ask:['삼백 해 전 약속의 날, 이 뜰을 지키던 기사 하나가 달아났소. 문이 열리지 않으리란 걸 먼저 알아챈 게지.','그자가 아직 왕의 길을 떠도오. 부끄러움이 굳어 저리 된 게요. 쉬게 해 주시오.'],
     doing:'길목에서 아직 갑주 소리가 나오.',
     thanks:['갔구려. 삼백 해 만에 뜰이 조용하오. 그자가 두고 간 것이오. 가져가시오.'],
@@ -303,7 +303,7 @@ areas:{
           "1000000000000001","1111111101111111","1111111111111111" ],
     enc:null, respawn:{x:3,y:5},
     npcs:[
-      {x:6,y:3,color:'#8a86a8',shade:true,name:'등불지기',lines:()=> storyFlags.ch15done ? [
+      {x:6,y:3,color:'#8a86a8',shade:true,name:'등불지기',shadeLook:'shadeKeeper',lines:()=> storyFlags.ch15done ? [
           say('등불지기','할렌이 돌아왔소. 제 발로, 제 얼굴로. 이 마을에서 그런 일은 처음이오.',FOLK),
           say('등불지기','동쪽으로 더 가면 「모습을 잃은 자들」이 모이는 골짜기가 있소. 군주의 사도 하나가 그곳을 지킨다 하더이다.',FOLK) ] : [
           say('등불지기','할렌이라는 사내요. 딸아이에게 줄 빛을 구하겠다며 균열을 넘었지.',FOLK),
@@ -320,7 +320,7 @@ areas:{
           say('린','언니가 준 빛, 아직 손바닥에 남아 있어. 이걸 아빠한테도 줄 수 있으면 좋겠다.',RIN) ]
         : [ "린은 등불 뒤로 숨는다. 검을 든 손만 뚫어지게 본다.",
             say('린','…아빠도, 그렇게 쫓겨났어?',RIN) ]},
-      {x:3,y:7,color:'#f0c27a',shade:true,name:'그림자 상인',glyph:'◇',shop:['hiPotion','hiEther','revive','ashSword','ashStaff','ashBow','ashPlate','ashRobe','ashHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
+      {x:3,y:7,color:'#f0c27a',shade:true,name:'그림자 상인',shadeLook:'shadeMerchant',glyph:'◇',shop:['hiPotion','hiEther','revive','ashSword','ashStaff','ashBow','ashPlate','ashRobe','ashHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
     warps:[ {x:1,y:5,to:'ashfield',tx:21,ty:5,label:'들판'},
             {x:8,y:9,to:'deadlight',tx:2,ty:1,label:'등대'},
             {x:14,y:5,to:'valeroad',tx:2,ty:5,label:'골짜기',need:'ch15done',block:'동쪽 골짜기는 등불지기가 막아선다. 「먼저 남쪽 등대의 일을 봐 주시오.」'} ],
@@ -356,15 +356,15 @@ areas:{
       {x:8,y:5,color:GARN,name:'가른',look:'garn',when:'ch16done',lines:[
         say('가른','팔은 조금씩 돌아오고 있다. 불 옆에 앉아 있으면 윤곽이 다시 선다.',GARN),
         say('가른','코르에게 전해라. 겨눌 것을 스스로 정한 궁수는, 나보다 멀리 쏜다고.',GARN) ]},
-      {x:5,y:3,color:'#6a6884',shade:true,name:'이름 없는 이',lines:()=> storyFlags.ch16done ? [
+      {x:5,y:3,color:'#6a6884',shade:true,name:'이름 없는 이',shadeLook:'shadeNameless',lines:()=> storyFlags.ch16done ? [
           say('이름 없는 이','…이름이… 하나 돌아왔어… 「소라」… 그게 나였어…',FOLK) ] : [
           say('이름 없는 이','…불… 따뜻해… 내 이름이… 뭐였더라…',FOLK) ]},
-      {x:10,y:3,color:'#7a7896',shade:true,name:'얼굴만 남은 이',lines:()=> storyFlags.p3Child==='share' ? [
+      {x:10,y:3,color:'#7a7896',shade:true,name:'얼굴만 남은 이',shadeLook:'shadeFace',lines:()=> storyFlags.p3Child==='share' ? [
           say('얼굴만 남은 이','잿등 마을 아이가 얼굴을 돌려받았다는 소문이 여기까지 왔어. 너희지?',FOLK),
           say('얼굴만 남은 이','빛을 나눠 받는다는 게 어떤 건지, 우리는 잊은 지 오래야. 고맙다는 말도.',FOLK) ] : [
           say('얼굴만 남은 이','검 든 저편 사람이 아이를 쫓았다더군. …너희는 아니겠지.',FOLK),
           say('얼굴만 남은 이','가른도 처음엔 활을 겨누고 왔어. 사람은, 보고 나면 바뀌기도 하더라.',FOLK) ]},
-      {x:12,y:7,color:'#f0c27a',shade:true,name:'빛 줍는 이',glyph:'◇',shop:['hiPotion','hiEther','revive','ashSword','ashStaff','ashBow','ashPlate','ashRobe','ashHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
+      {x:12,y:7,color:'#f0c27a',shade:true,name:'빛 줍는 이',shadeLook:'shadeGleaner',glyph:'◇',shop:['hiPotion','hiEther','revive','ashSword','ashStaff','ashBow','ashPlate','ashRobe','ashHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
     warps:[ {x:1,y:5,to:'valeroad',tx:19,ty:5,label:'골짜기'},
             {x:8,y:9,to:'valedeep',tx:2,ty:1,label:'밑바닥'},
             {x:14,y:5,to:'cinderpath',tx:2,ty:5,label:'등불 도시',need:'ch16done',block:'가른이 고개를 젓는다. 「밑바닥 일이 먼저다.」'} ],
@@ -475,7 +475,7 @@ areas:{
       {x:11,y:8,color:'#d8b860',name:'왕관의 사도',look:'crownApostle',lines:()=> storyFlags.ch19done ? [
           say('왕관의 사도','모두를 구하겠다는 왕은 어리석다고 배웠다. 어리석은 쪽이 옳았으면, 하고 지금은 바란다.',LORD) ] : [
           say('왕관의 사도','왕은 모두를 구할 수 없다. 너희는 다르다는 것을, 힘으로 보여 다오.',LORD) ]},
-      {x:3,y:7,color:'#f0c27a',shade:true,name:'뜰의 상인',glyph:'◇',shop:['hiPotion','hiEther','revive','mornSword','mornStaff','mornBow','mornPlate','mornRobe','mornHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
+      {x:3,y:7,color:'#f0c27a',shade:true,name:'뜰의 상인',shadeLook:'shadeCourtMerchant',glyph:'◇',shop:['hiPotion','hiEther','revive','mornSword','mornStaff','mornBow','mornPlate','mornRobe','mornHelm','powerSeed','wisdomSeed','guardSeed','lifeSeed']} ],
     warps:[ {x:1,y:5,to:'kingsroad',tx:19,ty:5,label:'길'},
             {x:14,y:5,to:'lordkeep',tx:2,ty:1,label:'성문',event:'ev_trial',eventFlag:'ch19done'},
             {x:7,y:1,to:'sourcepath',tx:2,ty:9,label:'근원',need:'ch20done',block:'성 뒤로 난 길은 군주만이 열 수 있다. 먼저 옥좌의 방으로 가자.'} ],

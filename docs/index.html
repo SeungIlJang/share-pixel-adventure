@@ -39,8 +39,8 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
 </script>
 <script src="data/part1.js?v=f539e90516"></script>
 <script src="data/part2.js?v=4a2bfb1f42"></script>
-<script src="data/part3.js?v=6307a071b6"></script>
-<script src="data/art.js?v=e2ce804591"></script>
+<script src="data/part3.js?v=deaf6561d7"></script>
+<script src="data/art.js?v=2622e01d4d"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -370,7 +370,7 @@ for(const a in (CONTENT.elites||{})) if(AREAS[a]) AREAS[a].elite=CONTENT.elites[
      ask:[…], doing:'…', thanks:[…], after:'…', reward:{gold, items:{id:n}}}. 대사는 모두 부탁한 사람의 말이다.
    진행: qa_id(맡음) · qb_id(맡은 순간의 처치 수) · qd_id(끝냄). 마릿수는 맡은 뒤에 쓰러뜨린 것만 센다 */
 const QUESTS=CONTENT.quests||{};
-for(const id in QUESTS){ const q=QUESTS[id], A=AREAS[q.area]; if(A){ A.npcs=A.npcs||[]; A.npcs.push({x:q.x,y:q.y,color:q.color||'#d9cdb5',name:q.name,look:q.look,shade:q.shade,quest:id}); } }
+for(const id in QUESTS){ const q=QUESTS[id], A=AREAS[q.area]; if(A){ A.npcs=A.npcs||[]; A.npcs.push({x:q.x,y:q.y,color:q.color||'#d9cdb5',name:q.name,look:q.look,shade:q.shade,shadeLook:q.shadeLook,quest:id}); } }
 function questProg(id){ const q=QUESTS[id], b=storyFlags['qb_'+id]||{}; return Object.keys(q.kill||{}).map(e=>[e,Math.max(0,Math.min(q.kill[e],(storyFlags['k_'+e]||0)-(b[e]||0))),q.kill[e]]); }
 function questMet(id){ const q=QUESTS[id]; return q.flag?!!storyFlags[q.flag]:questProg(id).every(p=>p[1]>=p[2]); }
 function questState(id){ return storyFlags['qd_'+id]?'done':!storyFlags['qa_'+id]?'new':questMet(id)?'ready':'doing'; }
@@ -402,7 +402,7 @@ function loadArea(id,tx,ty,dir){ cur=AREAS[id]; if(!cur) return; cur.id=id;
   if(cur.bgm&&bgm.started) playBGM(cur.bgm);
   if(cur.onEnter) runEvent(cur.onEnter); }
 /* 마을 사람의 그림: 모습을 잃은 사람(shade)은 그림자 그림, look 이 적혀 있으면 그 인물의 그림. 없으면 기본 모양 */
-function npcArt(n){ const N=ART.npcPx||{}, H=ART.heroPx||{}; if(typeof n.shade==='function'?n.shade():n.shade) return N[n.child?'shadeChild':'shadeFolk']||null; return n.look?(N[n.look]||H[n.look]||HEROPX[n.look]||null):null; }
+function npcArt(n){ const N=ART.npcPx||{}, H=ART.heroPx||{}; if(typeof n.shade==='function'?n.shade():n.shade) return N[n.shadeLook]||N[n.child?'shadeChild':'shadeFolk']||null; return n.look?(N[n.look]||H[n.look]||HEROPX[n.look]||null):null; }
 function npcOn(n){ return !n.when||(typeof n.when==='function'?!!n.when():!!storyFlags[n.when]); } // when: 그 조건일 때만 서 있는 사람
 function npcAt(x,y){ return (cur&&cur.npcs)?cur.npcs.find(n=>n.x===x&&n.y===y&&npcOn(n)):null; }
 function warpOn(w){ return !w.when||!!storyFlags[w.when]; } // when: 그 플래그가 선 뒤에만 생기는 길
