@@ -40,7 +40,7 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
 <script src="data/part1.js?v=22db5a6361"></script>
 <script src="data/part2.js?v=71ec656b03"></script>
 <script src="data/part3.js?v=bc7f810cc0"></script>
-<script src="data/art.js?v=223a4faf94"></script>
+<script src="data/art.js?v=a2e2130740"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -843,11 +843,13 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
   // 워프(출구) 표식
   if(cur.warps) for(const w of cur.warps){ if(!warpOn(w)) continue; const sx=w.x*TILE-camOX, sy=w.y*TILE-camOY;
     const wi=cur.tiles&&tileImg('obj','warp');
-    if(wi){ g.drawImage(wi,sx,sy-2); g.fillStyle='#9fe8c4'; g.textAlign='center'; }
+    if(wi){ g.drawImage(wi,sx,sy-5); g.textAlign='center'; }
     else { g.fillStyle='rgba(159,232,196,.16)'; g.fillRect(sx+2,sy+2,TILE-4,TILE-4);
     g.strokeStyle='rgba(159,232,196,.5)'; g.strokeRect(sx+2.5,sy+2.5,TILE-5,TILE-5);
     g.fillStyle='#9fe8c4'; g.textAlign='center'; g.font='13px sans-serif'; g.fillText('▣',sx+TILE/2,sy+TILE*0.52); }
-    g.font='8px sans-serif'; g.fillText(w.label||'',sx+TILE/2,sy+TILE-3); g.textAlign='left'; }
+    if(w.label){ g.font='bold 8px sans-serif'; const lw=Math.ceil(g.measureText(w.label).width)+6, lx=Math.round(sx+TILE/2-lw/2);
+      g.fillStyle='rgba(8,8,14,.88)'; g.fillRect(lx,sy+TILE-10,lw,10); g.fillStyle='#eafff4'; g.fillText(w.label,sx+TILE/2,sy+TILE-2); }
+    g.textAlign='left'; }
   // NPC / 상인
   if(cur.npcs) for(const nz of cur.npcs){ if(!npcOn(nz)) continue; const sx=nz.x*TILE-camOX, sy=nz.y*TILE-camOY;
     if(nz.glyph){ g.fillStyle=nz.color; g.font='16px sans-serif'; g.fillText(nz.glyph,sx+TILE*0.2,sy-1); }
