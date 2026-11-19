@@ -243,7 +243,8 @@ areas:{
           "1000000000000001","1000003000000001","1000000000000001","1011100000011101",
           "1000000040000001","1000000000000001","1111111111111111" ],
     enc:null, respawn:{x:6,y:5},
-    npcs:[], warps:[ {x:8,y:1,to:'abyss',tx:13,ty:9,label:'심부'} ],
+    npcs:[], warps:[ {x:8,y:1,to:'abyss',tx:13,ty:9,label:'심부'},
+            {x:14,y:1,to:'arg2',tx:3,ty:3,label:'마을',when:'part1Clear'} ], // 1부를 끝낸 뒤 다시 왔을 때: 2부의 아르겐 마을로 곧장 돌아가는 길
     boss:{ id:'seal3', chapter:6 }, onEnter:'ev_altar_enter' },
   /* ---- 심층 맵(1부 밀도 보강): 퍼즐 + 중간 보스 + 보물 장비 ---- */
   grove:{ name:'속삭이는 수림', theme:'forest', tiles:'forest', bgm:'field',

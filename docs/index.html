@@ -37,7 +37,7 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
   else { for(var id in c[k]) if(id in CONTENT[k]) CONTENT.clash.push(k+'.'+id+' (제'+n+'부가 덮어씀)'); Object.assign(CONTENT[k],c[k]); } } // 부끼리 이름이 겹치면 뒤의 부가 앞의 것을 덮어쓴다 — 겹침은 CONTENT.clash 에 남긴다
   if(CONTENT.clash.length&&window.console) console.warn('콘텐츠 이름 겹침: '+CONTENT.clash.join(', ')); }
 </script>
-<script src="data/part1.js?v=f539e90516"></script>
+<script src="data/part1.js?v=12f9cd7fb5"></script>
 <script src="data/part2.js?v=4a2bfb1f42"></script>
 <script src="data/part3.js?v=deaf6561d7"></script>
 <script src="data/art.js?v=598e8ddd7b"></script>
