@@ -40,7 +40,7 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
 <script src="data/part1.js?v=12f9cd7fb5"></script>
 <script src="data/part2.js?v=4a2bfb1f42"></script>
 <script src="data/part3.js?v=deaf6561d7"></script>
-<script src="data/art.js?v=598e8ddd7b"></script>
+<script src="data/art.js?v=0cc174fef5"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -871,7 +871,8 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
     g.textAlign='left'; }
   // NPC / 상인
   if(cur.npcs) for(const nz of cur.npcs){ if(!npcOn(nz)) continue; const sx=nz.x*TILE-camOX, sy=nz.y*TILE-camOY;
-    if(nz.glyph){ g.fillStyle=nz.color; g.font='16px sans-serif'; g.fillText(nz.glyph,sx+TILE*0.2,sy-1); }
+    if(nz.shop){ const bx=Math.round(sx+TILE/2-7), by=Math.round(sy-15+Math.sin(gtime/14)*1.2); // 상점 표시: 머리 위 돈주머니
+      SHOP_MARK.forEach((row,j)=>{ for(let i=0;i<row.length;i++){ const c=SHOP_MARK_PAL[row[i]]; if(c){ g.fillStyle=c; g.fillRect(bx+i*2,by+j*2,2,2); } } }); }
     if(nz.quest){ const st=questState(nz.quest); if(st!=='done'){ g.fillStyle=st==='doing'?'#8a93ad':'#ffd54a'; g.font='bold 15px sans-serif'; g.fillText(st==='doing'?'…':st==='ready'?'✔':'!',sx+TILE*0.34,sy-1+(st==='doing'?0:Math.sin(gtime/10)*1.5)); } } // 부탁: ! 새 부탁 · … 하는 중 · ✔ 끝내러 가자
     const na=npcArt(nz); if(na){ const w=Math.max.apply(null,na.rows.map(r=>r.length))*2, h=na.rows.length*2; g.fillStyle='#0007'; g.beginPath(); g.ellipse(sx+TILE/2,sy+TILE-3,TILE*0.3,TILE*0.13,0,0,7); g.fill(); drawPixSprite(na.rows,na.pal,Math.round(sx+(TILE-w)/2),Math.round(sy+TILE-h),2); }
     else if(typeof nz.shade==='function'?nz.shade():nz.shade){ chibi(sx,sy,'#24243a'); g.fillStyle='#ffd9a0'; g.fillRect(sx+TILE*0.36,sy+TILE*0.34,2,2); g.fillRect(sx+TILE*0.58,sy+TILE*0.34,2,2); } // 모습을 잃은 사람: 검은 윤곽에 눈빛만
@@ -1187,6 +1188,7 @@ function drawEquipPanel(p){
   btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
 
 /* ================= 상점 ================= */
+const SHOP_MARK=['..ooo..','..oko..','.obbbo.','obbgbbo','obgggbo','obbgbbo','.ooooo.'], SHOP_MARK_PAL={o:'#161019',b:'#e8b860',k:'#b5533c',g:'#fff3b8'};
 let shopSel=0, shopTop=0, shopStock=SHOP_STOCK, shopConfirm=null, shopMode='buy';
 function shopVis(){ return Math.max(1,Math.floor((H-58-48)/26)); }
 // 스크롤 창은 선택이 화면 밖으로 나갈 때만 이동(구매/선택으로 창이 맨 위로 튀지 않게 고정)
