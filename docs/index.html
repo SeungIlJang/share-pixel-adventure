@@ -375,6 +375,20 @@ function questProg(id){ const q=QUESTS[id], b=storyFlags['qb_'+id]||{}; return O
 function questMet(id){ const q=QUESTS[id]; return q.flag?!!storyFlags[q.flag]:questProg(id).every(p=>p[1]>=p[2]); }
 function questState(id){ return storyFlags['qd_'+id]?'done':!storyFlags['qa_'+id]?'new':questMet(id)?'ready':'doing'; }
 function questGoal(id){ const q=QUESTS[id]; return q.kill?questProg(id).map(p=>ENEMY_DB[p[0]].name+' '+p[1]+'/'+p[2]).join(' · '):q.goal; }
+/* 부탁 목록(메뉴 → 부탁): 맡은 부탁과 끝낸 부탁을 보여 준다. 진행 중인 것이 위, 끝낸 것이 아래 */
+function questLog(){ const ord={ready:0,doing:1,done:2}; return Object.keys(QUESTS).filter(id=>questState(id)!=='new').sort((a,b)=>ord[questState(a)]-ord[questState(b)]); }
+function questRewardStr(q){ const r=q.reward||{}, got=[]; if(r.gold) got.push('◆'+r.gold); for(const it in (r.items||{})) got.push(itemDef(it).name+' ×'+r.items[it]); return got.join(' · '); }
+function drawQuests(){ const ids=questLog(), all=Object.keys(QUESTS), fresh=all.length-ids.length;
+  g.textAlign='left'; g.fillStyle='#9fe8c4'; g.font='bold 13px sans-serif'; g.fillText('부탁  '+ids.filter(id=>questState(id)==='done').length+'/'+all.length,14,19);
+  g.fillStyle='#b8c2d8'; g.font='10px sans-serif'; g.fillText(fresh>0?'머리 위에 ! 가 뜬 사람에게 말을 걸면 새 부탁을 맡는다':'모든 부탁을 맡았다',110,19);
+  if(!ids.length){ g.fillStyle='#cdd6ea'; g.font='11px sans-serif'; g.fillText('아직 맡은 부탁이 없다.',14,60); }
+  ids.slice(0,10).forEach((id,i)=>{ const q=QUESTS[id], st=questState(id), col=i<5?0:1, x=8+col*236, y=28+(i-col*5)*43, w=228, A=AREAS[q.area];
+    g.fillStyle=st==='done'?'rgba(14,18,28,.94)':st==='ready'?'rgba(24,46,38,.96)':'rgba(18,22,34,.94)'; g.fillRect(x,y,w,40);
+    g.fillStyle=st==='done'?'#8a93ad':'#e8eef7'; g.font='bold 11px sans-serif'; g.fillText(q.title,x+6,y+12,w-78);
+    g.textAlign='right'; g.font='10px sans-serif'; g.fillStyle=st==='done'?'#8a93ad':st==='ready'?'#9fe8c4':'#ffd54a'; g.fillText(st==='done'?'✔ 끝냄':st==='ready'?'✔ 알리러 가자':'하는 중',x+w-6,y+12); g.textAlign='left';
+    g.fillStyle=st==='done'?'#8a93ad':'#cdd6ea'; g.font='10px sans-serif'; g.fillText(q.name+' · '+(A?A.name:''),x+6,y+24,w-12);
+    g.fillStyle=st==='done'?'#6b7590':st==='ready'?'#9fe8c4':'#e8eef7'; g.fillText(st==='done'?'받은 보상  '+questRewardStr(q):questGoal(id)+'   →  '+questRewardStr(q),x+6,y+36,w-12); });
+  btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
 function questTalk(id){ const q=QUESTS[id], st=questState(id), S=t=>({n:q.name,t,c:q.color||'#d9cdb5'});
   if(st==='done'){ showMsg([S(q.after)]); return; }
   if(st==='doing'){ showMsg([S(q.doing),'부탁 「'+q.title+'」 — '+questGoal(id)]); return; }
@@ -928,6 +942,7 @@ function drawMenu(){ drawField(); hotspots=[]; /* 가려진 들판 화면의 버
   if(menuMode==='skills'){ drawSkillPanel(party[menuSel]); return; }
   if(menuMode==='book'){ drawBook(); return; }
   if(menuMode==='feat'){ drawFeats(); return; }
+  if(menuMode==='quest'){ drawQuests(); return; }
   if(menuMode==='job'){ drawJobPanel(party[menuSel]); return; }
   if(menuMode==='respec'){ drawRespec(); return; }
   g.fillStyle='#e8eef7'; g.font='bold 14px sans-serif'; g.fillText('파티',14,20); g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText(currentPart()+'부 · 플레이 '+fmtTime(playSec),52,19);
@@ -944,9 +959,10 @@ function drawMenu(){ drawField(); hotspots=[]; /* 가려진 들판 화면의 버
     bar(200,y+23,180,3,p.exp/p.expNext,'#ffd54a');    // EXP 바(금색) — 다음 레벨까지 진행도
     hz(8,y-12,W-16,38,()=>{ menuSel=i; }); });
   if(menuMode==='party'){
-    let bx=8; if(invCount()>0){ btn(bx,H-24,92,20,'아이템 사용',()=>{menuMode='item';menuItemSel=0;}); bx+=100; }
-    btn(bx,H-24,92,20,'장비 장착',()=>{menuMode='equip';menuItemSel=0;}); bx+=100;
-    btn(bx,H-24,92,20,'스킬 · 특성',()=>{menuMode='skills';}); bx+=100;
+    let bx=8; if(invCount()>0){ btn(bx,H-24,78,20,'아이템 사용',()=>{menuMode='item';menuItemSel=0;}); bx+=82; }
+    btn(bx,H-24,78,20,'장비 장착',()=>{menuMode='equip';menuItemSel=0;}); bx+=82;
+    btn(bx,H-24,78,20,'스킬 · 특성',()=>{menuMode='skills';}); bx+=82;
+    { const qs=questLog(), rdy=qs.some(id=>questState(id)==='ready'); btn(bx,H-24,48,20,rdy?'부탁 ✔':'부탁',()=>{menuMode='quest';},{fg:rdy?'#9fe8c4':undefined}); bx+=52; } // 맡은 부탁 목록. 끝내러 갈 것이 있으면 ✔
     btn(bx,H-24,48,20,'도감',()=>{menuMode='book'; bookSel=null;}); bx+=52;
     btn(bx,H-24,48,20,'기록',()=>{menuMode='feat';},{fg:'#ffd54a'}); bx+=52;
     if(tile(player.x,player.y)==='3'&&party.some(q=>q.job&&!q.guest)) btn(W-236,3,82,16,'직업 다시 고르기',()=>{menuMode='respec'; respec.who=null;},{bg:'#2a3a4a',fg:'#9fe8c4',font:'10px sans-serif'}); // 제단 위에 서 있을 때만
