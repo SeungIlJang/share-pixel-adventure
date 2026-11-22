@@ -51,6 +51,7 @@ const W=480,H=270,TILE=30;
 const SEASON=1, SAVE_VER=4, SAVE_KEY='pixel-adventure-s'+SEASON, LEGACY_KEY='three-seals-save-v2';
 var DEBUG_ENCOUNTER=false; /* 개발용: 적 조우(풀) 타일을 빨간 점으로 표시. 출시 전 false. */
 const wrapEl=document.getElementById('wrap');
+let RS=1; const RS_MAX=4; // 그리기 배율(화면 점 수 ÷ 480×270)
 function resizeCanvas(){
   const vv=window.visualViewport;
   const vw=vv?vv.width:window.innerWidth, vh=vv?vv.height:window.innerHeight;
@@ -65,6 +66,11 @@ function resizeCanvas(){
   const availW=Math.max(1,vw-pl-pr), availH=Math.max(1,vh-pt-pb);
   const s=Math.min(availW/W, availH/H);
   cv.style.width=(W*s)+'px'; cv.style.height=(H*s)+'px';
+  /* 글씨가 번지지 않게: 480×270 으로 그려 늘리지 않고, 화면의 실제 점 수에 맞춘 정수 배율로 그린다(좌표는 그대로 480×270).
+     배율이 화면과 딱 맞으면 점을 그대로 살리고, 조금 크면 부드럽게 줄여 보여 준다 */
+  const want=s*(window.devicePixelRatio||1), rs=Math.max(1,Math.min(RS_MAX,Math.ceil(want-0.02)));
+  if(rs!==RS){ RS=rs; cv.width=W*RS; cv.height=H*RS; }
+  cv.style.imageRendering=(Math.abs(want-RS)<0.02||want>RS)?'pixelated':'auto';
 }
 addEventListener('resize',resizeCanvas);
 addEventListener('orientationchange',function(){ setTimeout(resizeCanvas,120); });
@@ -387,7 +393,7 @@ function drawQuests(){ const ids=questLog(), all=Object.keys(QUESTS), fresh=all.
     g.fillStyle=st==='done'?'#8a93ad':'#e8eef7'; g.font='bold 11px sans-serif'; g.fillText(q.title,x+6,y+12,w-78);
     g.textAlign='right'; g.font='10px sans-serif'; g.fillStyle=st==='done'?'#8a93ad':st==='ready'?'#9fe8c4':'#ffd54a'; g.fillText(st==='done'?'✔ 끝냄':st==='ready'?'✔ 알리러 가자':'하는 중',x+w-6,y+12); g.textAlign='left';
     g.fillStyle=st==='done'?'#8a93ad':'#cdd6ea'; g.font='10px sans-serif'; g.fillText(q.name+' · '+(A?A.name:''),x+6,y+24,w-12);
-    g.fillStyle=st==='done'?'#6b7590':st==='ready'?'#9fe8c4':'#e8eef7'; g.fillText(st==='done'?'받은 보상  '+questRewardStr(q):questGoal(id)+'   →  '+questRewardStr(q),x+6,y+36,w-12); });
+    g.fillStyle=st==='done'?'#9aa6c2':st==='ready'?'#9fe8c4':'#e8eef7'; g.fillText(st==='done'?'받은 보상  '+questRewardStr(q):questGoal(id)+'   →  '+questRewardStr(q),x+6,y+36,w-12); });
   btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
 function questTalk(id){ const q=QUESTS[id], st=questState(id), S=t=>({n:q.name,t,c:q.color||'#d9cdb5'});
   if(st==='done'){ showMsg([S(q.after)]); return; }
@@ -739,7 +745,7 @@ function drawTitle(){
     drawPixSprite(rows,sp.pal,Math.round(cx-w/2),253-h+bob,px); }
   // 버튼
   { const o=titleOptions(), bh=o.length>2?19:22, y0=o.length>2?159:166; o.forEach((e,i)=>pxBtn(W/2-78,y0+i*(bh+3),156,bh,e[0],titleSel===i,e[1])); }
-  g.fillStyle='#6b7590'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText('오리지널 작품 · 2026',W/2,H-5); g.textAlign='left';
+  g.fillStyle='#9aa6c2'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText('오리지널 작품 · 2026',W/2,H-5); g.textAlign='left';
   if(titleConfirm){ const bw=300,bh=96,bx=(W-bw)/2,by=(H-bh)/2;
     g.fillStyle='rgba(0,0,0,.6)'; g.fillRect(0,0,W,H); hz(0,0,W,H,()=>{ titleConfirm=null; sfx('sel'); });
     g.fillStyle='rgba(12,16,30,.98)'; g.fillRect(bx,by,bw,bh); g.strokeStyle='#f0c27a'; g.lineWidth=1.5; g.strokeRect(bx+1,by+1,bw-2,bh-2); g.lineWidth=1;
@@ -866,7 +872,7 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
     else { g.fillStyle='rgba(159,232,196,.16)'; g.fillRect(sx+2,sy+2,TILE-4,TILE-4);
     g.strokeStyle='rgba(159,232,196,.5)'; g.strokeRect(sx+2.5,sy+2.5,TILE-5,TILE-5);
     g.fillStyle='#9fe8c4'; g.textAlign='center'; g.font='13px sans-serif'; g.fillText('▣',sx+TILE/2,sy+TILE*0.52); }
-    if(w.label){ g.font='bold 8px sans-serif'; const lw=Math.ceil(g.measureText(w.label).width)+6, lx=Math.round(sx+TILE/2-lw/2);
+    if(w.label){ g.font='bold 9px sans-serif'; const lw=Math.ceil(g.measureText(w.label).width)+6, lx=Math.round(sx+TILE/2-lw/2);
       g.fillStyle='rgba(8,8,14,.88)'; g.fillRect(lx,sy+TILE-10,lw,10); g.fillStyle='#eafff4'; g.fillText(w.label,sx+TILE/2,sy+TILE-2); }
     g.textAlign='left'; }
   // NPC / 상인
@@ -994,16 +1000,16 @@ function drawSkillPanel(p){ const j=jobOf(p), off=p.off||[];
     p.skills.forEach((id,i)=>{ const s=SKILLS[id]; if(!s) return; const x=10+(i%2)*232, y=46+Math.floor(i/2)*22, on=!off.includes(id);
       btn(x,y,228,20,'',()=>toggleSkill(p,id),{bg:on?'rgba(27,34,54,.92)':'rgba(12,15,24,.9)'});
       g.save(); g.beginPath(); g.rect(x+2,y,224,20); g.clip(); g.textAlign='left';
-      g.fillStyle=on?'#9fe8c4':'#4d566b'; g.font='10px sans-serif'; g.fillText(on?'●':'○',x+5,y+14);
-      g.fillStyle=on?'#e8eef7':'#6b7590'; g.font='11px sans-serif'; g.fillText(s.name,x+18,y+14);
-      g.fillStyle=on?'#7cc4ff':'#4d566b'; g.font='9px sans-serif'; g.fillText(''+mpCost(p,s),x+90,y+14);
-      g.fillStyle=on?'#8a93ad':'#4d566b'; g.fillText(skillDesc(s),x+106,y+14); g.restore(); });
+      g.fillStyle=on?'#9fe8c4':'#6c7690'; g.font='10px sans-serif'; g.fillText(on?'●':'○',x+5,y+14);
+      g.fillStyle=on?'#e8eef7':'#9aa6c2'; g.font='11px sans-serif'; g.fillText(s.name,x+18,y+14);
+      g.fillStyle=on?'#7cc4ff':'#6c7690'; g.font='9px sans-serif'; g.fillText(''+mpCost(p,s),x+90,y+14);
+      g.fillStyle=on?'#8a93ad':'#6c7690'; g.fillText(skillDesc(s),x+106,y+14); g.restore(); });
     const nx=nextLearn(p), y=46+Math.ceil(p.skills.length/2)*22+14; g.font='10px sans-serif';
     if(nx){ const d=nx.trait?TRAITS[nx.trait]:SKILLS[nx.id], head=`다음 습득  Lv${nx.lv} · ${nx.trait?'특성 ':''}${d.name}`; g.fillStyle='#9fe8c4'; g.fillText(head,14,y); g.fillStyle='#8a93ad'; g.fillText('— '+(nx.trait?d.desc:skillDesc(d)),22+g.measureText(head).width,y); }
-    else { g.fillStyle='#6b7590'; g.fillText('지금 배울 수 있는 것은 모두 배웠다',14,y); } }
+    else { g.fillStyle='#9aa6c2'; g.fillText('지금 배울 수 있는 것은 모두 배웠다',14,y); } }
   else { let y=62; const tr=p.traits||[];
     g.fillStyle=j?j.col:'#cdd6ea'; g.font='bold 12px sans-serif'; g.fillText(j?j.name:p.cls,14,y); g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText(j?j.role:'아직 전직하지 않았다',92,y); y+=22;
-    if(!tr.length){ g.fillStyle='#6b7590'; g.fillText('특성이 아직 없다',14,y); }
+    if(!tr.length){ g.fillStyle='#9aa6c2'; g.fillText('특성이 아직 없다',14,y); }
     tr.forEach(t=>{ const d=TRAITS[t]; if(!d) return; g.fillStyle='#ffd54a'; g.font='11px sans-serif'; g.fillText(d.name,14,y); g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.fillText(d.desc,92,y); y+=17; }); }
   menuStepper(); menuNoteLine();
   btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
@@ -1018,7 +1024,7 @@ function drawJob2Panel(jp){ const p=jp.p, id=job2For(p), j=JOBS2[id], ls=CONTENT
   g.fillStyle='#9fe8c4'; g.font='9px sans-serif'; g.fillText('전직 즉시  '+Object.keys(j.bonus||{}).map(k=>k.toUpperCase()+'+'+j.bonus[k]).join(' '),x+8,y+44);
   let yy=y+60; ls.forEach(e=>{ const d=e.trait?TRAITS[e.trait]:SKILLS[e.id]; if(!d) return;
     g.fillStyle=d.ult?'#fff3b8':e.trait?'#ffd54a':'#e8eef7'; g.font='10px sans-serif'; g.fillText((d.ult?'궁극기 ':e.trait?'특성 ':'')+d.name+(e.trait||d.ult?'':'  MP '+d.mp),x+8,yy);
-    g.fillStyle='#6b7590'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(e.lv?'Lv'+e.lv:'바로',x+w-8,yy); g.textAlign='left'; g.fillStyle='#8a93ad'; g.fillText(e.trait?d.desc:skillDesc(d),x+8,yy+11); yy+=27; });
+    g.fillStyle='#9aa6c2'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(e.lv?'Lv'+e.lv:'바로',x+w-8,yy); g.textAlign='left'; g.fillStyle='#8a93ad'; g.fillText(e.trait?d.desc:skillDesc(d),x+8,yy+11); yy+=27; });
   g.fillStyle='#8a93ad'; g.font='9px sans-serif'; wrap('궁극기는 MP 대신 게이지(★)로 쓴다. 싸우는 동안 차오르고, 가득 차면 한 번 쓸 수 있다.',x+8,y+h-34,w-16,11);
   x=242; g.fillStyle='rgba(18,22,34,.94)'; g.fillRect(x,y,w,h); g.strokeStyle='#4a5670'; g.strokeRect(x+0.5,y+0.5,w-1,h-1);
   g.fillStyle='#ffd54a'; g.font='bold 11px sans-serif'; g.fillText('가지 않은 길의 기술 하나를 이어받는다',x+8,y+16);
@@ -1063,7 +1069,7 @@ function drawJobPanel(p,onPick){ const ids=jobChoices(p);
     g.fillStyle='#9fe8c4'; g.font='9px sans-serif'; g.fillText('전직 즉시  '+Object.keys(j.bonus||{}).map(k=>k.toUpperCase()+'+'+j.bonus[k]).join(' '),x+8,y+44);
     let yy=y+58; ls.forEach(e=>{ const d=e.trait?TRAITS[e.trait]:SKILLS[e.id]; if(!d) return;
       g.fillStyle=e.trait?'#ffd54a':'#e8eef7'; g.font='10px sans-serif'; g.fillText((e.trait?'특성 ':'')+d.name+(e.trait?'':'  MP '+d.mp),x+8,yy);
-      g.fillStyle='#6b7590'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(e.lv?'Lv'+e.lv:'바로',x+w-8,yy); g.textAlign='left';
+      g.fillStyle='#9aa6c2'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(e.lv?'Lv'+e.lv:'바로',x+w-8,yy); g.textAlign='left';
       g.fillStyle='#8a93ad'; g.font='9px sans-serif'; if(e.trait){ const long=g.measureText(d.desc).width>w-16; wrap(d.desc,x+8,yy,w-16,11); yy+=long?36:25; } else { g.fillText(skillDesc(d),x+8,yy+11); yy+=25; } });
     btn(x+8,y+h-26,w-16,20,cur?'지금 이 직업이다':'이 길로 전직한다',()=>{ if(cur) return; const got=changeJob(p,id); if(got){ sfx('win'); flashMenu(p.name+' — '+j.name+'(으)로 전직!  '+got.join(' · ')); if(onPick) onPick(id,got); } },{bg:cur?'rgba(27,34,54,.9)':'#2a4a3a',fg:cur?'#8a93ad':'#9fe8c4',font:'11px sans-serif'}); });
   if(!onPick){ menuStepper(); if(p.job) btn(W-152,H-24,84,20,'처음 직업으로',()=>{ clearJob(p); sfx('sel'); flashMenu(p.name+' — '+p.cls+'(으)로 되돌렸다'); },{font:'11px sans-serif'});
@@ -1124,13 +1130,13 @@ function drawBook(){ const ids=BOOK_IDS, PER=24, pages=Math.max(1,Math.ceil(ids.
   ids.slice(bookPage*PER,bookPage*PER+PER).forEach((id,i)=>{ const e=ENEMY_DB[id], x=8+(i%4)*117, y=30+Math.floor(i/4)*35, s=bookSeen(id), k=storyFlags['k_'+id]||0;
     btn(x,y,113,31,'',()=>{ if(s){ bookSel=id; sfx('sel'); } },{bg:s?'rgba(27,34,54,.92)':'rgba(16,20,30,.9)'});
     g.save(); g.beginPath(); g.rect(x+2,y,109,31); g.clip(); g.textAlign='left'; // 긴 이름은 칸 안에서 자른다
-    g.fillStyle=!s?'#4d566b':e.boss?'#ff9a5a':'#e8eef7'; g.font='10px sans-serif'; g.fillText(s?e.name:'？？？',x+6,y+13);
-    g.fillStyle='#6b7590'; g.font='8px sans-serif'; g.fillText('No.'+(bookPage*PER+i+1),x+6,y+25);
+    g.fillStyle=!s?'#6c7690':e.boss?'#ff9a5a':'#e8eef7'; g.font='10px sans-serif'; g.fillText(s?e.name:'？？？',x+6,y+13);
+    g.fillStyle='#9aa6c2'; g.font='9px sans-serif'; g.fillText('No.'+(bookPage*PER+i+1),x+6,y+25);
     if(s){ g.fillStyle='#8a93ad'; g.fillText('처치 '+k,x+34,y+25); if(storyFlags['wk_'+id]){ g.fillStyle='#ffd54a'; g.fillText('약점',x+72,y+25); } if(DROPS[id]&&storyFlags['loot_'+id]){ g.fillStyle='#7fd0ff'; g.fillText('★',x+98,y+25); } }
     g.restore(); });
   if(pages>1){ btn(W-154,H-24,26,20,'▲',()=>{ bookPage=(bookPage+pages-1)%pages; },{font:'12px sans-serif'}); btn(W-124,H-24,26,20,'▼',()=>{ bookPage=(bookPage+1)%pages; },{font:'12px sans-serif'});
     g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText((bookPage+1)+'/'+pages,W-160,H-10); g.textAlign='left'; }
-  g.fillStyle='#6b7590'; g.font='9px sans-serif'; g.fillText('만난 마물을 누르면 자세히 본다  ·  ★ = 전리품을 얻음',12,H-10);
+  g.fillStyle='#9aa6c2'; g.font='9px sans-serif'; g.fillText('만난 마물을 누르면 자세히 본다  ·  ★ = 전리품을 얻음',12,H-10);
   btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'});
   if(bookSel&&ENEMY_DB[bookSel]) drawBookEntry(bookSel); }
 function drawBookEntry(id){ const b=ENEMY_DB[id], e=spawn(id), k=storyFlags['k_'+id]||0, bx=24, by=30, bw=W-48, bh=H-60, tx=bx+112;
@@ -1144,14 +1150,14 @@ function drawBookEntry(id){ const b=ENEMY_DB[id], e=spawn(id), k=storyFlags['k_'
   line('보상',`경험치 ${b.exp}   골드 ${b.gold||0}`,'#f0c27a');
   const em=elemOf(e), wk=storyFlags['wk_'+id];
   if(!em.weak&&!em.resist) line('약점','없음','#8a93ad');
-  else if(!wk) line('약점','？？？  약점이나 내성 속성으로 때리면 기록된다','#6b7590');
+  else if(!wk) line('약점','？？？  약점이나 내성 속성으로 때리면 기록된다','#9aa6c2');
   else { g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText('약점',tx,y); let px=tx+46; if(em.weak){ g.fillStyle=EL_COL[em.weak]; g.fillText(EL_KO[em.weak],px,y); px+=g.measureText(EL_KO[em.weak]).width+14; } if(em.resist){ g.fillStyle='#8a93ad'; g.fillText('내성 '+EL_KO[em.resist],px,y); } y+=16; }
   const ar=bookAreas(id); line('출현',b.elite&&AREAS[b.elite]?AREAS[b.elite].name+' — 숨은 강적':ar.length?ar.slice(0,3).join(' · ')+(ar.length>3?' 외':''):(b.boss?'이야기의 길목':'강적과 함께 나타난다'),'#cdd6ea');
   const dr=DROPS[id], it=dr&&itemDef(dr.item); y+=4;
   if(!it) line('전리품','없음','#8a93ad');
   else if(storyFlags['loot_'+id]){ line('전리품',it.name+(it.slot?'  ('+SLOT_KO[it.slot]+')':''),gearCol(it,'#9fe8c4')); const fd=fxDesc(it); g.fillStyle='#cdd6ea'; g.font='9px sans-serif'; g.fillText(effStr(it)+(fd?' — '+fd:''),tx+46,y-3); y+=12; }
-  else line('전리품','？？？  '+(dr.rate==null?'쓰러뜨리면 반드시 얻는다':dr.pity?(dr.pity+'마리째까지는 반드시 얻는다 (지금 '+k+')'):'가끔 떨어뜨린다'),'#6b7590');
-  g.fillStyle='#6b7590'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText('아무 곳이나 누르면 닫힌다',W/2,by+bh-8); g.textAlign='left'; }
+  else line('전리품','？？？  '+(dr.rate==null?'쓰러뜨리면 반드시 얻는다':dr.pity?(dr.pity+'마리째까지는 반드시 얻는다 (지금 '+k+')'):'가끔 떨어뜨린다'),'#9aa6c2');
+  g.fillStyle='#9aa6c2'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText('아무 곳이나 누르면 닫힌다',W/2,by+bh-8); g.textAlign='left'; }
 function wkind(clsName){ return clsName==='검사'?'sword':clsName==='궁수'?'bow':'staff'; }
 function slotIcon(kind,x,y,s){ const c=g, cx=x+s/2;
   if(kind==='sword'){ c.fillStyle='#d7ddea'; c.fillRect(cx-1,y+1,2,s*0.55); c.fillStyle='#caa44a'; c.fillRect(x+s*0.22,y+s*0.52,s*0.56,s*0.12); c.fillRect(cx-1,y+s*0.6,2,s*0.32); }
@@ -1171,7 +1177,7 @@ function drawEquipPanel(p){
     btn(x,y,222,22,'',()=>{ if(p[sl]) unequip(p,sl); },{bg:'rgba(27,34,54,.92)'});
     slotIcon(sl==='weapon'?wkind(p.cls):sl, x+5, y+4, 14);
     g.textAlign='left'; g.fillStyle='#8fb0e8'; g.font='10px sans-serif'; g.fillText(SLOT_KO[sl],x+24,y+15);
-    g.fillStyle=gearCol(e,e?'#e8eef7':'#6b7590'); g.font='11px sans-serif'; g.fillText(e?e.name:'— 비어있음',x+56,y+15);
+    g.fillStyle=gearCol(e,e?'#e8eef7':'#9aa6c2'); g.font='11px sans-serif'; g.fillText(e?e.name:'— 비어있음',x+56,y+15);
     if(e){ g.fillStyle='#9fe8c4'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(effStr(e),x+216,y+15); g.textAlign='left'; } });
   const fxs=gearFxNames(p); g.font='10px sans-serif'; // 효과가 붙은 장비를 차고 있으면 도움말 대신 효과를 보여 준다
   if(fxs.length){ g.fillStyle='#ffd54a'; g.fillText('★ 장비 효과: '+fxs.join(' · '),14,140); }
@@ -1180,7 +1186,7 @@ function drawEquipPanel(p){
   const list=all.slice(menuItemSel*PER,menuItemSel*PER+PER);
   if(pages>1){ btn(W-154,H-24,26,20,'▲',()=>{ menuItemSel=(menuItemSel+pages-1)%pages; },{font:'12px sans-serif'}); btn(W-124,H-24,26,20,'▼',()=>{ menuItemSel=(menuItemSel+1)%pages; },{font:'12px sans-serif'});
     g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText((menuItemSel+1)+'/'+pages,W-160,H-10); g.textAlign='left'; }
-  if(!all.length){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.fillText('보유한 장비가 없습니다 — 상인 ◇ 에게서 구매',14,158); }
+  if(!all.length){ g.fillStyle='#9aa6c2'; g.font='10px sans-serif'; g.fillText('보유한 장비가 없습니다 — 상인 ◇ 에게서 구매',14,158); }
   list.forEach((id,i)=>{ const col=i%2, row=(i/2|0), x=12+col*230, y=148+row*19; if(y>H-46) return; const e=EQUIP[id], ok=canEquip(p,id), star=e.fx||e.el;
     btn(x,y,222,17,'',()=>{ equip(p,id); },{bg:'rgba(27,34,54,.92)'});
     slotIcon(e.slot==='weapon'?wkind(e.cls?e.cls[0]:'검사'):e.slot, x+4, y+2, 13);
@@ -1255,7 +1261,7 @@ function drawShop(){ drawField(); hotspots=[]; /* 가려진 들판 화면의 버
   btn(W/2-66,24,64,17,'사기', ()=>setShopMode('buy'),  {bg:shopMode==='buy' ?'#23314f':'rgba(18,22,34,.9)', fg:shopMode==='buy' ?'#9fe8c4':'#8a93ad', font:'11px sans-serif'});
   btn(W/2+2, 24,64,17,'팔기', ()=>setShopMode('sell'), {bg:shopMode==='sell'?'#3a2f1f':'rgba(18,22,34,.9)', fg:shopMode==='sell'?'#f0c27a':'#8a93ad', font:'11px sans-serif'});
   const selling=shopMode==='sell', list=shopList(), n=list.length, top=48, rh=26, vis=shopVis();
-  if(n===0){ g.fillStyle='#6b7590'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText(selling?'팔 물건이 없습니다':'판매 중인 물건이 없습니다',W/2,top+40); g.textAlign='left'; }
+  if(n===0){ g.fillStyle='#9aa6c2'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText(selling?'팔 물건이 없습니다':'판매 중인 물건이 없습니다',W/2,top+40); g.textAlign='left'; }
   shopClampScroll(); const start=shopTop; // 선택이 보이는 범위면 스크롤 유지(튐 방지)
   for(let r=0;r<vis && start+r<n;r++){ const i=start+r, id=list[i], it=itemDef(id), y=top+r*rh, sel=i===shopSel, ty=y+rh*0.62;
     btn(14,y,W-28,rh-3,'',()=>{shopSel=i; shopConfirm=id; sfx('sel');},{bg:sel?(selling?'#3a2f1f':'#23314f'):'rgba(27,34,54,.9)'});
@@ -1676,7 +1682,7 @@ function drawBattle(){ const b=battle;
     g.fillStyle=e.rareV?'#ffd54a':'#cdd6ea'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText(e.name,ep.x,ep.y+hh+16);
     { const tags=[]; if(e.charged&&gtime%30<22) tags.push(['⚠ 큰 공격 준비!','#ff6a6a']); if(e.enraged) tags.push(['격노','#ff6a6a']); if(e.poison>0) tags.push(['독','#8fdc6e']); if(e.weakT>0) tags.push(['약화','#c79bff']); if(e.sapT>0) tags.push(['쇠약','#9a8ad8']); if(e.mark>0) tags.push(['표식','#f3e3b0']); if(e.stun) tags.push(['기절','#ffd54a']);
       const ws=tags.map(t=>g.measureText(t[0]).width+5), tw=ws.reduce((x,y)=>x+y,0), ty=art?ep.y-hh-5:(e.boss?ep.y-26:ep.y-14); let tx=Math.max(4,ep.x-tw/2); g.textAlign='left'; tags.forEach((t,k)=>{ g.fillStyle=t[1]; g.fillText(t[0],tx,ty); tx+=ws[k]; }); g.textAlign='center';
-      if(storyFlags['wk_'+e.id]){ const em=elemOf(e); g.font='8px sans-serif'; if(em.weak){ g.fillStyle=EL_COL[em.weak]; g.fillText('약점 '+EL_KO[em.weak],ep.x,ep.y+hh+25); } if(em.resist){ g.fillStyle='#8a93ad'; g.fillText('내성 '+EL_KO[em.resist],ep.x,ep.y+hh+(em.weak?33:25)); } } }
+      if(storyFlags['wk_'+e.id]){ const em=elemOf(e); g.font='9px sans-serif'; if(em.weak){ g.fillStyle=EL_COL[em.weak]; g.fillText('약점 '+EL_KO[em.weak],ep.x,ep.y+hh+25); } if(em.resist){ g.fillStyle='#8a93ad'; g.fillText('내성 '+EL_KO[em.resist],ep.x,ep.y+hh+(em.weak?33:25)); } } }
     g.textAlign='left';
     if(b.phase==='input'&&b.menu==='target'){ hz(ep.x-Math.max(19,hh),ep.y-Math.max(19,hh),Math.max(38,hh*2),Math.max(48,hh*2+20),()=>{ if(b.targetIdx===i) confirmTarget(i); else { b.targetIdx=i; sfx('sel'); } }); }
     if(e.flash>0) e.flash--; });
@@ -1724,8 +1730,8 @@ function drawBattleUI(){ const b=battle;
   // 자동 버튼은 입력 턴뿐 아니라 행동이 진행되는 동안에도 항상 노출(결과 화면 제외)
   if(b.phase!=='done') btn(W-74,44,68,18, autoBattle?'⟳ 자동 ON':'⟳ 자동', toggleAuto, {bg:autoBattle?'#2a4a3a':'rgba(14,18,28,.96)', fg:autoBattle?'#9fe8c4':'#aeb8d0', font:'10px sans-serif'});
   if(b.phase!=='done') btn(W-134,44,56,18, fastBattle?'▶▶ 2배속':'▶ 1배속', toggleFast, {bg:fastBattle?'#3a3222':'rgba(14,18,28,.96)', fg:fastBattle?'#ffd54a':'#aeb8d0', font:'10px sans-serif'});
-  if(b.phase==='intro'){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭하여 진행',W-6,40); g.textAlign='left'; return; }
-  if(b.phase==='resolve'){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭=빠르게 ▶',W-6,40); g.textAlign='left'; return; }
+  if(b.phase==='intro'){ g.fillStyle='#9aa6c2'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭하여 진행',W-6,40); g.textAlign='left'; return; }
+  if(b.phase==='resolve'){ g.fillStyle='#9aa6c2'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭=빠르게 ▶',W-6,40); g.textAlign='left'; return; }
   if(b.phase==='done'){
     if(b.result==='win'){ const hasUp=b.winUps&&b.winUps.length, lt=(b.winLoot||[]).slice(0,3), pw=(b.winLearn||hasUp||lt.length)?360:280,ph=108+(b.winSeal?18:0)+(b.winLearn?18:0)+(hasUp?34:0)+lt.length*30, bx=(W-pw)/2, by=Math.max(4,Math.round((H-ph)/2));
       g.fillStyle='rgba(10,14,28,.96)'; g.fillRect(bx,by,pw,ph); g.strokeStyle='#4a7'; g.lineWidth=1.5; g.strokeRect(bx+1,by+1,pw-2,ph-2); g.lineWidth=1;
@@ -1736,7 +1742,7 @@ function drawBattleUI(){ const b=battle;
       if(b.winLearn){ g.fillStyle='#c79bff'; g.font='11px sans-serif'; g.fillText('새 스킬! '+b.winLearn,W/2,yy); yy+=18; }
       if(b.winSeal){ g.fillStyle='#9fe8ff'; g.font='11px sans-serif'; g.fillText(b.winSeal,W/2,yy); yy+=18; }
       lt.forEach(id=>{ const e=itemDef(id), fd=fxDesc(e); g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(bx+8,yy-12,pw-16,27); g.fillStyle=gearCol(e,'#9fe8c4'); g.font='bold 12px sans-serif'; g.fillText('★ 전리품  '+e.name+(e.slot?'  ('+SLOT_KO[e.slot]+')':''),W/2,yy); g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.fillText(effStr(e)+(fd?' — '+fd:''),W/2,yy+12); yy+=30; });
-      g.fillStyle='#6b7590'; g.font='11px sans-serif'; g.fillText('탭하여 계속 ▶',W/2,by+ph-9); g.textAlign='left'; }
+      g.fillStyle='#9aa6c2'; g.font='11px sans-serif'; g.fillText('탭하여 계속 ▶',W/2,by+ph-9); g.textAlign='left'; }
     else { g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText(adReviveOk()?'다른 곳을 탭하면 그대로 물러난다 ▶':'탭하여 계속 ▶',W/2,36); g.textAlign='left';
       if(adReviveOk()) btn(W/2-100,52,200,26,'▶ 광고 보고 다시 일어서기',adRevive,{bg:'#2a4a3a',fg:'#9fe8c4',font:'bold 12px sans-serif'}); }
     return; }
@@ -1750,11 +1756,11 @@ function drawBattleUI(){ const b=battle;
       {bg:i===b.cmd?'#23314f':'rgba(14,18,28,.96)', fg:i===b.cmd?'#9fe8c4':'#aeb8d0', font:'13px sans-serif'})); }
   else if(b.menu==='skill'||b.menu==='item'){ const isSk=b.menu==='skill', list=isSk?battleSkills(p):battleItems(), G=menuGrid(list.length);
     if(G.rows>1){ g.fillStyle='rgba(6,8,16,.92)'; g.fillRect(0,G.y0-5,W,H-G.y0+5); }
-    if(!list.length){ g.fillStyle='#6b7590'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('아이템 없음',W/2,by+20); g.textAlign='left'; }
+    if(!list.length){ g.fillStyle='#9aa6c2'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('아이템 없음',W/2,by+20); g.textAlign='left'; }
     list.forEach((id,i)=>{ const d=isSk?SKILLS[id]:itemDef(id), x=8+(i%G.cols)*(G.w+6), y=G.y0+Math.floor(i/G.cols)*(G.h+4), sel=i===b.sub, cost=isSk?mpCost(p,d):0, lack=isSk&&(p.mp<cost||!ultReady(p,d));
       btn(x,y,G.w,G.h,'',()=>isSk?chooseSkill(i):chooseItem(i),{bg:sel?(isSk?'#2a2342':'#23314f'):'rgba(14,18,28,.96)'});
-      g.textAlign='center'; g.fillStyle=sel?(isSk?'#c79bff':'#9fe8c4'):(lack?'#6b7590':'#aeb8d0'); g.font='12px sans-serif'; g.fillText((sel?'▶':'')+d.name+' '+(isSk?(d.ult?'★'+(p.ult||0)+'%':cost):'x'+inventory[id]),x+G.w/2,y+13);
-      g.fillStyle=lack?'#4d566b':'#8a93ad'; g.font='9px sans-serif'; g.fillText(isSk?skillDesc(d):effStr(d),x+G.w/2,y+G.h-5); g.textAlign='left'; }); }
+      g.textAlign='center'; g.fillStyle=sel?(isSk?'#c79bff':'#9fe8c4'):(lack?'#9aa6c2':'#aeb8d0'); g.font='12px sans-serif'; g.fillText((sel?'▶':'')+d.name+' '+(isSk?(d.ult?'★'+(p.ult||0)+'%':cost):'x'+inventory[id]),x+G.w/2,y+13);
+      g.fillStyle=lack?'#6c7690':'#8a93ad'; g.font='9px sans-serif'; g.fillText(isSk?skillDesc(d):effStr(d),x+G.w/2,y+G.h-5); g.textAlign='left'; }); }
   else if(b.menu==='target'){ const alive=b.enemies.map((e,idx)=>({e,idx})).filter(o=>o.e.alive);
     g.fillStyle='#f0c27a'; g.font='11px sans-serif'; g.textAlign='left'; g.fillText('적 선택  ·  탭해서 이동, 다시 탭 = 공격',10,by-4); g.textAlign='left';
     const n=Math.max(1,alive.length), bw=Math.min(150,(W-16-(n-1)*6)/n);
@@ -1776,7 +1782,7 @@ function drawMsgBox(){ const h=56; const raw=msg.lines[msg.i]; let nm=null, txt=
   g.fillStyle='rgba(8,10,20,.95)'; g.fillRect(8,H-h-8,W-16,h); g.strokeStyle=nm?col:'#30406a'; g.strokeRect(8.5,H-h-7.5,W-17,h-1);
   g.fillStyle='#e8eef7'; g.font='12px sans-serif'; g.textAlign='left'; wrap(txt,18,H-h+6,W-36,15);
   if(msg.ask&&msg.i>=msg.lines.length-1){ btn(W-196,H-31,88,22,msg.ask.yes,()=>{ pressed.confirm=true; },{bg:'#4a2a2a',fg:'#ffb0a0',font:'12px sans-serif'}); btn(W-102,H-31,88,22,msg.ask.no,()=>{ pressed.cancel=true; },{font:'12px sans-serif'}); return; }
-  g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭/확인 ▶ ('+(msg.i+1)+'/'+msg.lines.length+')',W-16,H-12); g.textAlign='left';
+  g.fillStyle='#9aa6c2'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭/확인 ▶ ('+(msg.i+1)+'/'+msg.lines.length+')',W-16,H-12); g.textAlign='left';
   hz(0,0,W,H,()=>{ pressed.confirm=true; }); }
 function wrap(text,x,y,maxw,lh){ let line='',yy=y+12; for(const ch of (text||'')){ if(g.measureText(line+ch).width>maxw){ g.fillText(line,x,yy); line=ch; yy+=lh; } else line+=ch; } g.fillText(line,x,yy); }
 
@@ -1791,7 +1797,7 @@ function update(){ { const now=Date.now(); if(state!=='title') playSec+=Math.min
   if(fx.length){ for(const f of fx){ if(f.delay>0) f.delay--; else f.t--; } fx=fx.filter(f=>f.t>0); }
   if(battle){ party.forEach(q=>{ if(q.hitFlash>0) q.hitFlash--; if(q.actAnim>0) q.actAnim--; }); battle.enemies.forEach(e=>{ if(e.actAnim>0) e.actAnim--; if(e.dying>0) e.dying--; }); }
   clearPressed(); }
-function draw(){ g.setTransform(1,0,0,1,0,0); // 매 프레임 변환 초기화(흔들림 등 누적 방지)
+function draw(){ g.setTransform(RS,0,0,RS,0,0); g.imageSmoothingEnabled=false; // 매 프레임 변환 초기화(흔들림 등 누적 방지)
   hotspots=[]; g.textAlign='left'; g.textBaseline='alphabetic'; g.font='12px sans-serif';
   if(state==='title') drawTitle(); else if(state==='field') drawField(); else if(state==='menu') drawMenu();
   else if(state==='shop') drawShop(); else if(state==='battle') drawBattle(); else if(state==='jobpick') drawJobPick();
