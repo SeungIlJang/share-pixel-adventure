@@ -1717,16 +1717,17 @@ function skillDesc(s){ if(s.desc) return s.desc; const tg={enemy:'단일',allEne
   if(s.kind==='heal'||s.kind==='healAll') return tg+' 회복'+(s.veil?' +장막':''); if(s.kind==='revive') return tg+' 소생';
   return tg+(s.el&&s.el!=='arrow'?' '+EL_KO[s.el]:'')+' ×'+s.power+(s.hits>1?' '+s.hits+'회':'')+(s.poison?' +독':'')+(s.weaken?' +약화':'')+(s.stun?' +기절':''); }
 function drawBattleUI(){ const b=battle;
-  g.fillStyle='rgba(6,8,16,.8)'; g.fillRect(0,0,W,42); g.fillStyle='#e8eef7'; g.font='11px sans-serif'; g.textAlign='left';
+  const won=b.phase==='done'&&b.result==='win'; // 승리 창이 같은 내용을 모두 보여 주므로 위쪽 기록 줄은 그리지 않고 그 자리까지 창에 쓴다
+  if(!won){ g.fillStyle='rgba(6,8,16,.8)'; g.fillRect(0,0,W,42); g.fillStyle='#e8eef7'; g.font='11px sans-serif'; g.textAlign='left';
   (b.log||[]).slice(-3).forEach((l,i)=>g.fillText(l,8,13+i*11));
-  if(b.note&&b.noteT>0){ g.fillStyle='#f0c27a'; g.fillText(b.note,8,40); }
+  if(b.note&&b.noteT>0){ g.fillStyle='#f0c27a'; g.fillText(b.note,8,40); } }
   // 자동 버튼은 입력 턴뿐 아니라 행동이 진행되는 동안에도 항상 노출(결과 화면 제외)
   if(b.phase!=='done') btn(W-74,44,68,18, autoBattle?'⟳ 자동 ON':'⟳ 자동', toggleAuto, {bg:autoBattle?'#2a4a3a':'rgba(14,18,28,.96)', fg:autoBattle?'#9fe8c4':'#aeb8d0', font:'10px sans-serif'});
   if(b.phase!=='done') btn(W-134,44,56,18, fastBattle?'▶▶ 2배속':'▶ 1배속', toggleFast, {bg:fastBattle?'#3a3222':'rgba(14,18,28,.96)', fg:fastBattle?'#ffd54a':'#aeb8d0', font:'10px sans-serif'});
   if(b.phase==='intro'){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭하여 진행',W-6,40); g.textAlign='left'; return; }
   if(b.phase==='resolve'){ g.fillStyle='#6b7590'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭=빠르게 ▶',W-6,40); g.textAlign='left'; return; }
   if(b.phase==='done'){
-    if(b.result==='win'){ const hasUp=b.winUps&&b.winUps.length, lt=(b.winLoot||[]).slice(0,3), pw=(b.winLearn||hasUp||lt.length)?360:280,ph=(b.winSeal?128:108)+(b.winLearn?18:0)+(hasUp?26:0)+lt.length*30, bx=(W-pw)/2, by=Math.min(b.winLearn?58:66,Math.max(44,H-4-ph));
+    if(b.result==='win'){ const hasUp=b.winUps&&b.winUps.length, lt=(b.winLoot||[]).slice(0,3), pw=(b.winLearn||hasUp||lt.length)?360:280,ph=108+(b.winSeal?18:0)+(b.winLearn?18:0)+(hasUp?34:0)+lt.length*30, bx=(W-pw)/2, by=Math.max(4,Math.round((H-ph)/2));
       g.fillStyle='rgba(10,14,28,.96)'; g.fillRect(bx,by,pw,ph); g.strokeStyle='#4a7'; g.lineWidth=1.5; g.strokeRect(bx+1,by+1,pw-2,ph-2); g.lineWidth=1;
       g.textAlign='center'; g.fillStyle='#9fe8c4'; g.font='bold 17px sans-serif'; g.fillText('승리!',W/2,by+26);
       g.fillStyle='#cdd6ea'; g.font='12px sans-serif'; g.fillText(`획득 경험치   ${b.winExp||0}`,W/2,by+50);
