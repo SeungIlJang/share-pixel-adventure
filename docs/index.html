@@ -114,8 +114,8 @@ addEventListener('mouseup',e=>{ if(mouseDown){ mouseDown=false; onUp(); } });
 
 /* ---------- 효과음 (WebAudio, 전부 합성음) ---------- */
 let actx=null;
-function resumeAudio(){ try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); }catch(e){} }
-function sfx(type){ try{ if(!actx) return; const o=actx.createOscillator(), ga=actx.createGain();
+function resumeAudio(){ try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended'&&!adBusy) actx.resume(); }catch(e){} }
+function sfx(type){ try{ if(!actx||adBusy) return; const o=actx.createOscillator(), ga=actx.createGain();
   o.connect(ga); ga.connect(actx.destination); const t=actx.currentTime;
   let f=440,d=0.08,w='square',f2=0;
   if(type==='hit'){f=170;d=0.09;w='square';} else if(type==='heal'){f=680;d=0.14;w='sine';}
@@ -149,7 +149,7 @@ const SONGS={
   title:{tempo:320, mel:[67,0,72,74, 76,0,74,72, 74,0,71,67, 69,0,0,0, 67,0,72,74, 76,0,79,76, 77,76,74,71, 72,0,0,0], bass:dbl([48,48,52,52,55,55,53,53, 48,48,52,52,53,53,48,48])},
 };
 function nf(n){ return n>0?440*Math.pow(2,(n-69)/12):0; }
-function tone(f,type,gain,dur){ try{ if(!actx||f<=0) return; const o=actx.createOscillator(),g2=actx.createGain(); o.type=type; o.frequency.value=f; o.connect(g2); g2.connect(actx.destination); const t=actx.currentTime; g2.gain.setValueAtTime(gain,t); g2.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.start(t); o.stop(t+dur); }catch(e){} }
+function tone(f,type,gain,dur){ try{ if(!actx||adBusy||f<=0) return; const o=actx.createOscillator(),g2=actx.createGain(); o.type=type; o.frequency.value=f; o.connect(g2); g2.connect(actx.destination); const t=actx.currentTime; g2.gain.setValueAtTime(gain,t); g2.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.start(t); o.stop(t+dur); }catch(e){} }
 function stopBGM(){ if(bgm.timer){ clearInterval(bgm.timer); bgm.timer=null; } }
 function playBGM(kind){ bgm.kind=kind; stopBGM(); if(bgm.muted||!actx) return; const s=SONGS[kind]; if(!s) return; bgm.step=0;
   bgm.timer=setInterval(()=>{ if(bgm.muted||bgm.kind!==kind) return; const st=bgm.step, m=s.mel[st%s.mel.length], b=s.bass[st%s.bass.length];
@@ -1204,11 +1204,13 @@ function drawEquipPanel(p){
 const AD_TEST=/[?&]adtest=1/.test(location.search)&&/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const AD_GOLD_PER_DAY=3, AD_STUCK_MS=120000;
 let adBusy=null; // 광고가 떠 있는 동안: {t,done}(가짜) 또는 {since}(실제)
+// 광고 상태는 여기서만 바꾼다 — 떠 있는 동안 게임 소리(배경음·효과음)를 멈추고, 끝나면 되살린다
+function adSet(v){ adBusy=v; try{ if(actx){ if(v) actx.suspend(); else actx.resume(); } }catch(e){} return v; }
 function adReady(){ if(adBusy) return false; if(AD_TEST) return true; try{ return !!(window.RewardAd&&window.RewardAd.ready()); }catch(e){ return false; } }
 function adShow(onReward){ if(!adReady()) return; sfx('sel');
-  if(AD_TEST){ adBusy={t:90,done:onReward}; return; }
-  const me=adBusy={since:Date.now()}; try{ window.RewardAd.show(ok=>{ if(adBusy!==me) return; adBusy=null; if(ok) onReward(); }); }catch(e){ adBusy=null; } }
-function updateAd(){ if(adBusy.t!=null){ if(--adBusy.t<=0){ const d=adBusy.done; adBusy=null; d(); } } else if(Date.now()-adBusy.since>AD_STUCK_MS) adBusy=null; } // 응답이 끝내 없으면 보상 없이 풀어 준다
+  if(AD_TEST){ adSet({t:90,done:onReward}); return; }
+  const me=adSet({since:Date.now()}); try{ window.RewardAd.show(ok=>{ if(adBusy!==me) return; adSet(null); if(ok) onReward(); }); }catch(e){ adSet(null); } }
+function updateAd(){ if(adBusy.t!=null){ if(--adBusy.t<=0){ const d=adBusy.done; adSet(null); d(); } } else if(Date.now()-adBusy.since>AD_STUCK_MS) adSet(null); } // 응답이 끝내 없으면 보상 없이 풀어 준다
 function drawAd(){ hotspots=[]; g.fillStyle='rgba(4,6,12,.94)'; g.fillRect(0,0,W,H); g.textAlign='center'; g.fillStyle='#cdd6ea'; g.font='13px sans-serif';
   g.fillText(adBusy.t!=null?'시험용 광고 — '+Math.ceil(adBusy.t/60)+'초':'광고를 불러오는 중…',W/2,H/2); g.textAlign='left'; }
 function adToday(){ const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
