@@ -65,6 +65,38 @@ Android Studio에서: **Build → Generate Signed Bundle / APK → Android App B
 - 아이콘: Android Studio **Image Asset** 에 `../docs/icon-maskable.svg`(또는 PNG) 사용
 - 버전: `android/app/build.gradle` 의 `versionCode` / `versionName`
 
+## 광고 (AdMob 보상형)
+게임(docs)에는 보상형 광고 버튼 세 가지(전멸 부활 · 직업 다시 고르기 무료 · 상점 골드 받기)와 AdMob 연결 코드가 이미 들어 있다.
+버튼은 **앱에 AdMob 플러그인이 들어 있고 광고를 불러왔을 때만** 보인다. 웹 브라우저와 플러그인이 없는 예전 앱에서는 보이지 않는다.
+플러그인은 네이티브 코드라 OTA 로는 들어가지 않는다 — **아래 설정 뒤 AAB 를 한 번 다시 빌드·배포**해야 한다.
+
+1. `app/` 에서 `npm install` → `npx cap sync android`
+   (`package.json` 에 `@capacitor-community/admob` 가 추가돼 있다. 플러그인 8.x 는 Capacitor 8.5 이상이 필요하다.)
+2. `android/app/src/main/AndroidManifest.xml` 의 `<application>` 안에 추가:
+   ```xml
+   <meta-data
+     android:name="com.google.android.gms.ads.APPLICATION_ID"
+     android:value="@string/admob_app_id" />
+   ```
+3. `android/app/src/main/res/values/strings.xml` 에 추가:
+   ```xml
+   <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+   ```
+   앱 ID 가 없으면 앱이 켜지자마자 종료된다.
+4. `versionCode` 를 올리고 AAB 를 다시 만든다.
+
+### 지금 들어 있는 ID 는 구글 공개 시험용이다
+| 용도 | ID | 넣는 곳 |
+|---|---|---|
+| 앱 ID | `ca-app-pub-3940256099942544~3347511713` | `strings.xml` 의 `admob_app_id` |
+| 리워드 | `ca-app-pub-3940256099942544/5224354917` | 게임 `index.html` 의 `ADMOB_REWARD_ID` |
+| 배너 | `ca-app-pub-3940256099942544/6300978111` | 쓰지 않음 |
+| 전면 | `ca-app-pub-3940256099942544/1033173712` | 쓰지 않음 |
+
+시험용 ID 로는 수익이 나지 않는다. **출시 전에 AdMob 콘솔에서 받은 실제 앱 ID·리워드 단위 ID 로 두 곳을 바꾼다.**
+리워드 단위 ID 는 게임 쪽에 있어 OTA 로 바뀌고, 앱 ID 는 재빌드가 필요하다.
+Play Console 의 "광고 포함" 선언과 데이터 보안 양식도 함께 고친다.
+
 ## 서명 키
 ⚠️ 키스토어 파일·비밀번호는 **안전하게 백업**(분실 시 업데이트 불가). Play 앱 서명 사용 권장.
 

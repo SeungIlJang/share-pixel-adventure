@@ -1216,6 +1216,20 @@ function adGoldLeft(){ return storyFlags.adGoldDay===adToday()?Math.max(0,AD_GOL
 function adGoldAmount(){ return Math.round((60+Math.max.apply(null,party.map(q=>q.lv||1))*20)/10)*10; } // 레벨이 오를수록 조금씩 는다
 function adGold(){ if(adGoldLeft()<=0) return; adShow(()=>{ const n=adGoldAmount(), day=adToday(); if(storyFlags.adGoldDay!==day){ storyFlags.adGoldDay=day; storyFlags.adGoldN=0; }
   storyFlags.adGoldN=(storyFlags.adGoldN||0)+1; gold+=n; sfx('coin'); flashShop('◆'+n+' 을(를) 받았다!'); saveGame(); }); }
+/* AdMob 연결(앱 전용): 앱에 @capacitor-community/admob 플러그인이 들어 있을 때만 window.RewardAd 를 만든다. 웹에서는 아무 일도 하지 않는다.
+   광고는 미리 하나 불러 두고, 보고 나면 다음 것을 다시 불러 둔다. 못 불러오면 30초 뒤에 다시 시도하고 그동안 버튼은 숨는다.
+   ※ 아래 ID는 구글이 공개한 시험용 ID다. 출시 전에 실제 광고 단위 ID로 바꾼다(앱 ID는 app/BUILD.md 참고) */
+const ADMOB_REWARD_ID='ca-app-pub-3940256099942544/5224354917';
+function adMobInit(){ const C=window.Capacitor, A=C&&C.Plugins&&C.Plugins.AdMob; if(!A||window.RewardAd) return false;
+  let loaded=false, loading=false, pending=null, earned=false;
+  const load=()=>{ if(loaded||loading) return; loading=true; A.prepareRewardVideoAd({adId:ADMOB_REWARD_ID}).then(()=>{ loaded=true; loading=false; },()=>{ loading=false; setTimeout(load,30000); }); };
+  const finish=()=>{ const d=pending, ok=earned; pending=null; earned=false; loaded=false; if(d) d(ok); load(); }; // 닫혔을 때: 끝까지 봤으면 보상
+  A.addListener('onRewardedVideoAdReward',()=>{ earned=true; });
+  A.addListener('onRewardedVideoAdDismissed',finish);
+  A.addListener('onRewardedVideoAdFailedToShow',finish);
+  window.RewardAd={ ready:()=>loaded&&!pending, show:done=>{ pending=done; earned=false; Promise.resolve(A.showRewardVideoAd()).catch(()=>{ if(pending) finish(); }); } };
+  Promise.resolve(A.initialize()).then(load,()=>{}); return true; }
+try{ adMobInit(); }catch(e){}
 /* 전멸했을 때 광고를 보고 그 자리에서 다시 일어선다 — 전투당 한 번, 지는 것이 정해진 이야기 전투는 제외 */
 function adReviveOk(){ const b=battle; return !!(b&&b.phase==='done'&&b.result==='lose'&&!b.onLose&&!b.adRevived&&adReady()); }
 function adRevive(){ if(!adReviveOk()) return; adShow(()=>{ const b=battle; if(!b||b.result!=='lose') return; b.adRevived=true;

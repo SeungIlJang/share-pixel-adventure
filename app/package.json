@@ -9,6 +9,7 @@
     "build:aab": "cd android && gradlew.bat bundleRelease"
   },
   "dependencies": {
+    "@capacitor-community/admob": "latest",
     "@capacitor/android": "latest",
     "@capacitor/core": "latest"
   },
