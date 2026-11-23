@@ -1321,7 +1321,7 @@ function pushA(a){ battle.actions.push(a); }
 /* 선택을 받아도 되는 순간인지: 입력 단계이고, 지금 차례의 아군이 실제로 있을 때만 */
 function inputOK(){ const b=battle; return !!b&&b.phase==='input'&&!autoBattle&&!!party[b.inputIdx]; }
 function flashMsg(t){ battle.note=t; battle.noteT=34; }
-function enemyPos(i){ const n=battle.enemies.length, startX=150-(n-1)*36, hh=enemyHalf(battle.enemies[i]); return {x:startX+i*72, y:96+(i%2)*14-(hh-10)}; } // 큰 그림은 발 위치를 맞추고 위로 올린다(이름표가 아군과 겹치지 않게)
+function enemyPos(i){ const n=battle.enemies.length, startX=150-(n-1)*36, hh=enemyHalf(battle.enemies[i]); return {x:startX+i*72, y:Math.max(hh+8,80+(i%2)*14-(hh-10))}; } // 위쪽 기록 줄을 없앤 만큼 16 올렸다. 아주 큰 그림은 화면 위로 넘지 않게 // 큰 그림은 발 위치를 맞추고 위로 올린다(이름표가 아군과 겹치지 않게)
 function partyPos(i){ const n=Math.max(1,party.length), gap=n<=4?102:Math.min(102,Math.floor((W-96)/(n-1))), startX=W/2-(n-1)*gap/2, // 5명 이상은 간격을 줄여 전원 배치
   ys=n>=5?[177,169,165,169,177]:[177,167,167,177]; return {x:startX+i*gap, y:ys[i]!=null?ys[i]:172}; }
 function pop(x,y,text,color,delay){ pops.push({x,y,text,color,t:46,delay:delay||0}); }
@@ -1665,9 +1665,9 @@ function endBattle(){ const b=battle, r=b.result; party.forEach(p=>p.poison=0);
   if(b.isBoss&&r==='win'){ const ow=b.onWin; playBGM(cur.bgm||'field'); state='field'; battle=null; if(ow) (typeof ow==='function'?ow():runEvent(ow)); return; }
   playBGM(cur.bgm||'field'); state='field'; battle=null; autoSave(); }
 function drawBattle(){ const b=battle;
-  g.fillStyle=b.isBoss?'#241a2e':'#243244'; g.fillRect(0,0,W,118);
-  g.fillStyle=b.isBoss?'#2a2030':'#3b5a3a'; g.fillRect(0,116,W,154);
-  g.fillStyle=b.isBoss?'#191322':'#19271f'; for(let t=0;t<=W/40;t++){ const tx=t*40; g.beginPath(); g.moveTo(tx-4,118); g.lineTo(tx+8,88); g.lineTo(tx+20,118); g.closePath(); g.fill(); }
+  g.fillStyle=b.isBoss?'#241a2e':'#243244'; g.fillRect(0,0,W,102);
+  g.fillStyle=b.isBoss?'#2a2030':'#3b5a3a'; g.fillRect(0,100,W,170);
+  g.fillStyle=b.isBoss?'#191322':'#19271f'; for(let t=0;t<=W/40;t++){ const tx=t*40; g.beginPath(); g.moveTo(tx-4,102); g.lineTo(tx+8,72); g.lineTo(tx+20,102); g.closePath(); g.fill(); }
   g.fillStyle='rgba(0,0,0,.14)'; g.fillRect(0,176,W,94);
   g.save(); if(shakeT>0) g.translate(rnd(5)-2,rnd(5)-2);
   if(flash>0){ g.fillStyle='rgba(255,80,80,.18)'; g.fillRect(0,0,W,H); }
@@ -1723,15 +1723,14 @@ function skillDesc(s){ if(s.desc) return s.desc; const tg={enemy:'단일',allEne
   if(s.kind==='heal'||s.kind==='healAll') return tg+' 회복'+(s.veil?' +장막':''); if(s.kind==='revive') return tg+' 소생';
   return tg+(s.el&&s.el!=='arrow'?' '+EL_KO[s.el]:'')+' ×'+s.power+(s.hits>1?' '+s.hits+'회':'')+(s.poison?' +독':'')+(s.weaken?' +약화':'')+(s.stun?' +기절':''); }
 function drawBattleUI(){ const b=battle;
-  const won=b.phase==='done'&&b.result==='win'; // 승리 창이 같은 내용을 모두 보여 주므로 위쪽 기록 줄은 그리지 않고 그 자리까지 창에 쓴다
-  if(!won){ g.fillStyle='rgba(6,8,16,.8)'; g.fillRect(0,0,W,42); g.fillStyle='#e8eef7'; g.font='11px sans-serif'; g.textAlign='left';
-  (b.log||[]).slice(-3).forEach((l,i)=>g.fillText(l,8,13+i*11));
-  if(b.note&&b.noteT>0){ g.fillStyle='#f0c27a'; g.fillText(b.note,8,40); } }
+  /* 위쪽 기록 줄(설명 3줄)은 그리지 않는다 — 그 자리까지 전투 화면으로 쓴다. 피해·회복은 숫자로, 결과는 승리 창으로 보인다.
+     입력을 받아 주지 못한 까닭(마력 부족 등)만 잠깐 띄운다 */
+  if(b.note&&b.noteT>0){ g.font='bold 11px sans-serif'; g.textAlign='center'; const nw=Math.ceil(g.measureText(b.note).width)+16; g.fillStyle='rgba(6,8,16,.82)'; g.fillRect(W/2-nw/2,26,nw,17); g.fillStyle='#f0c27a'; g.fillText(b.note,W/2,38); g.textAlign='left'; }
   // 자동 버튼은 입력 턴뿐 아니라 행동이 진행되는 동안에도 항상 노출(결과 화면 제외)
-  if(b.phase!=='done') btn(W-74,44,68,18, autoBattle?'⟳ 자동 ON':'⟳ 자동', toggleAuto, {bg:autoBattle?'#2a4a3a':'rgba(14,18,28,.96)', fg:autoBattle?'#9fe8c4':'#aeb8d0', font:'10px sans-serif'});
-  if(b.phase!=='done') btn(W-134,44,56,18, fastBattle?'▶▶ 2배속':'▶ 1배속', toggleFast, {bg:fastBattle?'#3a3222':'rgba(14,18,28,.96)', fg:fastBattle?'#ffd54a':'#aeb8d0', font:'10px sans-serif'});
-  if(b.phase==='intro'){ g.fillStyle='#9aa6c2'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭하여 진행',W-6,40); g.textAlign='left'; return; }
-  if(b.phase==='resolve'){ g.fillStyle='#9aa6c2'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭=빠르게 ▶',W-6,40); g.textAlign='left'; return; }
+  if(b.phase!=='done') btn(W-74,4,68,18, autoBattle?'⟳ 자동 ON':'⟳ 자동', toggleAuto, {bg:autoBattle?'#2a4a3a':'rgba(14,18,28,.96)', fg:autoBattle?'#9fe8c4':'#aeb8d0', font:'10px sans-serif'});
+  if(b.phase!=='done') btn(W-134,4,56,18, fastBattle?'▶▶ 2배속':'▶ 1배속', toggleFast, {bg:fastBattle?'#3a3222':'rgba(14,18,28,.96)', fg:fastBattle?'#ffd54a':'#aeb8d0', font:'10px sans-serif'});
+  if(b.phase==='intro'){ g.fillStyle='#9aa6c2'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭하여 진행',W-6,34); g.textAlign='left'; return; }
+  if(b.phase==='resolve'){ g.fillStyle='#9aa6c2'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('탭=빠르게 ▶',W-6,34); g.textAlign='left'; return; }
   if(b.phase==='done'){
     if(b.result==='win'){ const hasUp=b.winUps&&b.winUps.length, lt=(b.winLoot||[]).slice(0,3), pw=(b.winLearn||hasUp||lt.length)?360:280,ph=108+(b.winSeal?18:0)+(b.winLearn?18:0)+(hasUp?34:0)+lt.length*30, bx=(W-pw)/2, by=Math.max(4,Math.round((H-ph)/2));
       g.fillStyle='rgba(10,14,28,.96)'; g.fillRect(bx,by,pw,ph); g.strokeStyle='#4a7'; g.lineWidth=1.5; g.strokeRect(bx+1,by+1,pw-2,ph-2); g.lineWidth=1;
@@ -1743,13 +1742,13 @@ function drawBattleUI(){ const b=battle;
       if(b.winSeal){ g.fillStyle='#9fe8ff'; g.font='11px sans-serif'; g.fillText(b.winSeal,W/2,yy); yy+=18; }
       lt.forEach(id=>{ const e=itemDef(id), fd=fxDesc(e); g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(bx+8,yy-12,pw-16,27); g.fillStyle=gearCol(e,'#9fe8c4'); g.font='bold 12px sans-serif'; g.fillText('★ 전리품  '+e.name+(e.slot?'  ('+SLOT_KO[e.slot]+')':''),W/2,yy); g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.fillText(effStr(e)+(fd?' — '+fd:''),W/2,yy+12); yy+=30; });
       g.fillStyle='#9aa6c2'; g.font='11px sans-serif'; g.fillText('탭하여 계속 ▶',W/2,by+ph-9); g.textAlign='left'; }
-    else { g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText(adReviveOk()?'다른 곳을 탭하면 그대로 물러난다 ▶':'탭하여 계속 ▶',W/2,36); g.textAlign='left';
+    else { g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('전멸했다…  '+(adReviveOk()?'다른 곳을 탭하면 그대로 물러난다 ▶':'탭하여 계속 ▶'),W/2,36); g.textAlign='left';
       if(adReviveOk()) btn(W/2-100,52,200,26,'▶ 광고 보고 다시 일어서기',adRevive,{bg:'#2a4a3a',fg:'#9fe8c4',font:'bold 12px sans-serif'}); }
     return; }
   if(b.phase!=='input') return; const p=party[b.inputIdx]; if(!p) return;
-  g.fillStyle='#8a93ad'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText(p.name+'의 턴 · MP '+p.mp+'/'+p.maxmp,W-8,16); g.textAlign='left';
+  g.fillStyle='#cdd6ea'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText(p.name+'의 턴 · MP '+p.mp+'/'+p.maxmp,W-142,17); g.textAlign='left';
   if(autoBattle){ g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('⟳ 자동 진행 중 — "자동"을 눌러 해제',W/2,H-22); g.textAlign='left'; return; }
-  btn(6,44,52,18,'◀ 뒤로',()=>battleBack(),{font:'10px sans-serif'});
+  btn(6,4,52,18,'◀ 뒤로',()=>battleBack(),{font:'10px sans-serif'});
   const by=H-40;
   if(b.menu==='cmd'){ const n=CMDS.length, bw=(W-16-(n-1)*6)/n;
     CMDS.forEach((c,i)=>btn(8+i*(bw+6),by,bw,32,(i===b.cmd?'▶ ':'')+c,()=>chooseCommand(i),
