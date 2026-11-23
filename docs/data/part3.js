@@ -208,7 +208,8 @@ enemies:{
 
 members:{
   /* 16장의 임시 동료. 장비 없이도 제 몫을 하도록 기본 능력치를 높게 잡았다(장비를 끼우면 그만큼 더 세지고, 떠날 때 돌려받는다) */
-  '가른':{cls:'궁수', art:'garn', stats:[150,30,62,36,10,24], skills:['garnVolley'], color:GARN, set:{guest:true,title:'화살의 사도',learnKey:'garn',palx:{a:'#5a6480',A:'#3c445c',l:'#8e9ab8'}}},
+  /* 코르(빠른 연속 사격·독·전체 공격)와 겹치지 않게: 느리지만 한 발이 무겁고, 아군을 엄호하고 적을 무디게 한다. 빌린 활을 들고 와서 코르와 활을 나눠 쓰지 않는다 */
+  '가른':{cls:'궁수', art:'garn', stats:[170,36,50,38,10,6], skills:['garnPierce'], color:GARN, set:{guest:true,title:'화살의 사도',learnKey:'garn',weapon:'spareBow',grow:{hp:7,mp:2,atk:3,def:1,mag:1,spd:1},palx:{a:'#5a6480',A:'#3c445c',l:'#8e9ab8'}}},
 },
 
 equip:{
@@ -258,6 +259,7 @@ equip:{
   ashSword: {name:'잿빛검',        slot:'weapon',cls:['검사'],atk:40,price:1600},
   ashStaff: {name:'잿빛 지팡이',   slot:'weapon',cls:['주술사','치유사'],mag:40,price:1600},
   ashBow:   {name:'잿빛궁',        slot:'weapon',cls:['궁수'],atk:40,price:1600},
+  spareBow: {name:'코르의 예비 활', slot:'weapon',cls:['궁수'],atk:36,uniq:1,price:0}, /* 가른이 빌려 들고 합류한다. 떠나면 가방으로 돌아온다 */
   ashPlate: {name:'잿빛 갑주',     slot:'armor',def:26,price:1500},
   ashRobe:  {name:'잿빛 로브',     slot:'armor',def:16,mag:9,price:1300},
   ashHelm:  {name:'잿빛 투구',     slot:'head',def:13,price:900},
@@ -1050,6 +1052,9 @@ skills:{
   garnVolley:{name:'사도의 연사',  fx:'rain',  el:'arrow',mp:7, kind:'phys',power:1.3,hits:3,target:'enemy',msg:'의 연사!',desc:'단일 ×1.3 3회'},
   garnPierce:{name:'꿰뚫는 화살',  fx:'pierce',el:'arrow',mp:9, kind:'phys',power:3.2,pen:0.5,target:'enemy',msg:'의 꿰뚫는 화살!',desc:'단일 ×3.2 방어 절반 무시'},
   garnMark:  {name:'급소 짚기',    fx:'pierce',el:'arrow',mp:6, kind:'phys',power:1.4,mark:4,target:'enemy',msg:'의 급소 짚기!',desc:'단일 ×1.4 +표식(받는 피해↑)'},
+  /* garnVolley·garnMark 는 이제 배우지 않는다 — 가른이 파티에 있는 채로 저장한 예전 기록이 들고 있어서 정의만 남긴다 */
+  garnCover: {name:'엄호 사격',    mp:10,kind:'buff',buff:'veil',turns:4,target:'allAllies',msg:'의 엄호 사격!',note:'전원이 받는 피해가 줄어든다',desc:'아군 전체 피해↓ 3턴'},
+  garnCripple:{name:'손목 꿰기',   fx:'pierce',el:'arrow',mp:7, kind:'phys',power:1.6,weaken:3,target:'enemy',msg:'의 손목 꿰기!',desc:'단일 ×1.6 +약화(적 공격↓)'},
   /* 수호기사 */
   shieldBash:{name:'방패 강타',  fx:'heavy',el:'holy',mp:6, kind:'phys',power:2.4,stun:0.5,target:'enemy',msg:'의 방패 강타!',desc:'단일 빛 ×2.4 +기절 50%'},
   aegis:     {name:'수호의 맹세',mp:10,kind:'buff',buff:'veil',turns:4,target:'allAllies',msg:'의 수호의 맹세!',note:'전원이 받는 피해가 줄어든다',desc:'아군 전체 피해↓ 3턴'},
@@ -1093,7 +1098,7 @@ learn:{
   arbiter:    [{lv:0,id:'ultJudgment'},{lv:31,id:'condemn'}],
   deadshot:   [{lv:0,id:'ultOneShot'}, {lv:31,id:'pierceLine'}],
   stormarcher:[{lv:0,id:'ultStorm'},   {lv:31,id:'galeShot'}],
-  garn:       [{lv:1,trait:'twice'},  {lv:1,id:'garnPierce'}, {lv:1,id:'garnMark'}],
+  garn:       [{lv:1,trait:'deadeye'},{lv:1,id:'garnPierce'}, {lv:1,id:'garnCover'}, {lv:1,id:'garnCripple'}],
   guardian:   [{lv:0,trait:'cover'},  {lv:0,id:'shieldBash'}, {lv:26,id:'aegis'},     {lv:29,id:'holyBlade'}],
   blademaster:[{lv:0,trait:'keen'},   {lv:0,id:'tripleSlash'},{lv:26,id:'crescent'},  {lv:29,id:'iai'}],
   archsage:   [{lv:0,trait:'attune'}, {lv:0,id:'prism'},      {lv:26,id:'focus'},     {lv:29,id:'meteor'}],

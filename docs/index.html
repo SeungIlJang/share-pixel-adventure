@@ -39,7 +39,7 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
 </script>
 <script src="data/part1.js?v=12f9cd7fb5"></script>
 <script src="data/part2.js?v=9ad9c89d95"></script>
-<script src="data/part3.js?v=b50531a526"></script>
+<script src="data/part3.js?v=04d8b0fefb"></script>
 <script src="data/art.js?v=f5f9b60985"></script>
 <script>
 "use strict";
@@ -208,7 +208,7 @@ function advanceJob(p,inh){ const id=job2For(p), j=JOBS2[id]; if(!j||p.job2) ret
 function ultGain(p,n){ if(p&&p.job2&&p.alive) p.ult=Math.min(100,(p.ult||0)+n); }
 function ultReady(p,s){ return !s.ult||(p.ult||0)>=100; }
 function jobName(p){ const j=job2Of(p)||jobOf(p); return j?j.name:(p.title||p.cls); }
-function growOf(p){ const j=job2Of(p)||jobOf(p); return (j&&j.grow)||GROW[p.cls]||GROW['검사']; }
+function growOf(p){ const j=job2Of(p)||jobOf(p); return (j&&j.grow)||p.grow||GROW[p.cls]||GROW['검사']; } // p.grow: 직업이 없는 임시 동료의 고유 성장
 const STAT_KEY={hp:'maxhp',mp:'maxmp',atk:'atk',def:'def',mag:'mag',spd:'spd'};
 function learnList(p){ return (CONTENT.learn[p.learnKey||p.cls]||[]).concat(p.job?(CONTENT.learn[p.job]||[]):[]).concat(p.job2?(CONTENT.learn[p.job2]||[]):[]); }
 /* 전직: 이미 다른 직업이면 먼저 되돌린 뒤 바꾼다. 새로 배운 것의 이름 목록을 돌려준다(실패하면 null) */
