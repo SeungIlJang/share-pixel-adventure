@@ -40,7 +40,7 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
 <script src="data/part1.js?v=12f9cd7fb5"></script>
 <script src="data/part2.js?v=9ad9c89d95"></script>
 <script src="data/part3.js?v=c450b3a1b7"></script>
-<script src="data/art.js?v=13b9a9290b"></script>
+<script src="data/art.js?v=efe1c03409"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -648,7 +648,7 @@ function drawHeroField(x,y,p){ const art=p.alive&&heroArt(p), sp=art||(p.alive&&
     drawPixSprite(sp.rows,art?sp.pal:heroPal(sp,p), Math.round(x+(TILE-w)/2), Math.round(y+TILE-h), px); }
   else chibi(x,y,p.alive?p.color:'#888'); }
 function drawHeroBattle(cx,cy,p,sc){ const art=heroArt(p), sp=art||HEROPX[p.cls]; if(!sp){ heroBack(cx,cy,p,sc); return; }
-  const rows=(p.poseT>0&&p.alive&&sp.act)||sp.battle||sp.rows, px=3, /* 평소엔 뒷모습, 행동하는 동안만 옆모습(act) */ w=Math.max.apply(null,rows.map(r=>r.length))*px, h=rows.length*px, s=TILE*sc, feet=cy+s*0.4;
+  const rows=(p.poseT>0&&p.alive&&sp.act)||sp.battle||sp.rows, px=3, /* 행동하는 동안은 무기를 뻗은 자세(act) */ w=Math.max.apply(null,rows.map(r=>r.length))*px, h=rows.length*px, s=TILE*sc, feet=cy+s*0.4;
   g.fillStyle='#0007'; g.beginPath(); g.ellipse(cx,feet-1,s*0.34,s*0.13,0,0,7); g.fill();
   drawPixSprite(rows, art?sp.pal:heroPal(sp,p), Math.round(cx-w/2), Math.round(feet-h), px); }
 function heroSprite(px,py,p){ chibi(px,py,p.alive?p.color:'#777'); if(!p.alive) return; const s=TILE, cx=px+s/2;
@@ -1810,7 +1810,7 @@ function update(){ { const now=Date.now(); if(state!=='title') playSec+=Math.min
   if(flash>0) flash--; if(shakeT>0) shakeT--; gtime++;
   if(pops.length){ for(const q of pops){ if(q.delay>0){ q.delay--; continue; } q.y-=0.5; q.t--; } pops=pops.filter(q=>q.t>0); }
   if(fx.length){ for(const f of fx){ if(f.delay>0) f.delay--; else f.t--; } fx=fx.filter(f=>f.t>0); }
-  if(battle){ party.forEach(q=>{ if(q.hitFlash>0) q.hitFlash--; if(q.actAnim>0){ q.actAnim--; q.poseT=24; } else if(q.poseT>0) q.poseT--; }); battle.enemies.forEach(e=>{ if(e.actAnim>0) e.actAnim--; if(e.dying>0) e.dying--; }); }
+  if(battle){ party.forEach(q=>{ if(q.hitFlash>0) q.hitFlash--; if(q.actAnim>0){ q.actAnim--; q.poseT=8; } else if(q.poseT>0) q.poseT--; }); battle.enemies.forEach(e=>{ if(e.actAnim>0) e.actAnim--; if(e.dying>0) e.dying--; }); }
   clearPressed(); }
 function draw(){ g.setTransform(RS,0,0,RS,0,0); g.imageSmoothingEnabled=false; // 매 프레임 변환 초기화(흔들림 등 누적 방지)
   hotspots=[]; g.textAlign='left'; g.textBaseline='alphabetic'; g.font='12px sans-serif';
