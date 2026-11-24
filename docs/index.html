@@ -466,6 +466,13 @@ function equip(p,id){ const e=EQUIP[id]; if(!e||(inventory[id]||0)<=0) return;
   if(!canEquip(p,id)){ flashMenu(`${p.cls}는 ${e.name} 장착 불가`); return; }
   const old=p[e.slot]; inventory[id]--; if(old) inventory[old]=(inventory[old]||0)+1; p[e.slot]=id; sfx('sel'); const fd=fxDesc(e); if(fd) flashMenu('★ '+e.name+' — '+fd); }
 function unequip(p,slot){ if(p[slot]){ inventory[p[slot]]=(inventory[p[slot]]||0)+1; p[slot]=null; sfx('sel'); } }
+/* 장비 점수: 그 직업이 실제로 쓰는 공격 수치는 온전히, 쓰지 않는 쪽은 1/4만 친다. 목록 정렬 · 최강 장착 · 안 쓰는 장비 정리가 함께 쓴다 */
+function gearScore(p,e){ if(!e) return 0; const caster=wkind(p.cls)==='staff'; return (caster?(e.mag||0)+(e.atk||0)*0.25:(e.atk||0)+(e.mag||0)*0.25)+(e.def||0)+(e.spd||0); }
+function gearSpecial(e){ return !!(e&&(e.fx||e.el||e.uniq)); } // 효과·속성·고유 — 수치만으로 우열을 가릴 수 없는 장비
+function slotChoices(p,sl){ return ownedEquip().filter(id=>EQUIP[id].slot===sl&&canEquip(p,id)).sort((a,b)=>gearScore(p,EQUIP[b])-gearScore(p,EQUIP[a])); } // 그 부위에 찰 수 있는 보유 장비, 좋은 순
+function equipBest(p){ let n=0; for(const sl of SLOTS){ const cur=p[sl]&&EQUIP[p[sl]]; if(gearSpecial(cur)) continue; // 효과 장비를 찬 칸은 그대로 둔다
+    const best=slotChoices(p,sl)[0]; if(best&&gearScore(p,EQUIP[best])>gearScore(p,cur)){ equip(p,best); n++; } }
+  flashMenu(n?('★ '+n+'곳을 더 좋은 장비로 바꿨다'):'바꿀 곳이 없다 — 지금 장비가 가장 좋다'); }
 function invCount(){ return invList().reduce((s,k)=>s+inventory[k],0); }
 function firstDead(){ return party.findIndex(p=>!p.alive); }
 
@@ -904,7 +911,7 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
     g.fillStyle='rgba(159,232,196,.85)'; g.beginPath(); g.arc(kx,ky,12,0,7); g.fill(); g.lineWidth=1; } }
 
 /* ================= 메뉴(파티/아이템) ================= */
-let menuSel=0, menuMode='party', menuItemSel=0, itemConfirm=null; // itemConfirm = 사용할지 묻는 중인 아이템 id
+let menuSel=0, menuMode='party', menuItemSel=0, itemConfirm=null, eqSlot='weapon'; /* eqSlot = 장비 화면에서 고른 부위 */ // itemConfirm = 사용할지 묻는 중인 아이템 id
 /* 지금 p에게 써서 효과가 있는지: 열매는 언제나, 부활석은 쓰러진 아군에게만, 회복약은 살아 있고 덜 찬 쪽이 있을 때만 */
 function itemUsable(id,p){ const it=ITEMS[id]; if(!it||!p||(inventory[id]||0)<=0) return false; if(it.boost) return true; if(it.revive) return !p.alive;
   return p.alive&&((it.hp&&p.hp<p.maxhp)||(it.mp&&p.mp<p.maxmp)); }
@@ -1173,28 +1180,33 @@ function drawEquipPanel(p){
   g.fillStyle=p.color; g.font='bold 13px sans-serif'; g.fillText(`장비 — ${p.name} Lv${p.lv} ${jobName(p)}`,14,20);
   g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText('◆ '+gold,W-14,18); g.textAlign='left';
   g.fillStyle='#9fb0cf'; g.font='10px sans-serif'; g.fillText(`HP ${p.hp}/${p.maxhp}  MP ${p.mp}/${p.maxmp}  EXP ${p.exp}/${p.expNext}   ATK ${atkOf(p)} DEF ${defOf(p)} MAG ${magOf(p)} SPD ${spdEff(p)}`,14,36);
-  SLOTS.forEach((sl,i)=>{ const col=i%2, row=(i/2|0), x=12+col*230, y=46+row*26, id=p[sl], e=id&&EQUIP[id];
-    btn(x,y,222,22,'',()=>{ if(p[sl]) unequip(p,sl); },{bg:'rgba(27,34,54,.92)'});
+  if(!SLOTS.includes(eqSlot)) eqSlot='weapon';
+  SLOTS.forEach((sl,i)=>{ const col=i%2, row=(i/2|0), x=12+col*230, y=46+row*26, id=p[sl], e=id&&EQUIP[id], on=sl===eqSlot;
+    btn(x,y,222,22,'',()=>{ if(eqSlot!==sl){ eqSlot=sl; menuItemSel=0; sfx('sel'); } },{bg:on?'#23314f':'rgba(27,34,54,.92)',bd:on?'#9fe8c4':'#30406a'});
     slotIcon(sl==='weapon'?wkind(p.cls):sl, x+5, y+4, 14);
-    g.textAlign='left'; g.fillStyle='#8fb0e8'; g.font='10px sans-serif'; g.fillText(SLOT_KO[sl],x+24,y+15);
+    g.textAlign='left'; g.fillStyle=on?'#9fe8c4':'#8fb0e8'; g.font='10px sans-serif'; g.fillText(SLOT_KO[sl],x+24,y+15);
     g.fillStyle=gearCol(e,e?'#e8eef7':'#9aa6c2'); g.font='11px sans-serif'; g.fillText(e?e.name:'— 비어있음',x+56,y+15);
-    if(e){ g.fillStyle='#9fe8c4'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(effStr(e),x+216,y+15); g.textAlign='left'; } });
+    if(e){ const room=154-g.measureText(e.name).width; g.fillStyle='#9fe8c4'; g.font='9px sans-serif'; g.textAlign='right'; g.fillText(effStr(e),x+216,y+15,room); g.textAlign='left'; } }); // room: 긴 효과 글이 이름을 덮지 않게 남은 폭에 맞춘다
   const fxs=gearFxNames(p); g.font='10px sans-serif'; // 효과가 붙은 장비를 차고 있으면 도움말 대신 효과를 보여 준다
   if(fxs.length){ g.fillStyle='#ffd54a'; g.fillText('★ 장비 효과: '+fxs.join(' · '),14,140); }
-  else { g.fillStyle='#9fe8c4'; g.fillText('보유 장비 (탭=장착 · 위 슬롯 탭=해제 · ▲▼=지금 장비보다 오르는/내리는 수치)',14,140); }
-  const all=ownedEquip(), PER=10, pages=Math.max(1,Math.ceil(all.length/PER)); if(menuItemSel>=pages) menuItemSel=pages-1; if(menuItemSel<0) menuItemSel=0; // menuItemSel = 보유 장비 쪽 번호
+  else { g.fillStyle='#9fe8c4'; g.fillText('위 칸을 눌러 부위 선택 → 아래에서 눌러 장착 (좋은 순 · ▲▼=지금 장비보다 오르는/내리는 수치)',14,140); }
+  // 고른 부위에 이 캐릭터가 찰 수 있는 것만, 좋은 순으로. 차고 있으면 맨 앞에 '벗기'
+  const all=(p[eqSlot]?[null]:[]).concat(slotChoices(p,eqSlot)), PER=10, pages=Math.max(1,Math.ceil(all.length/PER)); if(menuItemSel>=pages) menuItemSel=pages-1; if(menuItemSel<0) menuItemSel=0; // menuItemSel = 보유 장비 쪽 번호
   const list=all.slice(menuItemSel*PER,menuItemSel*PER+PER);
   if(pages>1){ btn(W-154,H-24,26,20,'▲',()=>{ menuItemSel=(menuItemSel+pages-1)%pages; },{font:'12px sans-serif'}); btn(W-124,H-24,26,20,'▼',()=>{ menuItemSel=(menuItemSel+1)%pages; },{font:'12px sans-serif'});
     g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.textAlign='right'; g.fillText((menuItemSel+1)+'/'+pages,W-160,H-10); g.textAlign='left'; }
-  if(!all.length){ g.fillStyle='#9aa6c2'; g.font='10px sans-serif'; g.fillText('보유한 장비가 없습니다 — 상인 ◇ 에게서 구매',14,158); }
-  list.forEach((id,i)=>{ const col=i%2, row=(i/2|0), x=12+col*230, y=148+row*19; if(y>H-46) return; const e=EQUIP[id], ok=canEquip(p,id), star=e.fx||e.el;
+  if(!all.length){ g.fillStyle='#9aa6c2'; g.font='10px sans-serif'; g.fillText(ownedEquip().length?('찰 수 있는 '+SLOT_KO[eqSlot]+' 장비가 없습니다'):'보유한 장비가 없습니다 — 상인 ◇ 에게서 구매',14,158); }
+  list.forEach((id,i)=>{ const col=i%2, row=(i/2|0), x=12+col*230, y=148+row*19; if(y>H-46) return;
+    if(id===null){ btn(x,y,222,17,'',()=>{ unequip(p,eqSlot); },{bg:'rgba(40,30,34,.92)'}); g.textAlign='left'; g.fillStyle='#f0b89a'; g.font='10px sans-serif'; g.fillText('✕ '+SLOT_KO[eqSlot]+' 벗기',x+8,y+12); return; }
+    const e=EQUIP[id];
     btn(x,y,222,17,'',()=>{ equip(p,id); },{bg:'rgba(27,34,54,.92)'});
-    slotIcon(e.slot==='weapon'?wkind(e.cls?e.cls[0]:'검사'):e.slot, x+4, y+2, 13);
-    g.textAlign='left'; g.fillStyle=!ok?'#9a6069':gearCol(e,'#cdd6ea'); g.font='10px sans-serif'; g.fillText(`${e.name}${star?'':' ·'+SLOT_KO[e.slot]}${ok?'':' (불가)'}`,x+22,y+12);
+    slotIcon(e.slot==='weapon'?wkind(p.cls):e.slot, x+4, y+2, 13);
+    g.textAlign='left'; g.fillStyle=gearCol(e,'#cdd6ea'); g.font='10px sans-serif'; g.fillText(e.name,x+22,y+12); const nameEnd=x+28+g.measureText(e.name).width;
     g.font='9px sans-serif'; g.textAlign='right'; let rx=x+216; g.fillStyle='#8a93ad'; g.fillText('x'+inventory[id],rx,y+12); rx-=g.measureText('x'+inventory[id]).width+5;
-    if(ok){ const d=eqDiff(p,id), mk=d.t>0?'▲'+d.t:d.t<0?'▼'+(-d.t):'＝'; g.fillStyle=diffColor(d.t); g.fillText(mk,rx,y+12); rx-=g.measureText(mk).width+5; }
-    g.fillStyle=ok?'#9fe8c4':'#9a6069'; g.fillText(effStr(e),rx,y+12); g.textAlign='left'; });
-  if(menuNote&&menuNoteT>0){ g.fillStyle='rgba(6,8,16,.95)'; g.fillRect(8,H-25,W-166,22); g.fillStyle=menuNote[0]==='★'?'#ffd54a':'#f0b89a'; g.font='10px sans-serif'; g.fillText(menuNote,14,H-10); menuNoteT--; } // 목록을 가리지 않게 맨 아래 왼쪽에
+    const d=eqDiff(p,id), mk=d.t>0?'▲'+d.t:d.t<0?'▼'+(-d.t):'＝'; g.fillStyle=diffColor(d.t); g.fillText(mk,rx,y+12); rx-=g.measureText(mk).width+5;
+    g.fillStyle='#9fe8c4'; g.fillText(effStr(e),rx,y+12,Math.max(20,rx-nameEnd)); g.textAlign='left'; });
+  btn(8,H-24,70,20,'최강 장착',()=>equipBest(p),{bg:'#2a4a3a',fg:'#9fe8c4',font:'11px sans-serif'});
+  if(menuNote&&menuNoteT>0){ g.fillStyle='rgba(6,8,16,.95)'; g.fillRect(82,H-25,W-240,22); g.fillStyle=menuNote[0]==='★'?'#ffd54a':'#f0b89a'; g.font='10px sans-serif'; g.fillText(menuNote,86,H-10,W-246); menuNoteT--; } // 목록을 가리지 않게 맨 아래 왼쪽에
   btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
 
 /* ================= 보상형 광고 =================
@@ -1240,27 +1252,32 @@ function adRevive(){ if(!adReviveOk()) return; adShow(()=>{ const b=battle; if(!
   b.log=['빛이 일행을 다시 일으켰다!']; setCmdDefault(); b.autoT=12; sfx('win'); }); }
 /* ================= 상점 ================= */
 const SHOP_MARK=['..ooo..','..oko..','.obbbo.','obbgbbo','obgggbo','obbgbbo','.ooooo.'], SHOP_MARK_PAL={o:'#161019',b:'#e8b860',k:'#b5533c',g:'#fff3b8'};
-let shopSel=0, shopTop=0, shopStock=SHOP_STOCK, shopConfirm=null, shopMode='buy';
+let shopSel=0, shopTop=0, shopStock=SHOP_STOCK, shopConfirm=null, shopMode='buy', shopJunk=false; /* shopJunk = '안 쓰는 장비 정리' 확인창 */
 function shopVis(){ return Math.max(1,Math.floor((H-58-48)/26)); }
 // 스크롤 창은 선택이 화면 밖으로 나갈 때만 이동(구매/선택으로 창이 맨 위로 튀지 않게 고정)
 function shopClampScroll(){ const n=shopList().length, vis=shopVis(), maxTop=Math.max(0,n-vis);
   if(shopSel<0) shopSel=0; if(shopSel>=n) shopSel=Math.max(0,n-1);
   if(shopSel<shopTop) shopTop=shopSel; else if(shopSel>=shopTop+vis) shopTop=shopSel-vis+1;
   if(shopTop>maxTop) shopTop=maxTop; if(shopTop<0) shopTop=0; }
-function openShop(stock){ state='shop'; shopSel=0; shopTop=0; shopConfirm=null; shopMode='buy'; shopStock=stock||SHOP_STOCK; }
+function openShop(stock){ state='shop'; shopSel=0; shopTop=0; shopConfirm=null; shopJunk=false; shopMode='buy'; shopStock=stock||SHOP_STOCK; }
 const SELL_ORDER=[...Object.keys(ITEMS), ...Object.keys(EQUIP)]; // 판매 목록 정렬(소비→장비)
 function sellList(){ return SELL_ORDER.filter(id=>(inventory[id]||0)>0&&!(EQUIP[id]&&EQUIP[id].uniq)); } // 고유 장비는 팔 수 없다. // 장착품은 inventory에서 빠져 있어 제외됨
 function shopList(){ return shopMode==='sell' ? sellList() : shopStock; }
 function sellPrice(id){ const it=itemDef(id); return Math.max(1, Math.floor((it?it.price:0)*0.5)); } // 구매가의 50%
-function setShopMode(m){ if(shopMode!==m){ shopMode=m; shopSel=0; shopTop=0; shopConfirm=null; sfx('sel'); } }
+function setShopMode(m){ if(shopMode!==m){ shopMode=m; shopSel=0; shopTop=0; shopConfirm=null; shopJunk=false; sfx('sel'); } }
 function buy(id){ const it=itemDef(id); if(gold>=it.price){ gold-=it.price; inventory[id]=(inventory[id]||0)+1; sfx('coin'); flashShop(it.name+' 구매!'); }
   else flashShop('골드 부족'); }
+function junkGear(){ return sellList().filter(id=>{ const e=EQUIP[id]; if(!e||gearSpecial(e)) return false; // 효과·고유 장비는 정리 대상이 아니다
+  const us=party.filter(q=>canEquip(q,id)); return us.length>0&&us.every(q=>q[e.slot]&&gearScore(q,EQUIP[q[e.slot]])>=gearScore(q,e)); }); } // 찰 수 있는 사람 모두가 이미 그 이상을 차고 있는 장비(찰 사람이 없으면 남겨 둔다)
+function junkTotal(l){ return l.reduce((o,id)=>{ o.n+=inventory[id]; o.gold+=inventory[id]*sellPrice(id); return o; },{n:0,gold:0}); }
+function sellJunk(){ const l=junkGear(), t=junkTotal(l); l.forEach(id=>{ inventory[id]=0; }); gold+=t.gold; if(t.n){ sfx('coin'); flashShop('장비 '+t.n+'개 판매! +◆'+t.gold); } }
 function sell(id){ const it=itemDef(id); if((inventory[id]||0)>0){ inventory[id]--; const sp=sellPrice(id); gold+=sp; sfx('coin'); flashShop(it.name+' 판매! +◆'+sp); }
   else flashShop('보유 없음'); }
 let shopNote='',shopNoteT=0; function flashShop(t){ shopNote=t; shopNoteT=40; }
 function updateShop(){
   const list=shopList(), n=list.length;
   if(shopSel>=n) shopSel=Math.max(0,n-1);
+  if(shopJunk){ if(consume('confirm')){ shopJunk=false; sellJunk(); } else if(consume('cancel')){ shopJunk=false; sfx('sel'); } return; }
   if(shopConfirm){ // 확인창이 열려 있으면 예/아니오만 처리
     if(consume('confirm')){ const id=shopConfirm; shopConfirm=null; if(shopMode==='sell') sell(id); else buy(id); }
     else if(consume('cancel')){ shopConfirm=null; sfx('sel'); }
@@ -1294,7 +1311,23 @@ function drawShop(){ drawField(); hotspots=[]; /* 가려진 들판 화면의 버
   if(shopNote&&shopNoteT>0){ g.fillStyle='#f0b89a'; g.font='11px sans-serif'; g.textAlign='right'; g.fillText(shopNote,W-162,19); g.textAlign='left'; shopNoteT--; }
   btn(W/2-45,H-24,90,20,'나가기',()=>state='field');
   if(adReady()&&adGoldLeft()>0) btn(14,H-24,170,20,'▶ 광고 보고 ◆'+adGoldAmount()+' 받기 (오늘 '+adGoldLeft()+'번)',adGold,{bg:'#3a3222',fg:'#ffd54a',font:'10px sans-serif'});
-  if(shopConfirm) drawShopConfirm(); }
+  if(selling&&junkGear().length) btn(W-94,H-24,86,20,'안 쓰는 장비 정리',()=>{ shopJunk=true; sfx('sel'); },{bg:'#3a2f1f',fg:'#f0c27a',font:'10px sans-serif'});
+  if(shopJunk) drawJunkConfirm(); else if(shopConfirm) drawShopConfirm(); }
+function drawJunkConfirm(){ const l=junkGear(); if(!l.length){ shopJunk=false; return; }
+  const t=junkTotal(l), bw=340, bx=(W-bw)/2, close=()=>{ shopJunk=false; sfx('sel'); };
+  g.font='10px sans-serif'; const lines=['']; let rest=0; // 팔릴 장비 이름을 세 줄까지
+  l.forEach(id=>{ const nm=EQUIP[id].name+(inventory[id]>1?' x'+inventory[id]:''), cur=lines[lines.length-1], add=cur?cur+' · '+nm:nm;
+    if(rest){ rest++; return; } if(g.measureText(add).width<=bw-30) lines[lines.length-1]=add; else if(lines.length<3) lines.push(nm); else rest=1; });
+  if(rest) lines.push('… 외 '+rest+'종');
+  const bh=106+lines.length*13, by=(H-bh)/2;
+  g.fillStyle='rgba(0,0,0,.55)'; g.fillRect(0,0,W,H); hz(0,0,W,H,close); // 바깥 탭 = 취소
+  g.fillStyle='rgba(12,16,30,.98)'; g.fillRect(bx,by,bw,bh); g.strokeStyle='#f0c27a'; g.lineWidth=1.5; g.strokeRect(bx+1,by+1,bw-2,bh-2); g.lineWidth=1; g.textAlign='center';
+  g.fillStyle='#cdd6ea'; g.font='bold 13px sans-serif'; g.fillText('안 쓰는 장비 '+t.n+'개를 모두 팔까요?',W/2,by+24);
+  g.fillStyle='#8a93ad'; g.font='10px sans-serif'; g.fillText('모두가 이미 더 좋거나 같은 것을 차고 있는 장비 · 효과/고유 장비는 팔지 않는다',W/2,by+40,bw-16);
+  g.fillStyle='#cdd6ea'; lines.forEach((ln,i)=>g.fillText(ln,W/2,by+56+i*13));
+  g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.fillText('합계 ◆ '+t.gold,W/2,by+60+lines.length*13); g.textAlign='left';
+  btn(bx+26,by+bh-32,118,24,'예',()=>{ shopJunk=false; sellJunk(); },{bg:'#3a2f1f',fg:'#f0c27a',font:'13px sans-serif'});
+  btn(bx+bw-144,by+bh-32,118,24,'아니오',close,{font:'13px sans-serif'}); }
 function drawShopConfirm(){ const it=itemDef(shopConfirm); if(!it){ shopConfirm=null; return; }
   const selling=shopMode==='sell', price=selling?sellPrice(shopConfirm):it.price;
   const can=selling?((inventory[shopConfirm]||0)>0):(gold>=it.price);
