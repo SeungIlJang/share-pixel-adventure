@@ -776,6 +776,7 @@ events:{
       say('테리','봉인을 세운 건 우리야. 그게 뭘 가뒀는지 — 우리 눈으로 봐야 해.',T),
       "네 사람은 서로를 돌아보고, 균열 안으로 걸음을 내디딘다.",
       "— 모두의 픽셀모험 · 제2부 「그림자 군주」 끝 —",
+      '걸린 시간 '+fmtTime(playSec)+' · 그중 전투 '+fmtTime(battleSec)+' · 전투 '+fights+'번',
       "제3부 「균열 너머」에서 계속…   타이틀에서 「이어하기」를 누르면 제3부가 시작됩니다." ],
       ()=>{ storyFlags.ch14done=true; storyFlags.part2Clear=true; saveGame(); stopBGM(); bgm.started=false; state='title'; titleSel=1; }); },
 },

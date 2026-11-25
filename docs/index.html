@@ -37,9 +37,9 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
   else { for(var id in c[k]) if(id in CONTENT[k]) CONTENT.clash.push(k+'.'+id+' (제'+n+'부가 덮어씀)'); Object.assign(CONTENT[k],c[k]); } } // 부끼리 이름이 겹치면 뒤의 부가 앞의 것을 덮어쓴다 — 겹침은 CONTENT.clash 에 남긴다
   if(CONTENT.clash.length&&window.console) console.warn('콘텐츠 이름 겹침: '+CONTENT.clash.join(', ')); }
 </script>
-<script src="data/part1.js?v=5bad2d244b"></script>
-<script src="data/part2.js?v=4e4fc85091"></script>
-<script src="data/part3.js?v=69ea8add1b"></script>
+<script src="data/part1.js?v=69fbece619"></script>
+<script src="data/part2.js?v=6a0c7ffc67"></script>
+<script src="data/part3.js?v=b0a5ab6737"></script>
 <script src="data/art.js?v=3a30859529"></script>
 <script>
 "use strict";
@@ -442,6 +442,15 @@ let state='title', party=makeParty();
 let player={x:2,y:4,dir:'down',px:2*TILE,py:4*TILE,moving:false,steps:0};
 let gold=30, inventory={potion:3,ether:1,revive:1}, sealsFixed=3, bossStage=0, chests={}, storyFlags={};
 let choices={}, playSec=0, lastTick=Date.now(); // choices: 시즌 2로 넘길 선택 기록 / playSec: 누적 플레이 시간(초)
+/* 시간 기록: 목표(CONTENT.goals 의 완료 플래그)를 끝낼 때마다 그때까지의 플레이 시간·전투 시간·전투 횟수·레벨을 적어 둔다.
+   runLog[플래그]={t,b,f,lv}. 건너뛴 부나 이 기능이 없던 때의 기록은 {skip:1} — 시간을 알 수 없다는 뜻이다 */
+let battleSec=0, fights=0, runLog={}, logTick=0;
+function goalFlags(){ const o=[]; const G=CONTENT.goals||{}; for(const p of Object.keys(G).map(Number).sort((a,b)=>a-b)) for(const e of G[p]) o.push({part:p,flag:e[0],text:e[1]}); return o; }
+function logGoals(){ for(const e of goalFlags()) if(storyFlags[e.flag]&&!runLog[e.flag]) runLog[e.flag]={t:Math.round(playSec),b:Math.round(battleSec),f:fights,lv:(party&&party[0]&&party[0].lv)||1}; }
+function skipLogged(){ for(const e of goalFlags()) if(storyFlags[e.flag]&&!runLog[e.flag]) runLog[e.flag]={skip:1}; } // 이미 끝나 있던 목표: 언제 끝냈는지 모른다
+function fmtHM(t){ t=Math.floor(t/60); return Math.floor(t/60)+':'+String(t%60).padStart(2,'0'); } // 시:분
+let saveInfoC=null, saveInfoT=0; // 첫 화면의 「이어하기」에 붙일 요약(2초마다 다시 읽는다)
+function saveInfo(){ const now=Date.now(); if(now-saveInfoT>2000){ saveInfoT=now; saveInfoC=null; try{ const d=readSave(); if(d){ let n=1; while(d.flags&&d.flags['part'+n+'Clear']) n++; saveInfoC={part:Math.min(n,3),sec:d.playSec||0}; } }catch(e){} } return saveInfoC; }
 function fmtTime(t){ t=Math.floor(t); const h=Math.floor(t/3600), m=Math.floor(t%3600/60), ss=t%60; return (h?h+':':'')+String(m).padStart(h?2:1,'0')+':'+String(ss).padStart(2,'0'); }
 let msg=null, flash=0, fieldMove=null, camOX=0, camOY=0, pops=[], shakeT=0, gtime=0, fx=[];
 /* 미니맵: 화면에 한 번이라도 들어온 칸만 보인다. seenMap[지역]=칸마다 0/1. 저장할 때는 6칸을 한 글자로 묶는다 */
@@ -515,7 +524,7 @@ function currentGoal(){ const gs=(CONTENT.goals||{})[currentPart()]; if(!gs) ret
 function autoSave(){ if(state==='field'&&!msg&&!battle&&cur) saveGame(); }
 function saveGame(){ try{ checkFeats(); localStorage.setItem(SAVE_KEY,JSON.stringify(
   {v:SAVE_VER,season:SEASON,part:currentPart(),savedAt:Date.now(),playSec:Math.round(playSec),
-   party,area:cur?cur.id:'village',rev:(cur&&cur.rev)||0,player:{x:player.x,y:player.y,dir:player.dir},gold,inventory,sealsFixed,bossStage,chests,flags:storyFlags,choices,seen:packSeen()})); return true; }catch(e){ return false; } }
+   party,area:cur?cur.id:'village',rev:(cur&&cur.rev)||0,player:{x:player.x,y:player.y,dir:player.dir},gold,inventory,sealsFixed,bossStage,chests,flags:storyFlags,choices,seen:packSeen(),battleSec:Math.round(battleSec),fights,log:(logGoals(),runLog)})); return true; }catch(e){ return false; } }
 /* 저장 형식 변환: 버전별 변환을 순서대로 적용한 뒤 공통 정규화. 새 버전을 만들면 여기에 단계만 추가한다. */
 /* 끝낸 부의 진행 플래그를 모두 세운다: CONTENT.clearFlags[부]. 「N부부터 시작」으로 만든 기록은 앞 부의 플래그가 비어 있어,
    그대로 앞 부 지역에 돌아가면 끝난 이야기와 보스가 다시 나온다 */
@@ -532,7 +541,7 @@ function migrateSave(d){ const v=d.v||2;
   d.v=SAVE_VER; return d; }
 function readSave(){ try{ const raw=localStorage.getItem(SAVE_KEY)||localStorage.getItem(LEGACY_KEY); if(!raw) return null; const d=JSON.parse(raw); return d?migrateSave(d):null; }catch(e){ return null; } }
 function loadGame(){ try{ const d=readSave(); if(!d) return false;
-  party=d.party; gold=d.gold||0; inventory=d.inventory||{potion:1}; sealsFixed=d.sealsFixed==null?3:d.sealsFixed; bossStage=d.bossStage||0; chests=d.chests||{}; storyFlags=d.flags||{}; seenMap=unpackSeen(d.seen);
+  party=d.party; gold=d.gold||0; inventory=d.inventory||{potion:1}; sealsFixed=d.sealsFixed==null?3:d.sealsFixed; bossStage=d.bossStage||0; chests=d.chests||{}; storyFlags=d.flags||{}; seenMap=unpackSeen(d.seen); battleSec=d.battleSec||0; fights=d.fights||0; runLog=d.log||{}; if(!d.log) skipLogged();
   choices=d.choices||{}; playSec=d.playSec||0; retroNote=d.retroLoot||0;
   const area=AREAS[d.area]?d.area:'village', dir=(d.player&&d.player.dir)||'down'; let px=(d.player&&d.player.x)||3, py=(d.player&&d.player.y)||3;
   { const A=AREAS[area], rp=A.respawn; if(rp&&(d.rev||0)!==(A.rev||0)){ px=rp.x; py=rp.y; } } // 저장한 뒤 지도가 다시 지어졌으면(rev 가 다르면) 옛 좌표는 벽 속일 수 있다 → 그 지역의 안전한 자리에서 시작
@@ -722,18 +731,18 @@ function drawEnemyPix(e,flash){ const art=enemyArt(e), base=art||ENEMYPX[e.look|
 
 /* ================= 타이틀 ================= */
 let titleSel=0;
-function startNew(){ seenMap={}; party=makeParty(); gold=30; inventory={potion:3,ether:1,revive:1}; sealsFixed=3; bossStage=0; chests={}; storyFlags={}; choices={}; playSec=0;
+function startNew(){ seenMap={}; battleSec=0; fights=0; runLog={}; party=makeParty(); gold=30; inventory={potion:3,ether:1,revive:1}; sealsFixed=3; bossStage=0; chests={}; storyFlags={}; choices={}; playSec=0;
   player={x:3,y:3,dir:'down',px:3*TILE,py:3*TILE,moving:false,steps:0}; state='field';
   bgm.started=true; loadArea('village',3,3,'down'); sfx('sel'); playBGM(cur.bgm||'field'); }
 let retroNote=0; // 이어하기 때 소급 지급한 전리품 수(안내용)
 function doContinue(){ bgm.started=true; if(loadGame()){ state='field'; sfx('sel'); playBGM(cur?cur.bgm:'field');
     const n=currentPart(), ev='ev_p'+n+'_start'; // 앞 부를 끝낸 기록이면 다음 부의 시작 이벤트로 이어진다
     if(n>1&&!storyFlags['p'+n+'Started']&&EVENTS[ev]) runEvent(ev); else showMsg(retroNote?['기록을 불러왔다.','지금까지 쓰러뜨린 강적들의 전리품 '+retroNote+'점을 받았다! 메뉴의 「장비 장착」에서 확인하자.']:'기록을 불러왔다.'); retroNote=0; } }
-function startPart(n){ const f=CONTENT.starts[n]; if(!f) return; bgm.started=true; choices={}; playSec=0; chests={}; seenMap={}; f(); markCleared(storyFlags); pastLoot(storyFlags,inventory,dr=>dr.part<n&&!dr.elite); /* 건너뛴 부의 보스 전리품도 갖고 시작 */ state='field'; sfx('sel'); const ev='ev_p'+n+'_start'; if(EVENTS[ev]) runEvent(ev); playBGM(cur?cur.bgm:'field'); }
+function startPart(n){ const f=CONTENT.starts[n]; if(!f) return; bgm.started=true; choices={}; playSec=0; chests={}; seenMap={}; battleSec=0; fights=0; runLog={}; f(); markCleared(storyFlags); skipLogged(); pastLoot(storyFlags,inventory,dr=>dr.part<n&&!dr.elite); /* 건너뛴 부의 보스 전리품도 갖고 시작 */ state='field'; sfx('sel'); const ev='ev_p'+n+'_start'; if(EVENTS[ev]) runEvent(ev); playBGM(cur?cur.bgm:'field'); }
 let titleConfirm=null, titleAsk=''; // 기록이 있을 때 새로 시작하는 동작은 확인을 거친다(기록 덮어쓰기 방지). 값 = 확인 시 실행할 함수
 function askStart(fn,what){ if(hasSave()){ titleConfirm=fn; titleAsk=what||'새 게임을'; sfx('sel'); } else fn(); } // what: 확인 창에 적을 말(무엇을 시작하는지)
 function askNewGame(){ askStart(startNew); }
-function titleOptions(){ const o=[['새 게임',askNewGame]]; if(hasSave()) o.push(['이어하기',doContinue]); for(const n of Object.keys(CONTENT.starts).map(Number).sort()) o.push([n+'부부터 시작',()=>askStart(()=>startPart(n),n+'부부터')]); return o; }
+function titleOptions(){ const o=[['새 게임',askNewGame]]; if(hasSave()){ const si=saveInfo(); o.push([si?('이어하기 · '+si.part+'부 '+fmtHM(si.sec)):'이어하기',doContinue]); } for(const n of Object.keys(CONTENT.starts).map(Number).sort()) o.push([n+'부부터 시작',()=>askStart(()=>startPart(n),n+'부부터')]); return o; }
 function updateTitle(){ const o=titleOptions(), n=o.length; if(titleSel>=n) titleSel=0;
   if(titleConfirm){ if(consume('confirm')){ const f=titleConfirm; titleConfirm=null; f(); } else if(consume('cancel')){ titleConfirm=null; sfx('sel'); } return; }
   if(consume('up')) titleSel=(titleSel+n-1)%n; if(consume('down')) titleSel=(titleSel+1)%n;
@@ -990,6 +999,7 @@ function drawMenu(){ drawField(); hotspots=[]; /* 가려진 들판 화면의 버
   if(menuMode==='skills'){ drawSkillPanel(party[menuSel]); return; }
   if(menuMode==='book'){ drawBook(); return; }
   if(menuMode==='feat'){ drawFeats(); return; }
+  if(menuMode==='time'){ drawTimeLog(); return; }
   if(menuMode==='quest'){ drawQuests(); return; }
   if(menuMode==='job'){ drawJobPanel(party[menuSel]); return; }
   if(menuMode==='respec'){ drawRespec(); return; }
@@ -1162,6 +1172,27 @@ function drawFeats(){ g.textAlign='left'; g.fillStyle='#ffd54a'; g.font='bold 13
     g.fillStyle=done?'#ffd54a':'#e8eef7'; g.font='bold 11px sans-serif'; g.fillText((done?'✔ ':'')+f.name,x+6,y+10);
     g.fillStyle=done?'#e0d08a':'#cdd6ea'; g.font='10px sans-serif'; g.fillText(f.desc+'  →  '+featReward(f.reward||{}),x+6,y+20,w-12); // 설명은 또렷한 밝은 색으로, 길면 칸 너비에 맞춰 좁힌다
     g.textAlign='right'; g.fillStyle=done?'#ffd54a':'#9fe8c4'; g.font='10px sans-serif'; g.fillText(f.max>1?c+'/'+f.max:(done?'완료':'—'),x+w-6,y+10); g.textAlign='left'; });
+  btn(W-140,H-24,72,20,'시간 기록',()=>{ menuMode='time'; timePart=Math.min(currentPart(),3); },{fg:'#9fe8c4',font:'11px sans-serif'});
+  btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
+/* 시간 기록 화면: 목표마다 걸린 시간(앞 목표를 끝낸 뒤부터) · 누적 · 그 구간의 전투 횟수와 전투 시간 · 끝낸 때의 레벨 */
+let timePart=1;
+function drawTimeLog(){ logGoals(); const all=goalFlags(), parts=[...new Set(all.map(e=>e.part))]; if(!parts.includes(timePart)) timePart=parts[0]||1;
+  g.textAlign='left'; g.fillStyle='#9fe8c4'; g.font='bold 13px sans-serif'; g.fillText('시간 기록',14,19);
+  g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.fillText('전체 '+fmtTime(playSec)+'  ·  전투 '+fmtTime(battleSec)+' ('+(playSec>0?Math.round(battleSec/playSec*100):0)+'%)  ·  전투 '+fights+'번',84,19);
+  let prev={t:0,b:0,f:0}; const rows=[]; // 앞 목표와의 차이로 구간을 낸다. 시간을 모르는 목표(skip)는 건너뛰고 그다음 구간도 알 수 없음으로 둔다
+  let known=true; for(const e of all){ const r=runLog[e.flag]; let row={e,done:!!r,skip:!!(r&&r.skip)};
+    if(r&&!r.skip){ if(known) Object.assign(row,{dt:r.t-prev.t,db:r.b-prev.b,df:r.f-prev.f}); row.t=r.t; row.lv=r.lv; prev=r; known=true; } else if(r&&r.skip) known=false; rows.push(row); }
+  parts.forEach((p,i)=>{ const rs=rows.filter(r=>r.e.part===p&&r.dt!=null), sum=rs.reduce((a,r)=>a+r.dt,0);
+    btn(14+i*116,26,110,17,p+'부'+(rs.length?'  '+fmtTime(sum):''),()=>{ timePart=p; sfx('sel'); },{bg:p===timePart?'#23314f':'rgba(18,22,34,.9)',fg:p===timePart?'#9fe8c4':'#8a93ad',font:'10px sans-serif'}); });
+  const cx=[14,250,300,352,394,446], hd=['목표','걸린 시간','누적','전투','전투 시간','Lv']; g.font='9px sans-serif'; g.fillStyle='#8a93ad';
+  hd.forEach((h,i)=>{ g.textAlign=i?'right':'left'; g.fillText(h,i?cx[i]+20:cx[i],56); });
+  rows.filter(r=>r.e.part===timePart).forEach((r,i)=>{ const y=70+i*13; if(y>H-30) return; g.font='10px sans-serif';
+    g.textAlign='left'; g.fillStyle=r.done?'#e8eef7':'#5f6880'; g.fillText((r.done?'✔ ':'· ')+r.e.text,cx[0],y,222);
+    g.textAlign='right'; const cell=(k,v,c)=>{ g.fillStyle=c||'#cdd6ea'; g.fillText(v,cx[k]+20,y); };
+    if(!r.done) return; if(r.skip){ cell(1,'—','#5f6880'); return; }
+    cell(1,r.dt!=null?fmtTime(r.dt):'—','#9fe8c4'); cell(2,fmtTime(r.t)); cell(3,r.df!=null?r.df+'번':'—'); cell(4,r.db!=null?fmtTime(r.db):'—'); cell(5,String(r.lv),'#ffd54a'); });
+  g.textAlign='left'; g.fillStyle='#8a93ad'; g.font='9px sans-serif'; g.fillText('걸린 시간 = 앞 목표를 끝낸 뒤부터 · 「—」 = 건너뛰었거나 이 기록이 생기기 전에 끝낸 목표',14,H-9,W-160);
+  btn(W-140,H-24,72,20,'달성 기록',()=>{ menuMode='feat'; },{fg:'#ffd54a',font:'11px sans-serif'});
   btn(W-62,H-24,54,20,'뒤로',()=>menuMode='party',{font:'11px sans-serif'}); }
 function drawBook(){ const ids=BOOK_IDS, PER=24, pages=Math.max(1,Math.ceil(ids.length/PER)); bookPage=Math.max(0,Math.min(pages-1,bookPage));
   const seen=ids.filter(bookSeen).length, dk=Object.keys(DROPS), got=dk.filter(id=>storyFlags['loot_'+id]).length;
@@ -1386,7 +1417,7 @@ function drawShopConfirm(){ const it=itemDef(shopConfirm); if(!it){ shopConfirm=
 /* ================= 전투 ================= */
 let battle=null;
 const CMDS=['공격','스킬','아이템','방어','도망'];
-function startBattle(ids,boss,opts){ artFx.length=0; party.forEach(p=>{ p.lvFrom=0; }); opts=opts||{}; battle={enemies:ids.map(id=>spawn(id,opts.scale)),isBoss:boss,sealBoss:!!opts.sealBoss,onWin:opts.onWin||null,onLose:opts.onLose||null,noPenalty:!!opts.noPenalty,phase:'intro',
+function startBattle(ids,boss,opts){ fights++; artFx.length=0; party.forEach(p=>{ p.lvFrom=0; }); opts=opts||{}; battle={enemies:ids.map(id=>spawn(id,opts.scale)),isBoss:boss,sealBoss:!!opts.sealBoss,onWin:opts.onWin||null,onLose:opts.onLose||null,noPenalty:!!opts.noPenalty,phase:'intro',
   log:[(boss?(opts.sealBoss?'봉인 수호물':'강적'):'마물')+'이(가) 나타났다!'],
   actions:[],queue:[],inputIdx:0,cmd:0,sub:0,menu:'cmd',targetIdx:0,timer:40,pending:null,note:'',noteT:0,poisonDone:false,auto:0,result:null,round:0};
   battle.enemies.forEach(e=>{ storyFlags['m_'+e.id]=1; }); // 도감: 만난 마물
@@ -1870,7 +1901,7 @@ function drawMsgBox(){ const h=56; const raw=msg.lines[msg.i]; let nm=null, txt=
 function wrap(text,x,y,maxw,lh){ let line='',yy=y+12; for(const ch of (text||'')){ if(g.measureText(line+ch).width>maxw){ g.fillText(line,x,yy); line=ch; yy+=lh; } else line+=ch; } g.fillText(line,x,yy); }
 
 /* ================= 루프 ================= */
-function update(){ { const now=Date.now(); if(state!=='title') playSec+=Math.min(1,Math.max(0,(now-lastTick)/1000)); lastTick=now; } // 플레이 시간 누적(탭이 멈춘 동안은 최대 1초만)
+function update(){ { const now=Date.now(), dt=Math.min(1,Math.max(0,(now-lastTick)/1000)); lastTick=now; if(state!=='title'&&!adBusy){ playSec+=dt; if(state==='battle') battleSec+=dt; if(++logTick>=60){ logTick=0; logGoals(); } } } // 플레이 시간 누적(탭이 멈춘 동안은 최대 1초만 · 광고가 떠 있는 동안은 세지 않는다). 전투 시간은 따로 센다
   if(adBusy){ updateAd(); clearPressed(); return; } // 광고가 떠 있는 동안은 게임을 멈춘다
   if(msg) updateMsg();
   else if(state==='title') updateTitle(); else if(state==='field') updateField();
