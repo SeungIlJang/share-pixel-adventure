@@ -419,6 +419,7 @@ function loadArea(id,tx,ty,dir){ cur=AREAS[id]; if(!cur) return; cur.id=id;
   if(storyFlags['gate_'+cur.id]) for(let y=0;y<MAPH;y++)for(let x=0;x<MAPW;x++) if(MAP[y][x]==='9') MAP[y][x]='0';
   player.x=tx; player.y=ty; player.px=tx*TILE; player.py=ty*TILE; player.moving=false; if(dir) player.dir=dir;
   joy.active=false; joyDir=null; fieldMove=null;
+  markSeen();
   if(cur.bgm&&bgm.started) playBGM(cur.bgm);
   if(cur.onEnter) runEvent(cur.onEnter); }
 /* 마을 사람의 그림: 모습을 잃은 사람(shade)은 그림자 그림, look 이 적혀 있으면 그 인물의 그림. 없으면 기본 모양 */
@@ -443,6 +444,36 @@ let gold=30, inventory={potion:3,ether:1,revive:1}, sealsFixed=3, bossStage=0, c
 let choices={}, playSec=0, lastTick=Date.now(); // choices: 시즌 2로 넘길 선택 기록 / playSec: 누적 플레이 시간(초)
 function fmtTime(t){ t=Math.floor(t); const h=Math.floor(t/3600), m=Math.floor(t%3600/60), ss=t%60; return (h?h+':':'')+String(m).padStart(h?2:1,'0')+':'+String(ss).padStart(2,'0'); }
 let msg=null, flash=0, fieldMove=null, camOX=0, camOY=0, pops=[], shakeT=0, gtime=0, fx=[];
+/* 미니맵: 화면에 한 번이라도 들어온 칸만 보인다. seenMap[지역]=칸마다 0/1. 저장할 때는 6칸을 한 글자로 묶는다 */
+let seenMap={}, mapMode=0; try{ mapMode=+(localStorage.getItem('pixel-adventure-map')||0)||0; }catch(e){} // mapMode: 0 작게 · 1 크게 펼침 · 2 접음
+const MAP64='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+function mapBig(){ return !!cur&&(MAPW>16||MAPH>11); } // 한 화면보다 큰 지역에서만 미니맵을 쓴다
+function seenOf(){ const n=MAPW*MAPH; let a=seenMap[cur.id]; if(!a||a.length!==n) a=seenMap[cur.id]=new Uint8Array(n); return a; }
+function markSeen(){ if(!mapBig()) return; const a=seenOf(); for(let y=Math.max(0,player.y-5);y<=Math.min(MAPH-1,player.y+5);y++) for(let x=Math.max(0,player.x-8);x<=Math.min(MAPW-1,player.x+8);x++) a[y*MAPW+x]=1; }
+function packSeen(){ const o={}; for(const id in seenMap){ const a=seenMap[id], A=AREAS[id]; if(!A) continue; let t=''; for(let i=0;i<a.length;i+=6){ let v=0; for(let k=0;k<6;k++) if(a[i+k]) v|=1<<k; t+=MAP64[v]; } o[id]=(A.rev||0)+':'+t; } return o; }
+function unpackSeen(o){ const r={}; for(const id in (o||{})){ const A=AREAS[id], p=String(o[id]).split(':'); if(!A||+p[0]!==(A.rev||0)) continue; // 지도가 다시 지어졌으면 옛 기록은 버린다
+    const n=A.src.length*A.src[0].length, a=new Uint8Array(n), t=p[1]||''; for(let i=0;i<n;i++){ const v=MAP64.indexOf(t[(i/6)|0]); if(v>0&&(v>>(i%6))&1) a[i]=1; } r[id]=a; } return r; }
+function cycleMap(){ mapMode=(mapMode+1)%3; sfx('sel'); try{ localStorage.setItem('pixel-adventure-map',String(mapMode)); }catch(e){} }
+function drawMiniMap(){ if(!mapBig()) return; const a=seenOf(), big=mapMode===1;
+  if(mapMode===2){ btn(W-40,36,36,14,'지도',cycleMap,{bg:'rgba(27,34,54,.85)',font:'9px sans-serif'}); return; }
+  const sc=big?Math.max(2,Math.min(6,Math.floor(Math.min((W-30)/MAPW,(H-70)/MAPH)))):2, w=MAPW*sc, h=MAPH*sc, x0=big?Math.round((W-w)/2):W-w-5, y0=big?Math.round(36+(H-36-h)/2):37;
+  if(big){ g.fillStyle='rgba(4,6,12,.72)'; g.fillRect(0,33,W,H-33); }
+  g.fillStyle=big?'rgba(8,10,20,.96)':'rgba(8,10,20,.66)'; g.fillRect(x0-2,y0-2,w+4,h+4); g.strokeStyle='#30406a'; g.lineWidth=1; g.strokeRect(x0-1.5,y0-1.5,w+3,h+3);
+  const dot=(x,y,c,r)=>{ g.fillStyle=c; const e=r||0; g.fillRect(x0+x*sc-e,y0+y*sc-e,sc+e*2,sc+e*2); };
+  for(let y=0;y<MAPH;y++) for(let x=0;x<MAPW;x++){ if(!a[y*MAPW+x]) continue; const t=MAP[y][x];
+    dot(x,y, t==='1'?'#262c40':t==='2'?'#7a5560':t==='9'?'#c9c9e0':'#7c88a6'); }
+  const ex=big?1:0; // 표식은 본 칸에만: 통로 초록 · 상자 금색 · 제단 파랑 · 장치 주황 · 봉인/사건 빨강 · 정예 보라
+  for(let y=0;y<MAPH;y++) for(let x=0;x<MAPW;x++){ if(!a[y*MAPW+x]) continue; const t=MAP[y][x];
+    if(t==='5') dot(x,y,'#ffd54a',ex); else if(t==='3') dot(x,y,'#7cc4ff',ex); else if(t==='4') dot(x,y,'#ff5a7a',ex);
+    else if(t==='8') dot(x,y,storyFlags['sw_'+cur.id+'_'+x+','+y]?'#8a6a4a':'#ff9a5a',ex);
+    else if(t==='6'&&!(cur.eventDone?storyFlags[cur.eventDone]:storyFlags['et_'+cur.id])) dot(x,y,'#ff5a7a',ex); }
+  if(cur.elite&&!storyFlags['elite_'+cur.id]&&a[cur.elite.y*MAPW+cur.elite.x]) dot(cur.elite.x,cur.elite.y,'#d05aff',ex);
+  (cur.warps||[]).forEach(wp=>{ if(!warpOn(wp)||!a[wp.y*MAPW+wp.x]) return; dot(wp.x,wp.y,'#9fe8c4',ex);
+    if(big&&wp.label){ g.font='bold 8px sans-serif'; g.textAlign='center'; const tx=clamp(x0+wp.x*sc+sc/2,x0+10,x0+w-10), ty=y0+wp.y*sc+(wp.y*sc<12?sc+9:-3); g.fillStyle='rgba(8,8,14,.85)'; const lw=g.measureText(wp.label).width+4; g.fillRect(tx-lw/2,ty-8,lw,10); g.fillStyle='#eafff4'; g.fillText(wp.label,tx,ty); g.textAlign='left'; } });
+  if(Math.floor(gtime/14)%2===0||big) dot(player.x,player.y,'#ffffff',1); // 나: 흰 점(작은 지도에서는 깜빡인다)
+  if(big){ g.fillStyle='#9aa6c2'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText('흰 점 = 나 · 초록 = 통로 · 금색 = 상자 · 파랑 = 제단 · 주황 = 장치 · 빨강 = 봉인/사건     (누르면 닫힌다)',W/2,Math.min(H-4,y0+h+13)); g.textAlign='left';
+    hz(0,33,W,H-33,cycleMap); } // 펼친 동안은 어디를 눌러도 닫힌다
+  else hz(x0-4,y0-4,w+8,h+8,cycleMap); }
 let encAlert=0, encPending=null, encX=0, encY=0; // 랜덤 조우: 전투 직전 위치에 '!' 경고 표시
 
 /* ---------- 유틸 ---------- */
@@ -484,7 +515,7 @@ function currentGoal(){ const gs=(CONTENT.goals||{})[currentPart()]; if(!gs) ret
 function autoSave(){ if(state==='field'&&!msg&&!battle&&cur) saveGame(); }
 function saveGame(){ try{ checkFeats(); localStorage.setItem(SAVE_KEY,JSON.stringify(
   {v:SAVE_VER,season:SEASON,part:currentPart(),savedAt:Date.now(),playSec:Math.round(playSec),
-   party,area:cur?cur.id:'village',rev:(cur&&cur.rev)||0,player:{x:player.x,y:player.y,dir:player.dir},gold,inventory,sealsFixed,bossStage,chests,flags:storyFlags,choices})); return true; }catch(e){ return false; } }
+   party,area:cur?cur.id:'village',rev:(cur&&cur.rev)||0,player:{x:player.x,y:player.y,dir:player.dir},gold,inventory,sealsFixed,bossStage,chests,flags:storyFlags,choices,seen:packSeen()})); return true; }catch(e){ return false; } }
 /* 저장 형식 변환: 버전별 변환을 순서대로 적용한 뒤 공통 정규화. 새 버전을 만들면 여기에 단계만 추가한다. */
 /* 끝낸 부의 진행 플래그를 모두 세운다: CONTENT.clearFlags[부]. 「N부부터 시작」으로 만든 기록은 앞 부의 플래그가 비어 있어,
    그대로 앞 부 지역에 돌아가면 끝난 이야기와 보스가 다시 나온다 */
@@ -501,7 +532,7 @@ function migrateSave(d){ const v=d.v||2;
   d.v=SAVE_VER; return d; }
 function readSave(){ try{ const raw=localStorage.getItem(SAVE_KEY)||localStorage.getItem(LEGACY_KEY); if(!raw) return null; const d=JSON.parse(raw); return d?migrateSave(d):null; }catch(e){ return null; } }
 function loadGame(){ try{ const d=readSave(); if(!d) return false;
-  party=d.party; gold=d.gold||0; inventory=d.inventory||{potion:1}; sealsFixed=d.sealsFixed==null?3:d.sealsFixed; bossStage=d.bossStage||0; chests=d.chests||{}; storyFlags=d.flags||{};
+  party=d.party; gold=d.gold||0; inventory=d.inventory||{potion:1}; sealsFixed=d.sealsFixed==null?3:d.sealsFixed; bossStage=d.bossStage||0; chests=d.chests||{}; storyFlags=d.flags||{}; seenMap=unpackSeen(d.seen);
   choices=d.choices||{}; playSec=d.playSec||0; retroNote=d.retroLoot||0;
   const area=AREAS[d.area]?d.area:'village', dir=(d.player&&d.player.dir)||'down'; let px=(d.player&&d.player.x)||3, py=(d.player&&d.player.y)||3;
   { const A=AREAS[area], rp=A.respawn; if(rp&&(d.rev||0)!==(A.rev||0)){ px=rp.x; py=rp.y; } } // 저장한 뒤 지도가 다시 지어졌으면(rev 가 다르면) 옛 좌표는 벽 속일 수 있다 → 그 지역의 안전한 자리에서 시작
@@ -691,14 +722,14 @@ function drawEnemyPix(e,flash){ const art=enemyArt(e), base=art||ENEMYPX[e.look|
 
 /* ================= 타이틀 ================= */
 let titleSel=0;
-function startNew(){ party=makeParty(); gold=30; inventory={potion:3,ether:1,revive:1}; sealsFixed=3; bossStage=0; chests={}; storyFlags={}; choices={}; playSec=0;
+function startNew(){ seenMap={}; party=makeParty(); gold=30; inventory={potion:3,ether:1,revive:1}; sealsFixed=3; bossStage=0; chests={}; storyFlags={}; choices={}; playSec=0;
   player={x:3,y:3,dir:'down',px:3*TILE,py:3*TILE,moving:false,steps:0}; state='field';
   bgm.started=true; loadArea('village',3,3,'down'); sfx('sel'); playBGM(cur.bgm||'field'); }
 let retroNote=0; // 이어하기 때 소급 지급한 전리품 수(안내용)
 function doContinue(){ bgm.started=true; if(loadGame()){ state='field'; sfx('sel'); playBGM(cur?cur.bgm:'field');
     const n=currentPart(), ev='ev_p'+n+'_start'; // 앞 부를 끝낸 기록이면 다음 부의 시작 이벤트로 이어진다
     if(n>1&&!storyFlags['p'+n+'Started']&&EVENTS[ev]) runEvent(ev); else showMsg(retroNote?['기록을 불러왔다.','지금까지 쓰러뜨린 강적들의 전리품 '+retroNote+'점을 받았다! 메뉴의 「장비 장착」에서 확인하자.']:'기록을 불러왔다.'); retroNote=0; } }
-function startPart(n){ const f=CONTENT.starts[n]; if(!f) return; bgm.started=true; choices={}; playSec=0; chests={}; f(); markCleared(storyFlags); pastLoot(storyFlags,inventory,dr=>dr.part<n&&!dr.elite); /* 건너뛴 부의 보스 전리품도 갖고 시작 */ state='field'; sfx('sel'); const ev='ev_p'+n+'_start'; if(EVENTS[ev]) runEvent(ev); playBGM(cur?cur.bgm:'field'); }
+function startPart(n){ const f=CONTENT.starts[n]; if(!f) return; bgm.started=true; choices={}; playSec=0; chests={}; seenMap={}; f(); markCleared(storyFlags); pastLoot(storyFlags,inventory,dr=>dr.part<n&&!dr.elite); /* 건너뛴 부의 보스 전리품도 갖고 시작 */ state='field'; sfx('sel'); const ev='ev_p'+n+'_start'; if(EVENTS[ev]) runEvent(ev); playBGM(cur?cur.bgm:'field'); }
 let titleConfirm=null, titleAsk=''; // 기록이 있을 때 새로 시작하는 동작은 확인을 거친다(기록 덮어쓰기 방지). 값 = 확인 시 실행할 함수
 function askStart(fn,what){ if(hasSave()){ titleConfirm=fn; titleAsk=what||'새 게임을'; sfx('sel'); } else fn(); } // what: 확인 창에 적을 말(무엇을 시작하는지)
 function askNewGame(){ askStart(startNew); }
@@ -795,7 +826,7 @@ function nextTalk(){ let best=null, top=0; for(const id in TALKS){ const t=TALKS
 function talkCount(){ const ids=Object.keys(TALKS); return ids.filter(id=>storyFlags['talk_'+id]).length+'/'+ids.length; }
 function talkLines(t){ const ls=typeof t.lines==='function'?t.lines():t.lines;
   return (t.old?['— 지난 일을 떠올린다 · 제'+t.ch+'장 무렵 —']:[]).concat(ls.map(l=>Array.isArray(l)?{n:l[0],t:l[1],c:TALK_COL[l[0]]||'#d9cdb5'}:l)); }
-function onStep(){
+function onStep(){ markSeen();
   const wp=warpAt(player.x,player.y); if(wp){ if(wp.need&&!storyFlags[wp.need]){ showMsg([wp.block||'아직 갈 수 없다.']); sfx('sel'); return; }
     if(wp.event&&wp.eventFlag&&!storyFlags[wp.eventFlag]){ sfx('sel'); runEvent(wp.event); return; } // 챕터 이벤트 미완료 시 길목에서 발동(회피 불가 보장)
     const dst=(wp.alt&&storyFlags[wp.alt.flag])?wp.alt:wp; // alt: 진행에 따라 목적지가 바뀌는 길(예: 2부에서는 숲 → 2부의 마을)
@@ -906,6 +937,7 @@ function drawField(){ const pal=cur.pal; g.fillStyle=pal.bg; g.fillRect(0,0,W,H)
   { const gl=currentGoal(); if(gl){ g.fillStyle='rgba(8,10,20,.62)'; g.fillRect(0,20,W,13); g.font='9px sans-serif'; g.fillStyle='#ffd54a'; g.fillText('▸ 목표',6,30); g.fillStyle='#e8eef7'; g.fillText(gl,40,30); } }
   btn(W-112,2,52,16, bgm.muted?'♪ 끔':'♪ 켬', toggleMute, {bg:'rgba(27,34,54,.9)',font:'10px sans-serif'});
   btn(W-54,2,50,16,'≡ 메뉴',()=>{state='menu';menuMode='party';menuSel=0;},{bg:'rgba(27,34,54,.9)',font:'10px sans-serif'});
+  if(state==='field'&&!msg) drawMiniMap();
   if(joy.active){ const R=28,dx=joy.x-joy.ox,dy=joy.y-joy.oy,d=Math.hypot(dx,dy)||1,k=d>R?R/d:1,kx=joy.ox+dx*k,ky=joy.oy+dy*k;
     g.fillStyle='rgba(159,232,196,.14)'; g.beginPath(); g.arc(joy.ox,joy.oy,R,0,7); g.fill();
     g.strokeStyle='rgba(159,232,196,.55)'; g.lineWidth=2; g.beginPath(); g.arc(joy.ox,joy.oy,R,0,7); g.stroke();
