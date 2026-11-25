@@ -39,8 +39,8 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
 </script>
 <script src="data/part1.js?v=5bad2d244b"></script>
 <script src="data/part2.js?v=4e4fc85091"></script>
-<script src="data/part3.js?v=91e0ee0df9"></script>
-<script src="data/art.js?v=efe1c03409"></script>
+<script src="data/part3.js?v=0e91400eaf"></script>
+<script src="data/art.js?v=4aeead2168"></script>
 <script>
 "use strict";
 /* ===== 모두의 픽셀모험 — 오리지널 턴제 RPG v2 (단일 파일, 캔버스 터치 조작) =====
@@ -1856,6 +1856,8 @@ function updateMsg(){
   if(msg.ask&&msg.i>=msg.lines.length-1){ if(consume('confirm')){ const f=msg.ask.fn; msg=null; f(); } else if(consume('cancel')){ const f=msg.ask.fnNo; msg=null; sfx('sel'); if(f) f(); } return; }
   if(consume('confirm')||consume('cancel')){ msg.i++; if(msg.i>=msg.lines.length){ const a=msg.after; msg=null; if(a) a(); } } }
 function drawMsgBox(){ const h=56; const raw=msg.lines[msg.i]; let nm=null, txt=raw, col='#9fe8c4';
+  if(raw&&raw.pic){ g.fillStyle='#020308'; g.fillRect(0,0,W,H); // 장면 그림이 붙은 줄: 뒤 화면을 가리고 그림을 띄운다. 그림이 아직 없으면 어두운 바탕만
+    const sp=(ART.scenePx||{})[raw.pic]; if(sp){ const fr=sp.frames[raw.frame!=null?raw.frame:Math.floor(gtime/45)%sp.frames.length], px=sp.px||5, /* frame: 그 줄에서는 한 장만 보인다 */ w=fr[0].length*px; drawPixSprite(fr,sp.pal,Math.round((W-w)/2),Math.max(2,Math.round((H-h-8-fr.length*px)/2)),px); } }
   if(raw && typeof raw==='object'){ nm=raw.n; txt=raw.t; col=raw.c||'#9fe8c4'; }
   if(nm){ g.font='bold 12px sans-serif'; const nw=g.measureText(nm).width+16;
     g.fillStyle='rgba(8,10,20,.95)'; g.fillRect(14,H-h-23,nw,18); g.strokeStyle=col; g.lineWidth=1; g.strokeRect(14.5,H-h-22.5,nw-1,17);
