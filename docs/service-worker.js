@@ -14,6 +14,7 @@ const ASSETS = [
   './data/part1.js',
   './data/part2.js',
   './data/part3.js',
+  './data/part4.js',
   './data/art.js'
 ];
 
