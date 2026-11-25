@@ -37,9 +37,9 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
   else { for(var id in c[k]) if(id in CONTENT[k]) CONTENT.clash.push(k+'.'+id+' (제'+n+'부가 덮어씀)'); Object.assign(CONTENT[k],c[k]); } } // 부끼리 이름이 겹치면 뒤의 부가 앞의 것을 덮어쓴다 — 겹침은 CONTENT.clash 에 남긴다
   if(CONTENT.clash.length&&window.console) console.warn('콘텐츠 이름 겹침: '+CONTENT.clash.join(', ')); }
 </script>
-<script src="data/part1.js?v=12f9cd7fb5"></script>
-<script src="data/part2.js?v=9ad9c89d95"></script>
-<script src="data/part3.js?v=c450b3a1b7"></script>
+<script src="data/part1.js?v=5bad2d244b"></script>
+<script src="data/part2.js?v=4e4fc85091"></script>
+<script src="data/part3.js?v=91e0ee0df9"></script>
 <script src="data/art.js?v=efe1c03409"></script>
 <script>
 "use strict";
@@ -484,7 +484,7 @@ function currentGoal(){ const gs=(CONTENT.goals||{})[currentPart()]; if(!gs) ret
 function autoSave(){ if(state==='field'&&!msg&&!battle&&cur) saveGame(); }
 function saveGame(){ try{ checkFeats(); localStorage.setItem(SAVE_KEY,JSON.stringify(
   {v:SAVE_VER,season:SEASON,part:currentPart(),savedAt:Date.now(),playSec:Math.round(playSec),
-   party,area:cur?cur.id:'village',player:{x:player.x,y:player.y,dir:player.dir},gold,inventory,sealsFixed,bossStage,chests,flags:storyFlags,choices})); return true; }catch(e){ return false; } }
+   party,area:cur?cur.id:'village',rev:(cur&&cur.rev)||0,player:{x:player.x,y:player.y,dir:player.dir},gold,inventory,sealsFixed,bossStage,chests,flags:storyFlags,choices})); return true; }catch(e){ return false; } }
 /* 저장 형식 변환: 버전별 변환을 순서대로 적용한 뒤 공통 정규화. 새 버전을 만들면 여기에 단계만 추가한다. */
 /* 끝낸 부의 진행 플래그를 모두 세운다: CONTENT.clearFlags[부]. 「N부부터 시작」으로 만든 기록은 앞 부의 플래그가 비어 있어,
    그대로 앞 부 지역에 돌아가면 끝난 이야기와 보스가 다시 나온다 */
@@ -503,7 +503,8 @@ function readSave(){ try{ const raw=localStorage.getItem(SAVE_KEY)||localStorage
 function loadGame(){ try{ const d=readSave(); if(!d) return false;
   party=d.party; gold=d.gold||0; inventory=d.inventory||{potion:1}; sealsFixed=d.sealsFixed==null?3:d.sealsFixed; bossStage=d.bossStage||0; chests=d.chests||{}; storyFlags=d.flags||{};
   choices=d.choices||{}; playSec=d.playSec||0; retroNote=d.retroLoot||0;
-  const area=AREAS[d.area]?d.area:'village', px=(d.player&&d.player.x)||3, py=(d.player&&d.player.y)||3, dir=(d.player&&d.player.dir)||'down';
+  const area=AREAS[d.area]?d.area:'village', dir=(d.player&&d.player.dir)||'down'; let px=(d.player&&d.player.x)||3, py=(d.player&&d.player.y)||3;
+  { const A=AREAS[area], rp=A.respawn; if(rp&&(d.rev||0)!==(A.rev||0)){ px=rp.x; py=rp.y; } } // 저장한 뒤 지도가 다시 지어졌으면(rev 가 다르면) 옛 좌표는 벽 속일 수 있다 → 그 지역의 안전한 자리에서 시작
   player={x:px,y:py,dir,px:px*TILE,py:py*TILE,moving:false,steps:0};
   loadArea(area,px,py,dir); return true; }catch(e){ return false; } }
 function hasSave(){ try{ return !!(localStorage.getItem(SAVE_KEY)||localStorage.getItem(LEGACY_KEY)); }catch(e){ return false; } }
