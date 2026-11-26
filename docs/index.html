@@ -469,22 +469,26 @@ function drawMiniMap(){ if(!mapBig()) return; if(cur.noMap){ g.fillStyle='rgba(8
   if(mapMode===2){ btn(W-40,36,36,14,'지도',cycleMap,{bg:'rgba(27,34,54,.85)',font:'9px sans-serif'}); return; }
   const sc=big?Math.max(2,Math.min(6,Math.floor(Math.min((W-30)/MAPW,(H-70)/MAPH)))):2, w=MAPW*sc, h=MAPH*sc, x0=big?Math.round((W-w)/2):W-w-5, y0=big?Math.round(36+(H-36-h)/2):37;
   if(big){ g.fillStyle='rgba(4,6,12,.72)'; g.fillRect(0,33,W,H-33); }
-  g.fillStyle=big?'rgba(8,10,20,.96)':'rgba(8,10,20,.66)'; g.fillRect(x0-2,y0-2,w+4,h+4); g.strokeStyle='#30406a'; g.lineWidth=1; g.strokeRect(x0-1.5,y0-1.5,w+3,h+3);
+  g.fillStyle=big?'rgba(3,4,8,.97)':'rgba(3,4,8,.86)'; g.fillRect(x0-2,y0-2,w+4,h+4); g.strokeStyle='#30406a'; g.lineWidth=1; g.strokeRect(x0-1.5,y0-1.5,w+3,h+3);
   const dot=(x,y,c,r)=>{ g.fillStyle=c; const e=r||0; g.fillRect(x0+x*sc-e,y0+y*sc-e,sc+e*2,sc+e*2); };
   for(let y=0;y<MAPH;y++) for(let x=0;x<MAPW;x++){ if(!a[y*MAPW+x]) continue; const t=MAP[y][x];
-    dot(x,y, t==='1'?'#262c40':t==='2'?'#7a5560':t==='9'?'#c9c9e0':'#7c88a6'); }
+    dot(x,y, t==='1'?'#161a26':t==='2'?'#eaa6b2':t==='9'?'#e8433a':'#d6deee'); } // 갈 수 있는 칸은 밝게(바닥 흰빛 · 풀숲 분홍), 벽은 어둡게, 잠긴 문은 빨강 — 길과 벽이 한눈에 갈리게
   const ex=big?1:0; // 표식은 본 칸에만: 통로 초록 · 상자 금색 · 제단 파랑 · 장치 주황 · 봉인/사건 빨강 · 정예 보라
   for(let y=0;y<MAPH;y++) for(let x=0;x<MAPW;x++){ if(!a[y*MAPW+x]) continue; const t=MAP[y][x];
-    if(t==='5') dot(x,y,'#ffd54a',ex); else if(t==='3') dot(x,y,'#7cc4ff',ex); else if(t==='4') dot(x,y,'#ff5a7a',ex);
-    else if(t==='8') dot(x,y,storyFlags['sw_'+cur.id+'_'+x+','+y]?'#8a6a4a':'#ff9a5a',ex);
-    else if(t==='6'&&!(cur.eventDone?storyFlags[cur.eventDone]:storyFlags['et_'+cur.id])) dot(x,y,'#ff5a7a',ex); }
-  if(cur.elite&&!storyFlags['elite_'+cur.id]&&a[cur.elite.y*MAPW+cur.elite.x]) dot(cur.elite.x,cur.elite.y,'#d05aff',ex);
-  (cur.warps||[]).forEach(wp=>{ if(!warpOn(wp)||!a[wp.y*MAPW+wp.x]) return; dot(wp.x,wp.y,'#9fe8c4',ex);
+    if(t==='5') dot(x,y,'#ffc21a',ex); else if(t==='3') dot(x,y,'#3aa0ff',ex); else if(t==='4') dot(x,y,'#d93ad0',ex);
+    else if(t==='8') dot(x,y,storyFlags['sw_'+cur.id+'_'+x+','+y]?'#8a8f9c':'#ff8a2a',ex);
+    else if(t==='6'&&!(cur.eventDone?storyFlags[cur.eventDone]:storyFlags['et_'+cur.id])) dot(x,y,'#d93ad0',ex); }
+  if(cur.elite&&!storyFlags['elite_'+cur.id]&&a[cur.elite.y*MAPW+cur.elite.x]) dot(cur.elite.x,cur.elite.y,'#8a4dff',ex);
+  (cur.warps||[]).forEach(wp=>{ if(!warpOn(wp)||!a[wp.y*MAPW+wp.x]) return; dot(wp.x,wp.y,'#1fd08a',ex);
     if(big&&wp.label){ g.font='bold 8px sans-serif'; g.textAlign='center'; const tx=clamp(x0+wp.x*sc+sc/2,x0+10,x0+w-10), ty=y0+wp.y*sc+(wp.y*sc<12?sc+9:-3); g.fillStyle='rgba(8,8,14,.85)'; const lw=g.measureText(wp.label).width+4; g.fillRect(tx-lw/2,ty-8,lw,10); g.fillStyle='#eafff4'; g.fillText(wp.label,tx,ty); g.textAlign='left'; } });
-  if(Math.floor(gtime/14)%2===0||big) dot(player.x,player.y,'#ffffff',1); // 나: 흰 점(작은 지도에서는 깜빡인다)
-  if(big){ g.fillStyle='#9aa6c2'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText('흰 점 = 나 · 초록 = 통로 · 금색 = 상자 · 파랑 = 제단 · 주황 = 장치 · 빨강 = 봉인/사건     (누르면 닫힌다)',W/2,Math.min(H-4,y0+h+13)); g.textAlign='left';
+  { const on=Math.floor(gtime/14)%2===0; g.fillStyle='#05060a'; g.fillRect(x0+player.x*sc-2,y0+player.y*sc-2,sc+4,sc+4); dot(player.x,player.y,on||big?'#ffef3a':'#ff5a2a',1); } // 나: 검은 테두리를 두른 노란 점(밝은 바닥 위에서도 보이게), 작은 지도에서는 깜빡인다 // 나: 흰 점(작은 지도에서는 깜빡인다)
+  if(big){ g.fillStyle='#9aa6c2'; g.font='9px sans-serif'; g.textAlign='center'; g.fillText('밝은 칸 = 갈 수 있는 길 · 어두운 칸 = 벽 · 분홍 = 마물이 나오는 풀숲 · 빨강 = 잠긴 문',W/2,Math.min(H-15,y0+h+12)); g.fillText('노란 점 = 나 · 초록 = 통로 · 금색 = 상자 · 파랑 = 제단 · 주황 = 장치 · 자주 = 봉인/사건     (누르면 닫힌다)',W/2,Math.min(H-4,y0+h+23)); g.textAlign='left';
     hz(0,33,W,H-33,cycleMap); } // 펼친 동안은 어디를 눌러도 닫힌다
   else hz(x0-4,y0-4,w+8,h+8,cycleMap); }
+/* 조우 조절 손잡이 두 개.
+   ENC_RATE_MUL  — 모든 지역의 걸음당 조우 확률에 곱하는 값(1 = 지역에 적힌 그대로, 0.8 = 20% 덜, 1.2 = 20% 더). 지역별 확률은 data/partN.js 의 enc.rate
+   ENC_SAFE_STEPS — 전투가 끝난 뒤 이 걸음 수만큼은 적이 나오지 않는다(연달아 싸우는 답답함을 줄인다) */
+const ENC_RATE_MUL=0.9, ENC_SAFE_STEPS=3; let safeSteps=0;
 let encAlert=0, encPending=null, encX=0, encY=0; // 랜덤 조우: 전투 직전 위치에 '!' 경고 표시
 
 /* ---------- 유틸 ---------- */
@@ -840,7 +844,7 @@ function nextTalk(){ let best=null, top=0; for(const id in TALKS){ const t=TALKS
 function talkCount(){ const ids=Object.keys(TALKS); return ids.filter(id=>storyFlags['talk_'+id]).length+'/'+ids.length; }
 function talkLines(t){ const ls=typeof t.lines==='function'?t.lines():t.lines;
   return (t.old?['— 지난 일을 떠올린다 · 제'+t.ch+'장 무렵 —']:[]).concat(ls.map(l=>Array.isArray(l)?{n:l[0],t:l[1],c:TALK_COL[l[0]]||'#d9cdb5'}:l)); }
-function onStep(){ markSeen();
+function onStep(){ markSeen(); const safe=safeSteps>0; if(safe) safeSteps--; // 전투 직후의 안전한 걸음
   const wp=warpAt(player.x,player.y); if(wp){ if(wp.need&&!storyFlags[wp.need]){ showMsg([wp.block||'아직 갈 수 없다.']); sfx('sel'); return; }
     if(wp.event&&wp.eventFlag&&!storyFlags[wp.eventFlag]){ sfx('sel'); runEvent(wp.event); return; } // 챕터 이벤트 미완료 시 길목에서 발동(회피 불가 보장)
     const dst=(wp.alt&&storyFlags[wp.alt.flag])?wp.alt:wp; // alt: 진행에 따라 목적지가 바뀌는 길(예: 2부에서는 숲 → 2부의 마을)
@@ -861,7 +865,7 @@ function onStep(){ markSeen();
     if(ek&&!done){ storyFlags[fk]=true; runEvent(ek); } }
   else if(t==='7'){ party.forEach(p=>{ if(p.alive) p.hp=Math.max(1,p.hp-Math.round(p.maxhp*0.12)); }); sfx('hit'); flash=8; shakeT=6; showMsg([cur.trapMsg||'함정! 바닥에서 가시가 솟았다. (전원 HP 피해)']); }
   else if(t==='8'){ const k='sw_'+cur.id+'_'+player.x+','+player.y; if(!storyFlags[k]){ storyFlags[k]=true; sfx('coin'); const opened=checkGate(); showMsg([opened?'철컹! 모든 장치가 맞물리며 봉인된 문이 열렸다!':'고대 장치가 눌렸다. 철컹—']); } }
-  else if(t==='2'){ const e=cur.enc; if(e&&Math.random()<e.rate){ const n=1+rnd(3),es=[];
+  else if(t==='2'){ const e=cur.enc; if(e&&!safe&&Math.random()<e.rate*ENC_RATE_MUL){ const n=1+rnd(3),es=[];
     for(let i=0;i<n;i++) es.push(e.pool[rnd(e.pool.length)]); encPending=es; encAlert=20; encX=player.x; encY=player.y; sfx('sel'); flash=5; } } // 조우! '!' 표시 후 전투
   else if(t==='5'){ const k=cur.id+':'+player.x+','+player.y; if(!chests[k]){ chests[k]=1; const lt=(cur.loot&&cur.loot[player.x+','+player.y])||{gold:25,item:'potion'};
       if(lt.gold) gold+=lt.gold; if(lt.item) inventory[lt.item]=(inventory[lt.item]||0)+1; MAP[player.y][player.x]='0'; sfx('coin');
@@ -1779,7 +1783,7 @@ function nextLearn(p){ return learnList(p).filter(e=>e.lv>p.lv&&(e.trait?TRAITS[
 const GROW={'검사':{hp:7,mp:2,atk:2,def:2,mag:1,spd:1},'궁수':{hp:6,mp:2,atk:2,def:1,mag:1,spd:2},'주술사':{hp:6,mp:3,atk:1,def:1,mag:2,spd:1},'치유사':{hp:6,mp:3,atk:1,def:1,mag:2,spd:1},'창술사':{hp:7,mp:2,atk:2,def:1,mag:1,spd:2}};
 function levelUp(p){ const gr=growOf(p); p.lv++; p.expNext=expNeed(p.lv); p.maxhp+=gr.hp+rnd(4); p.maxmp+=gr.mp+rnd(3); p.atk+=gr.atk; p.def+=gr.def; p.mag+=gr.mag; p.spd+=gr.spd; p.hp=p.maxhp; p.mp=p.maxmp; return learnSkills(p); }
 function loseBattle(){ battle.log=['전멸했다...']; battle.phase='done'; battle.result='lose'; }
-function endBattle(){ const b=battle, r=b.result; party.forEach(p=>p.poison=0);
+function endBattle(){ const b=battle, r=b.result; party.forEach(p=>p.poison=0); safeSteps=ENC_SAFE_STEPS;
   if(r==='lose'&&b.onLose){ const ol=b.onLose; party.forEach(p=>{p.alive=true;p.hp=Math.max(1,Math.round(p.maxhp*0.5));p.mp=Math.round(p.maxmp*0.5);}); // 스토리상 패배: 리스폰 대신 이벤트 진행
     playBGM(cur.bgm||'field'); state='field'; battle=null; runEvent(ol); return; }
   if(r==='lose'){ party.forEach(p=>{p.alive=true;p.hp=Math.max(1,Math.round(p.maxhp*0.5));p.mp=Math.round(p.maxmp*0.5);});
