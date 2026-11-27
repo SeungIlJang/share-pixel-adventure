@@ -736,9 +736,10 @@ events:{
       say('그림자 군주','이 봉인을 처음 세운 것은 나다. 그러니 부수는 것도 내 몫이지.',LORD),
       say('카엘','…최초의 수호자.',K),
       say('그림자 군주','막고 싶다면 막아 보아라.',LORD) ],
-      ()=>{ startBattle(['lord'],true,{onWin:'ev_lord_after',onLose:'ev_lord_after'}); }); },
+      ()=>{ startBattle(['lord'],true,{onWin:'ev_lord_after',onLose:'ev_lord_after',loseMsg:'군주에게는 무엇도 닿지 않는다… 이길 수 없는 싸움이었다.'}); }); },
   ev_lord_after:()=>{
     showMsg([
+      "(이 싸움은 이길 수 없는 싸움이다 — 이야기는 그대로 이어진다.)",
       "…검도, 주문도, 화살도 닿지 않았다. 일행은 쓰러진 채 올려다볼 수밖에 없다.",
       "군주가 봉인석에 손을 얹는다. 석 달 전 되찾은 여명의 빛이 — 깨진다.",
       say('그림자 군주','미워서가 아니다. 저편에는 내 백성이 있다. 빛 없이 사람의 모습을 잃어 가는.',LORD),

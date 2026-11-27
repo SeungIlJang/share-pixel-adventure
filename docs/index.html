@@ -38,7 +38,7 @@ function definePart(n,c){ CONTENT.parts.push(n); for(var k in c){ if(!CONTENT[k]
   if(CONTENT.clash.length&&window.console) console.warn('콘텐츠 이름 겹침: '+CONTENT.clash.join(', ')); }
 </script>
 <script src="data/part1.js?v=69fbece619"></script>
-<script src="data/part2.js?v=6a0c7ffc67"></script>
+<script src="data/part2.js?v=533f1c8791"></script>
 <script src="data/part3.js?v=b0a5ab6737"></script>
 <script src="data/part4.js?v=22b51394ca"></script>
 <script src="data/art.js?v=462044e303"></script>
@@ -1434,7 +1434,7 @@ function drawShopConfirm(){ const it=itemDef(shopConfirm); if(!it){ shopConfirm=
 /* ================= 전투 ================= */
 let battle=null;
 const CMDS=['공격','스킬','아이템','방어','도망'];
-function startBattle(ids,boss,opts){ fights++; artFx.length=0; party.forEach(p=>{ p.lvFrom=0; }); opts=opts||{}; battle={enemies:ids.map(id=>spawn(id,opts.scale)),isBoss:boss,sealBoss:!!opts.sealBoss,onWin:opts.onWin||null,onLose:opts.onLose||null,noPenalty:!!opts.noPenalty,phase:'intro',
+function startBattle(ids,boss,opts){ fights++; artFx.length=0; party.forEach(p=>{ p.lvFrom=0; }); opts=opts||{}; battle={enemies:ids.map(id=>spawn(id,opts.scale)),isBoss:boss,sealBoss:!!opts.sealBoss,onWin:opts.onWin||null,onLose:opts.onLose||null,loseMsg:opts.loseMsg||'',noPenalty:!!opts.noPenalty,phase:'intro',
   log:[(boss?(opts.sealBoss?'봉인 수호물':'강적'):'마물')+'이(가) 나타났다!'],
   actions:[],queue:[],inputIdx:0,cmd:0,sub:0,menu:'cmd',targetIdx:0,timer:40,pending:null,note:'',noteT:0,poisonDone:false,auto:0,result:null,round:0};
   battle.enemies.forEach(e=>{ storyFlags['m_'+e.id]=1; }); // 도감: 만난 마물
@@ -1789,7 +1789,7 @@ function nextLearn(p){ return learnList(p).filter(e=>e.lv>p.lv&&(e.trait?TRAITS[
 /* 직업별 성장: 주력 능력치는 모두 +2, 나머지에서 차이를 둔다(검사=체력·방어, 궁수=속도, 주술사·치유사=MP) */
 const GROW={'검사':{hp:7,mp:2,atk:2,def:2,mag:1,spd:1},'궁수':{hp:6,mp:2,atk:2,def:1,mag:1,spd:2},'주술사':{hp:6,mp:3,atk:1,def:1,mag:2,spd:1},'치유사':{hp:6,mp:3,atk:1,def:1,mag:2,spd:1},'창술사':{hp:7,mp:2,atk:2,def:1,mag:1,spd:2}};
 function levelUp(p){ const gr=growOf(p); p.lv++; p.expNext=expNeed(p.lv); p.maxhp+=gr.hp+rnd(4); p.maxmp+=gr.mp+rnd(3); p.atk+=gr.atk; p.def+=gr.def; p.mag+=gr.mag; p.spd+=gr.spd; p.hp=p.maxhp; p.mp=p.maxmp; return learnSkills(p); }
-function loseBattle(){ battle.log=['전멸했다...']; battle.phase='done'; battle.result='lose'; }
+function loseBattle(){ battle.log=[battle.loseMsg||'전멸했다...']; battle.phase='done'; battle.result='lose'; }
 function endBattle(){ const b=battle, r=b.result; party.forEach(p=>p.poison=0); safeSteps=ENC_SAFE_STEPS;
   if(r==='lose'&&b.onLose){ const ol=b.onLose; party.forEach(p=>{p.alive=true;p.hp=Math.max(1,Math.round(p.maxhp*0.5));p.mp=Math.round(p.maxmp*0.5);}); // 스토리상 패배: 리스폰 대신 이벤트 진행
     playBGM(cur.bgm||'field'); state='field'; battle=null; runEvent(ol); return; }
@@ -1878,7 +1878,7 @@ function drawBattleUI(){ const b=battle;
       if(b.winSeal){ g.fillStyle='#9fe8ff'; g.font='11px sans-serif'; g.fillText(b.winSeal,W/2,yy); yy+=18; }
       lt.forEach(id=>{ const e=itemDef(id), fd=fxDesc(e); g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(bx+8,yy-12,pw-16,27); g.fillStyle=gearCol(e,'#9fe8c4'); g.font='bold 12px sans-serif'; g.fillText('★ 전리품  '+e.name+(e.slot?'  ('+SLOT_KO[e.slot]+')':''),W/2,yy); g.fillStyle='#cdd6ea'; g.font='10px sans-serif'; g.fillText(effStr(e)+(fd?' — '+fd:''),W/2,yy+12); yy+=30; });
       g.fillStyle='#9aa6c2'; g.font='11px sans-serif'; g.fillText('탭하여 계속 ▶',W/2,by+ph-9); g.textAlign='left'; }
-    else { g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText('전멸했다…  '+(adReviveOk()?'다른 곳을 탭하면 그대로 물러난다 ▶':'탭하여 계속 ▶'),W/2,36); g.textAlign='left';
+    else { g.fillStyle='#9fe8c4'; g.font='12px sans-serif'; g.textAlign='center'; g.fillText((b.loseMsg||'전멸했다…')+'  '+(adReviveOk()?'다른 곳을 탭하면 그대로 물러난다 ▶':'탭하여 계속 ▶'),W/2,36); g.textAlign='left';
       if(adReviveOk()) btn(W/2-100,52,200,26,'▶ 광고 보고 다시 일어서기',adRevive,{bg:'#2a4a3a',fg:'#9fe8c4',font:'bold 12px sans-serif'}); }
     return; }
   if(b.phase!=='input') return; const p=party[b.inputIdx]; if(!p) return;
