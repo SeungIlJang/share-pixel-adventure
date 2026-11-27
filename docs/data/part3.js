@@ -906,7 +906,7 @@ events:{
       const [name,line]=give[i], q=party.find(x=>x.name===name);
       if(!q||q.job2||!job2For(q)){ next(i+1); return; }
       showMsg([ line() ], ()=>{ openJob2Pick(name,(id,got)=>{ saveGame();
-        showMsg([ id ? name+(name==='카엘'?'은':'는')+' 「'+jobName(q)+'」(으)로 나아갔다!  '+(got||[]).join(' · ') : '…' ], ()=>next(i+1)); }); }); };
+        showMsg([ id ? (trDict?T`${name} → 「${jobName(q)}」!  `:name+(name==='카엘'?'은':'는')+' 「'+jobName(q)+'」(으)로 나아갔다!  ')+(got||[]).join(' · ') : '…' ], ()=>next(i+1)); }); }); };
     if(first) showMsg([
       "네 사도가 무기를 내린다.",
       say('왕관의 사도','…졌다. 깨끗이. 왕이 못 한 것을, 너희는 하려 하는구나.',LORD),

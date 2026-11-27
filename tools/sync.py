@@ -23,7 +23,9 @@ def main() -> int:
         shutil.copyfile(f, DST / "data" / f.name)
         hashes[f.name] = hashlib.sha1(f.read_bytes()).hexdigest()[:10]
     html = io.open(SRC / "index.html", encoding="utf-8").read()
-    refs = re.findall(r'src="data/([\w.-]+\.js)\?v=dev"', html)
+    # <script src="data/…"> 뿐 아니라 스크립트 안에서 뒤늦게 불러오는 파일(언어 묶음 'data/lang-en.js?v=dev')도 같은 방식으로 버전을 붙인다
+    ref_re = r'''(["'])data/([\w.-]+\.js)\?v=dev\1'''
+    refs = [m[1] for m in re.findall(ref_re, html)]
     missing = [r for r in refs if r not in hashes]
     if missing:
         print(f"index.html 이 참조하는 데이터 파일이 없습니다: {missing}", file=sys.stderr)
@@ -31,7 +33,7 @@ def main() -> int:
     unreferenced = [n for n in hashes if n not in refs]
     if unreferenced:
         print(f"경고: index.html 이 참조하지 않는 데이터 파일: {unreferenced}", file=sys.stderr)
-    html = re.sub(r'src="data/([\w.-]+\.js)\?v=dev"', lambda m: f'src="data/{m.group(1)}?v={hashes[m.group(1)]}"', html)
+    html = re.sub(ref_re, lambda m: f'{m.group(1)}data/{m.group(2)}?v={hashes[m.group(2)]}{m.group(1)}', html)
     io.open(DST / "index.html", "w", encoding="utf-8", newline="").write(html)
     for n in refs:
         print(f"data/{n} v={hashes[n]}")

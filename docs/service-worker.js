@@ -15,7 +15,9 @@ const ASSETS = [
   './data/part2.js',
   './data/part3.js',
   './data/part4.js',
-  './data/art.js'
+  './data/art.js',
+  './data/lang-en.js',
+  './data/lang-ja.js'
 ];
 
 self.addEventListener('install', (e) => {
